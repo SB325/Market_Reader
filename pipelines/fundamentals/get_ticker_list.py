@@ -1,21 +1,33 @@
 '''
 Requests list of company names, their ticker symbols and their SEC Filing CIK 
 '''
+# import sys
+# sys.path.append('../../')
+from util.logger import log
+from util.crud import crud as crud
+from util.db.models.tickers import Symbols as SymbolTable
+
 import requests
 import pdb
 import json
 
 url='https://www.sec.gov/files/company_tickers.json'
-# url_in = 'https://www.sec.gov/Archives/edgar/cik-lookup-data.txt'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
-
 output_filename = 'tickers.json'
 
-response = requests.get(url=url, headers=header)
-# pdb.set_trace()
+crud_util = crud()
 
-with open(output_filename,'w') as file:
-    file.write(json.dumps(response.json()))
+def save_ticker_data(data: dict, to_file: bool = True):
+    if to_file:
+        with open(output_filename,'w') as file:
+            file.write(json.dumps(response.json()))
+    else:
+        table = SymbolTable
+        index_cols = ['symbol']
+        crud_util.insert_rows(table, index_cols, data)
 
+if __name__ == "__main__":
+    response = requests.get(url=url, headers=header)
+    save_ticker_data(True, response.json())

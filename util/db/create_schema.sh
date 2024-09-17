@@ -11,11 +11,11 @@ else
 fi
 
 docker exec postgres_container \
-        sh -c "psql -d ${DATABASE} -U sheldon -v new_schema_name=${SCHEMA_NAME} -a -q -f create_schema.sql"
+        sh -c "psql -d ${DATABASE} -U sheldon -v new_schema_name=${SCHEMA_NAME} -a -q -f ./home/create_schema.sql"
 
 if [ ${POSTGIS_REQUIRED} == 1 ]; then
     docker exec postgres_container \
-        sh -c "psql -d ${DATABASE} -U sheldon -v new_schema_name=${SCHEMA_NAME} -a -q -f setup_extension_postgis.sql"
+        sh -c "psql -d ${DATABASE} -U sheldon -v new_schema_name=${SCHEMA_NAME} -a -q -f ./home/setup_extension_postgis.sql"
     echo "New Schema Name is: $SCHEMA_NAME with postgis extension"
 else
     echo "New Schema Name is: $SCHEMA_NAME"
