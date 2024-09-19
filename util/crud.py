@@ -3,6 +3,7 @@ Class that manages all data transfers to and from the databases
 '''
 from util.db.models.tickers import Symbols as SymbolTable
 from util.db.conn import insert_engine
+from util.logger import log
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import delete #, update
 from sqlalchemy.orm import sessionmaker
@@ -15,18 +16,20 @@ engine = insert_engine()
 
 class crud():
 
-    def insert_rows(self, table, index_elements: list, data) -> bool:
-            pdb.set_trace()
-            status = False
-            try:
-                with engine.connect() as conn:
-                    conn.execute(insert(table).on_conflict_do_nothing(
-                                index_elements=index_elements
-                                ), [ self.members_dict() ])
-                    conn.commit()
-                status = True
-            except Exception as exc:
-                log.error(f'Failure to insert data into DB.\n{exc}')
+    def insert_rows(self, table, index_elements: list, data: list) -> bool:
+        # pdb.set_trace()
+        status = False
+        try:
+            with engine.connect() as conn:
+                conn.execute(insert(table).on_conflict_do_nothing(
+                            index_elements=index_elements
+                            ), data)
+                conn.commit()
+            status = True
+        except Exception as exc:
+            log.error(f'Failure to insert data into DB.\n{exc}')
+        
+        return status
 
     def query_table(self, table, column: str, query_val: str):
         query = user_session.query(table).filter(

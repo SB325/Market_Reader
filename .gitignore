@@ -1,5 +1,5 @@
+**/__pycache__/
 .venv/
-__pycache__/
-__generated__/
+__generated__
 .pytest_cache/
 log/*

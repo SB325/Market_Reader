@@ -19,3 +19,6 @@ urllib3==1.26.13
 Werkzeug==2.3.5
 marshmallow-sqlalchemy
 psycopg2-binary==2.9.5
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.5
+flask-swagger-ui==4.11.1

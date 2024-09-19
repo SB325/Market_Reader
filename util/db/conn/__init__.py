@@ -32,8 +32,10 @@ if database_name != None and user != None and password != None and hostname != N
     SQLALCHEMY_POOL_TIMEOUT = 7  # value less than backend’s timeout
     SQLALCHEMY_PRE_PING = True
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': SQLALCHEMY_POOL_RECYCLE,
-                                               'pool_timeout': SQLALCHEMY_POOL_TIMEOUT,
-                                               'pool_pre_ping': SQLALCHEMY_PRE_PING}
+                                                'pool_timeout': SQLALCHEMY_POOL_TIMEOUT,
+                                                'pool_pre_ping': SQLALCHEMY_PRE_PING,
+                                                'pool_pre_ping': SQLALCHEMY_PRE_PING,
+                                                'insertmanyvalues_page_size' : 1000}
     db = SQLAlchemy(app)
 else:
     log.error(

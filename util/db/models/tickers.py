@@ -27,6 +27,6 @@ Base = declarative_base(metadata=MetaData(schema=db_schema))
 class Symbols(Base):
     __tablename__ = "symbols"
     __table_args__ = ({"schema": db_schema})
-    symbol = Column(String, primary_key=True)
-    name = Column(String)
-    CIK = Column(String)
+    ticker = Column(String, primary_key=True)
+    title = Column(String)
+    cik_str = Column(String)

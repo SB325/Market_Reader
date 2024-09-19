@@ -22,12 +22,13 @@ crud_util = crud()
 def save_ticker_data(data: dict, to_file: bool = True):
     if to_file:
         with open(output_filename,'w') as file:
-            file.write(json.dumps(response.json()))
+            file.write(json.dumps(data))
     else:
         table = SymbolTable
-        index_cols = ['symbol']
+        index_cols = ['ticker']
         crud_util.insert_rows(table, index_cols, data)
 
 if __name__ == "__main__":
     response = requests.get(url=url, headers=header)
-    save_ticker_data(True, response.json())
+    content = list(response.json().values())
+    save_ticker_data(content, False)
