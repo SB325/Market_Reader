@@ -12,18 +12,19 @@ class JSON(fields.Field):
 
         return None
   
-class sBantam_Api(Schema):
-    event_time = fields.DateTime()
-    event_date = fields.DateTime()
-    record_type = fields.String()
-    calling_number = fields.String()
-    imsi = fields.String()
-    imei = fields.Integer()
-    called_number = fields.String()
-    called_imsi = fields.Integer()
-    call_duration = fields.Float()
-    cgi = fields.String()
-    geo_lat = fields.Float()
-    geo_lon = fields.Float()
-    radius = fields.Float()
+class sSymbols(Schema):
+    cik_str = fields.String()
+    ticker = fields.String()
+    title = fields.String()
+
+    # calling_number = fields.String()
+    # imsi = fields.String()
+    # imei = fields.Integer()
+    # called_number = fields.String()
+    # called_imsi = fields.Integer()
+    # call_duration = fields.Float()
+    # cgi = fields.String()
+    # geo_lat = fields.Float()
+    # geo_lon = fields.Float()
+    # radius = fields.Float()
     

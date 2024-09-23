@@ -25,10 +25,14 @@ def save_ticker_data(data: dict, to_file: bool = True):
             file.write(json.dumps(data))
     else:
         table = SymbolTable
-        index_cols = ['ticker']
+        index_cols = ['cik_str']
         crud_util.insert_rows(table, index_cols, data)
 
 if __name__ == "__main__":
     response = requests.get(url=url, headers=header)
     content = list(response.json().values())
+    for con in content:
+        cik = str(con['cik_str'])
+        con['cik_str'] = '0' * (10-len(cik)) + cik
+
     save_ticker_data(content, False)

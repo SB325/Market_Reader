@@ -22,3 +22,4 @@ psycopg2-binary==2.9.5
 Flask==2.3.2
 Flask-SQLAlchemy==3.0.5
 flask-swagger-ui==4.11.1
+pandas==2.2.3

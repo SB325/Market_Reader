@@ -5,19 +5,18 @@ from util.db.models.tickers import Symbols as SymbolTable
 from util.db.conn import insert_engine
 from util.logger import log
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import delete #, update
+from sqlalchemy import delete, select, text
 from sqlalchemy.orm import sessionmaker
 from pydantic import BaseModel
 import pdb
 
 Session = sessionmaker(bind=insert_engine())
-user_session = Session()
+session = Session()
 engine = insert_engine()
 
 class crud():
 
     def insert_rows(self, table, index_elements: list, data: list) -> bool:
-        # pdb.set_trace()
         status = False
         try:
             with engine.connect() as conn:
@@ -31,15 +30,21 @@ class crud():
         
         return status
 
-    def query_table(self, table, column: str, query_val: str):
-        query = user_session.query(table).filter(
-            table[column] == query_val
-            )
-        return query.first()
+    def query_table(self, table, column: str, query_val: str = ''):
+        if query_val:
+            stmt = select(table).where(column == query_val)
+            result = session.execute(stmt)
+        else:
+            stmt = select(getattr(table,column))
+            result = session.execute(stmt)
+        obj = result.all()
+        if obj:
+            out = [n[0] for n in obj]
+        return out
 
     def delete_rows(column: str, table, query_val: str) -> bool:
         try:
-            query = user_session.query(table).filter(
+            query = session.query(table).filter(
                         table[column] == query_val
                         )
             if not query.first():

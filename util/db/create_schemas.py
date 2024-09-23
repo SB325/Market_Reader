@@ -1,5 +1,6 @@
 from sqlalchemy.schema import CreateSchema
-from util.db.models.tickers import Base as Symbols_Base
+# from util.db.models.tickers import Base as Symbols_Base
+from util.db.models.filings import Base as Filings_Base
 from util.db.conn import insert_engine
 
 import os
@@ -15,7 +16,7 @@ if not engine.dialect.has_schema(
         conn.commit()
 
 with engine.connect() as conn:
-    Symbols_Base.metadata.create_all(engine)
+    Filings_Base.metadata.create_all(engine)
     conn.commit()
     conn.close()
 engine.dispose()

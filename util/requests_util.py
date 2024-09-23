@@ -5,11 +5,12 @@ import requests
 class requests_util:
     '''
     requests_util is a clean, simple interface for requests get, post etc requests
+    Requests_Util forces a time period between consecutive REST requests in order to comply with API rate limits.
     '''
-    def __init__(self):
-        self.last_request_time = 0;
-        self.access_token = ''
-        self.rate_limit = 1  # minimum period or 1/max rate per second 
+    def __init__(self, last_request_time: int = 0, access_token: str = '', rate_limit: int = 1):
+        self.last_request_time = last_request_time
+        self.access_token = access_token
+        self.rate_limit = rate_limit  # minimum period or 1/max rate per second. For edgar, limit is listed at 10/sec
         
     def get_last_request_time(self):
         return self.last_request_time
@@ -27,7 +28,7 @@ class requests_util:
             wait_time = 0
         time.sleep(wait_time)
         
-    def get(self, url_in, params_dict, headers_in):
+    def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}):
         self.wait_half_second()
         response = requests.get(url=url_in, params=params_dict, headers=headers_in)
         
