@@ -4,3 +4,5 @@ downloads/
 __generated__
 .pytest_cache/
 log/*
+*.zip
+*.csv

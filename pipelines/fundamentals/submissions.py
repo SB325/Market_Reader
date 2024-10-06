@@ -11,6 +11,7 @@ import os
 import json
 import pdb
 
+
 requests = requests_util()
 crud_util = crud()
 
@@ -32,18 +33,12 @@ class Submissions():
         # Descriptions for all of a company's filings
         self.filings: pd.DataFrame = {}
         self.cik = None
-
-        # cik must be a 10 digit integer if passed in as argument
-        # if cik:
-        #     self.read_cik(cik)
-        #     self.download_submission(cik)
-        #     self.parse_response()
     
     def read_cik(self, cik: str):
         assert cik, "Must pass 10 digit number as an argument!"
         self.cik = '0' * (10-len(cik)) + cik
         self.url = self.url_base + f'CIK{self.cik}.json'
-    
+
     def download_submission(self, cik: str):
         # download submission from SEC Edgar submissions endpoint for cik.
         self.read_cik(cik)
@@ -65,36 +60,41 @@ class Submissions():
         table = filings['recent']
         self.filings = pd.DataFrame({k:pd.Series(v) for k,v in table.items()})
 
-    def insert_table(self):
+    def insert_table(self) -> bool:
         # Insert table(s) into database.
-        assert not self.filings.empty, "No data to insert. Download and parse first!"
-        assert self.meta_data, "No data to insert. Download and parse first!"
-
-        cik_dict = [{'cik': self.cik}] * 2
-        metadata = copy.deepcopy(self.meta_data)
+        if self.filings.empty:
+            log.warning(f"No filings data to insert for cik {self.cik}.")
+        else:
+            nfilings = len(self.filings.index)
+            self.filings = self.filings.assign(cik=[self.cik] * nfilings)
+            filings_to_insert = self.filings.to_dict('records')
+            
+            # Insert company filings
+            crud_util.insert_rows(filings, ['accessionNumber'], filings_to_insert)
         
-        metadata['tickers'] = json.dumps(metadata['tickers'])
-        metadata['exchanges'] = json.dumps(metadata['exchanges'])
-        metadata['formerNames'] = json.dumps(metadata['formerNames'])
-        metadata['cik'] = self.cik
+        if not self.meta_data:
+            pdb.set_trace()
+            log.warning(f"No meta_data to insert for cik {self.cik}")
+        else:
+            cik_dict = [{'cik': self.cik}] * 2
+            metadata = copy.deepcopy(self.meta_data)
+            
+            metadata['tickers'] = json.dumps(metadata['tickers'])
+            metadata['exchanges'] = json.dumps(metadata['exchanges'])
+            metadata['formerNames'] = json.dumps(metadata['formerNames'])
+            metadata['cik'] = self.cik
 
-        addresses = metadata.pop('addresses')
-        mailing_address = cik_dict[0].update(addresses['mailing'])
-        business_address = cik_dict[1].update(addresses['mailing'])
-        nfilings = len(self.filings.index)
-        self.filings = self.filings.assign(cik=[self.cik] * nfilings)
-        filings_to_insert = self.filings.to_dict('records')
-        
-        # Insert company metadata
-        if metadata['cik']:
-            crud_util.insert_rows(cmeta, ['cik'], [metadata])
+            addresses = metadata.pop('addresses')
+            cik_dict[0].update(addresses['mailing'])
+            cik_dict[1].update(addresses['business'])
 
-        # Insert company filings
-        crud_util.insert_rows(filings, ['accessionNumber'], filings_to_insert)
+            # Insert company metadata
+            if metadata['cik']:
+                crud_util.insert_rows(cmeta, ['cik'], [metadata])
 
-        # Insert mailing address
-        crud_util.insert_rows(cmailing, ['cik'], [cik_dict[0]])
+            # Insert mailing address
+            crud_util.insert_rows(cmailing, ['cik'], [cik_dict[0]])
 
-        # Insert business address
-        crud_util.insert_rows(cbusiness, ['cik'], [cik_dict[1]])
+            # Insert business address
+            crud_util.insert_rows(cbusiness, ['cik'], [cik_dict[1]])
 

@@ -25,7 +25,7 @@ if debug == 'True' or debug == 'False':
 
 if database_name != None and user != None and password != None and hostname != None and port != None and database_schema != None and debug != None:
     app.config['DEBUG'] = debug
-    app.config['SQLALCHEMY_ECHO'] = debug
+    app.config['SQLALCHEMY_ECHO'] = False
     app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{hostname}:{port}/{database_name}?options=-csearch_path%3Ddbo,{database_schema}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     SQLALCHEMY_POOL_RECYCLE = 35  # value less than backend’s timeout
@@ -36,6 +36,7 @@ if database_name != None and user != None and password != None and hostname != N
                                                 'pool_pre_ping': SQLALCHEMY_PRE_PING,
                                                 'pool_pre_ping': SQLALCHEMY_PRE_PING,
                                                 'insertmanyvalues_page_size' : 1000}
+
     db = SQLAlchemy(app)
 else:
     log.error(

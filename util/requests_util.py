@@ -28,9 +28,9 @@ class requests_util:
             wait_time = 0
         time.sleep(wait_time)
         
-    def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}):
+    def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}, stream_in: bool = False):
         self.wait_half_second()
-        response = requests.get(url=url_in, params=params_dict, headers=headers_in)
+        response = requests.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in)
         
         if not response.ok:
             print(f"GET Request for \n{response.url}\n Failed. {response.status_code}")
