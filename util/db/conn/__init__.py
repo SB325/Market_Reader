@@ -43,9 +43,6 @@ else:
         f'\n____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist')
     exit()
 
-def insert_engine():
-    return db.engine
-
 app.app_context().push()
 db.create_all()
 
@@ -58,3 +55,6 @@ with db.engine.connect() as conn:
         log.error('\n----------- Connection failed !!!! ERROR : ',
                   e, ' -----------')
         exit()
+
+def insert_engine():
+    return db.engine

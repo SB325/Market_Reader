@@ -1,12 +1,12 @@
+import asyncio
 from util.logger import log
 from util.requests_util import requests_util
-from util.crud import crud as crud
 from util.db.models.tickers import Symbols as symbols
 from util.db.models.filings import SharesOutstanding as SharesOutstanding
 from util.db.models.filings import StockFloat as FloatTable
 from util.db.models.filings import Accounting as AccountingTable
+
 import pandas as pd
-import copy
 import os
 import json
 import pdb
@@ -21,12 +21,12 @@ requests = requests_util()
 
 current_file = os.path.basename(__file__)
 
-def read_cik(self, cik: str = ''):
+async def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
     return cik
 
-def clean_df(df: pd.DataFrame):
+async def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
@@ -36,10 +36,8 @@ class Facts():
     # List of all listed filing submissions made by the company.
     #  The 'recent' key contains a table of all accessionNumbers (filing identifiers) and the 
     # metadata needed to derive the url (to download the actual pdf).
-    url_base = f'https://data.sec.gov/submissions/'
-    header = {'User-Agent': 'Mozilla/5.0'}
 
-    def __init__(self, crud):
+    def __init__(self, crud_obj):
         # Nearly raw downloaded REST response (dict)
         self.download = []
         self.shares = []
@@ -50,11 +48,11 @@ class Facts():
         # Descriptions for all of a company's filings
         self.filing_list: list = []
         self.cik: str = None
-        self.crud_util = crud
+        self.crud_util = crud_obj
 
-    def download_from_zip(self, zip_file: str = ''):
+    async def download_from_zip(self, zip_file: str = ''):
         success = False
-        known_ciks = self.crud_util.query_table(symbols, 'cik_str')
+        known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
             print('no tickers inserted.')
             return success
@@ -64,8 +62,7 @@ class Facts():
         if zip_file:
             
             with zipfile.ZipFile(zip_file) as myzip:
-                # try:
-                for name in tqdm(myzip.namelist()[:400], desc="Downloading Filing Data:"):
+                for name in tqdm(myzip.namelist(), desc="Downloading Filing Data:"):
                     file = myzip.read(name)
                     try:
                         if len(file)>100:
@@ -76,14 +73,16 @@ class Facts():
                             else:
                                 continue
                             self.download.append(f)
-                    except:
+                    except (Exception) as err:
                         pdb.set_trace()
+                        print(f"{err}")
+
             success = True
         else:
             print('No zip file presented.')
         return success
 
-    def parse_response(self):
+    async def parse_response(self):
         success = False
 
         t0 = time.time()
@@ -152,7 +151,7 @@ class Facts():
         success = True
         return success
 
-    def insert_table(self) -> bool:
+    async def insert_table(self) -> bool:
         
         success = False
 
@@ -166,8 +165,8 @@ class Facts():
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
-            clean_df(df)
-            self.crud_util.insert_rows(SharesOutstanding, df)
+            await clean_df(df)
+            await self.crud_util.insert_rows(SharesOutstanding, df)
             print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.shares = []
 
@@ -182,8 +181,8 @@ class Facts():
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
-            clean_df(df)
-            self.crud_util.insert_rows(FloatTable, df)   
+            await clean_df(df)
+            await self.crud_util.insert_rows(FloatTable, df)   
             print(f"{(time.time()-t0)/60} minutes elapsed on float data insertion.")
             self.float = []
 
@@ -199,12 +198,11 @@ class Facts():
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
-            clean_df(df)
+            await clean_df(df)
 
-            self.crud_util.insert_rows(AccountingTable, df)
+            await self.crud_util.insert_rows(AccountingTable, df)
             print(f"{(time.time()-t0)/60} minutes elapsed on accounting data insertion.")
             self.accounting_data = []
 
         success = True
         return success
-

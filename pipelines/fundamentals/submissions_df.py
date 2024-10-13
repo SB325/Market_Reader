@@ -1,33 +1,33 @@
+import asyncio
 from util.logger import log
 from util.requests_util import requests_util
-from util.crud import crud as crud
 from util.db.models.tickers import Symbols as symbols
 from util.db.models.tickers import Company_Meta as cmeta
 from util.db.models.tickers import Company_Mailing_Addresses as cmailing
 from util.db.models.tickers import Company_Business_Addresses as cbusiness
 from util.db.models.filings import Filings as filings
+
 import pandas as pd
-import copy
 import os
 import json
 import pdb
 import zipfile
 from tqdm import tqdm
 import time
-from util.db.create_schemas import create_schemas
 import json
+from util.db.create_schemas import create_schemas
 
 create_schemas()
 requests = requests_util()
 
 current_file = os.path.basename(__file__)
 
-def read_cik(self, cik: str = ''):
+async def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
     return cik
 
-def clean_df(df: pd.DataFrame):
+async def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
@@ -37,10 +37,8 @@ class Submissions():
     # List of all listed filing submissions made by the company.
     #  The 'recent' key contains a table of all accessionNumbers (filing identifiers) and the 
     # metadata needed to derive the url (to download the actual pdf).
-    url_base = f'https://data.sec.gov/submissions/'
-    header = {'User-Agent': 'Mozilla/5.0'}
     
-    def __init__(self, crud):
+    def __init__(self, crud_obj):
         # Nearly raw downloaded REST response (dict)
         self.filings: pd.DataFrame = pd.DataFrame()
         self.downloaded_data: dict = {}  
@@ -52,11 +50,11 @@ class Submissions():
         # Descriptions for all of a company's filings
         self.filing_list: list = []
         self.cik: str = None
-        self.crud_util = crud
+        self.crud_util = crud_obj
 
-    def insert_submissions_from_zip(self, zip_file: str = ''):
+    async def insert_submissions_from_zip(self, zip_file: str = ''):
         success = False
-        known_ciks = self.crud_util.query_table(symbols, 'cik_str')
+        known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
             return success
          
@@ -66,7 +64,7 @@ class Submissions():
             self.downloaded_list = []
             with zipfile.ZipFile(zip_file) as myzip:
                 # try:
-                for name in tqdm(myzip.namelist()[:400], desc="Capturing Filing MetaData:"):
+                for name in tqdm(myzip.namelist(), desc="Capturing Filing MetaData:"):
                     file = myzip.read(name)
                     try:
                         if len(file)>100:
@@ -88,7 +86,7 @@ class Submissions():
             print('No zip file presented.')
         return success
 
-    def parse_response(self):
+    async def parse_response(self):
         success = False
         # Set parsing rules and value checks, returning table of interest.
         for dct in tqdm(self.downloaded_list, desc='Extracting Metadata'):
@@ -114,7 +112,7 @@ class Submissions():
         success = True
         return success
 
-    def insert_table(self) -> bool:
+    async def insert_table(self) -> bool:
         success = False
         # Insert table(s) into database.
         if not self.filing_list:
@@ -127,7 +125,7 @@ class Submissions():
             df = df[['cik', 'accessionNumber', 'filingDate', 'reportDate', 'acceptanceDateTime', \
                 'act', 'form', 'fileNumber', 'filmNumber', 'items', 'core_type', 'size', \
                 'isXBRL', 'isInlineXBRL', 'primaryDocument', 'primaryDocDescription']]
-            clean_df(df)
+            await clean_df(df)
             self.crud_util.insert_rows(filings, df)
             print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.filing_list = []
@@ -144,7 +142,7 @@ class Submissions():
                         'stateOfIncorporationDescription', 'ein', 'entityType', \
                             'sicDescription', 'ownerOrg', 'insiderTransactionForOwnerExists', \
                                 'insiderTransactionForIssuerExists', 'phone', 'flags', 'formerNames']]
-            clean_df(df)
+            await clean_df(df)
             self.crud_util.insert_rows(cmeta, df)   
             print(f"{(time.time()-t0)/60} minutes elapsed on metadata insertion.")
             self.meta_data = []
@@ -158,7 +156,7 @@ class Submissions():
 
             df = df[['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
                     'stateOrCountryDescription']]
-            clean_df(df)
+            await clean_df(df)
             self.crud_util.insert_rows(cmailing, df) 
             print(f"{(time.time()-t0)/60} minutes elapsed on mailing addr insertion.")
             self. addresses_mailing = []
@@ -172,7 +170,7 @@ class Submissions():
             
             df = df[['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
                     'stateOrCountryDescription']]
-            clean_df(df)
+            await clean_df(df)
             self.crud_util.insert_rows(cbusiness, df)
             print(f"{(time.time()-t0)/60} minutes elapsed on business addr insertion.")
             self.addresses_business = []
