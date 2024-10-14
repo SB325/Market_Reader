@@ -74,7 +74,7 @@ class Submissions():
             t0 = time.time()
             self.downloaded_list = [m for m in self.downloaded_list if 'cik' in m.keys()]
             self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
-            self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: x.zfill(10))
+            self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
             self.downloaded_list['tickers'] = self.downloaded_list['tickers'].apply(lambda x: json.dumps(x))
             self.downloaded_list['exchanges'] = self.downloaded_list['exchanges'].apply(lambda x: json.dumps(x))
             self.downloaded_list['formerNames'] = self.downloaded_list['formerNames'].apply(lambda x: json.dumps(x))
@@ -126,7 +126,7 @@ class Submissions():
                 'act', 'form', 'fileNumber', 'filmNumber', 'items', 'core_type', 'size', \
                 'isXBRL', 'isInlineXBRL', 'primaryDocument', 'primaryDocDescription']]
             await clean_df(df)
-            self.crud_util.insert_rows(filings, df)
+            await self.crud_util.insert_rows(filings, df)
             print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.filing_list = []
             
@@ -143,7 +143,7 @@ class Submissions():
                             'sicDescription', 'ownerOrg', 'insiderTransactionForOwnerExists', \
                                 'insiderTransactionForIssuerExists', 'phone', 'flags', 'formerNames']]
             await clean_df(df)
-            self.crud_util.insert_rows(cmeta, df)   
+            await self.crud_util.insert_rows(cmeta, df)   
             print(f"{(time.time()-t0)/60} minutes elapsed on metadata insertion.")
             self.meta_data = []
 
@@ -157,7 +157,7 @@ class Submissions():
             df = df[['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
                     'stateOrCountryDescription']]
             await clean_df(df)
-            self.crud_util.insert_rows(cmailing, df) 
+            await self.crud_util.insert_rows(cmailing, df) 
             print(f"{(time.time()-t0)/60} minutes elapsed on mailing addr insertion.")
             self. addresses_mailing = []
 
@@ -171,7 +171,7 @@ class Submissions():
             df = df[['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
                     'stateOrCountryDescription']]
             await clean_df(df)
-            self.crud_util.insert_rows(cbusiness, df)
+            await self.crud_util.insert_rows(cbusiness, df)
             print(f"{(time.time()-t0)/60} minutes elapsed on business addr insertion.")
             self.addresses_business = []
             

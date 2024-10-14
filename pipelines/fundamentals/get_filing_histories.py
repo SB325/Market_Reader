@@ -45,7 +45,7 @@ async def get_submissions():
     msg = "Submissions failed."
     submissions = Submissions(crud_util)
     t0 = time.time()
-    vals = await asyncio.gather(submissions.insert_submissions_from_zip('companyfacts.zip'), \
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
                                 submissions.parse_response(), \
                                 submissions.insert_table())
     # if submissions.insert_submissions_from_zip('submissions.zip'):

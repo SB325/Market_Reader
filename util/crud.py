@@ -33,7 +33,6 @@ class crud():
             buffer.seek(0)
 
             conn =  self.engine.raw_connection()
-            # pdb.set_trace()
             cursor = conn.cursor()
             try:
                 cursor.copy_from(buffer, tablename, sep=sep, null="")
@@ -53,19 +52,6 @@ class crud():
             log.error(f'Failure to insert data into DB.\n{exc}')
         
         return status
-
-    # def print_state(self, line: str = ''):
-    #     pdb.set_trace()
-    #     in_transaction = self.engine.in_transaction()
-    #     info = self.engine.info
-    #     is_active = self.engine.is_active
-    #     dirty = self.engine.dirty
-    #     deleted = self.engine.deleted
-    #     print(f"Line {line}\nIn Transaction: {in_transaction}\n \
-    #         Info: {info}\n \
-    #             Is Active: {is_active}\n \
-    #                 Dirty: {dirty}\n \
-    #                     Deleted: {deleted}")
     
     async def query_table(self, table, column: str, query_val: str = ''):
         with self.engine.connect() as conn:
