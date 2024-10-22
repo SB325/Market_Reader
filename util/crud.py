@@ -6,12 +6,13 @@ import asyncio
 from util.db.conn import insert_engine
 from util.logger import log
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import delete, select, text, bindparam
+from sqlalchemy import delete, select, column, table
 from sqlalchemy.orm import sessionmaker
 import pdb
 from io import StringIO
 import pandas as pd
 import time
+from typing import Union
 
 import inspect 
     
@@ -53,34 +54,40 @@ class crud():
         
         return status
     
-    async def query_table(self, table, column: str, query_val: str = ''):
+    async def query_table(self, tablename, cols: Union[str, list], query_val: str = ''):
         with self.engine.connect() as conn:
             if query_val:
-                stmt = select(table).where(column == query_val)
+                stmt = select(tablename).where(cols == query_val)
                 result = conn.execute(stmt)
             else:
-                stmt = select(getattr(table,column))
-                result = conn.execute(stmt)
-            out = result.all()
-            if out:
-                out = [n[0] for n in out]
+                if isinstance(cols, list):
+                    cols_ = [column(col) for col in cols]
+                    stmt = select(table(tablename.__tablename__, *cols_))
+                    result = conn.execute(stmt)
+                    out = result.all()
+                else:
+                    stmt = select(getattr(tablename, cols))
+                    result = conn.execute(stmt)
+                    out = result.all()
+                    if out:
+                        out = [n[0] for n in out]
+            
         return out
 
-    async def delete_rows(self, column: str, table, query_val: str) -> bool:
-        
+    async def delete_rows(self, column: str, tablename, query_val: str) -> bool:
         try:
             with self.engine.connect() as conn:
-                query = conn.query(table).filter(
-                            table[column] == query_val
-                            )
+                query = conn.query(tablename.filter(
+                            tablename[column] == query_val
+                            ))
                 if not query.first():
                     log.warning(f'Deletion query returned 0 rows. Nothing to delete.')
                     return False
                 else:
                     with conn as conn:
                         conn.execute(
-                            delete(table).where(
-                            table[column] == query_val
+                            delete(tablename).where(
+                            tablename[column] == query_val
                             )
                         )
                         conn.commit()
@@ -92,11 +99,11 @@ class crud():
         
         return True
     
-    async def insert_rows_orm(self, table, index_elements: list, data: pd.DataFrame) -> bool:
+    async def insert_rows_orm(self, tablename, index_elements: list, data: pd.DataFrame) -> bool:
         status = False
         pdb.set_trace()
         with self.engine.connect() as conn:
-            conn.execute(insert(table).on_conflict_do_nothing(
+            conn.execute(insert(tablename).on_conflict_do_nothing(
                         index_elements=index_elements
                         ).values(data))
             conn.commit()

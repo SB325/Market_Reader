@@ -26,16 +26,7 @@ async def get_facts():
     vals = await asyncio.gather(facts.download_from_zip('companyfacts.zip'), \
                                 facts.parse_response(), \
                                 facts.insert_table())
-    # if await facts.download_from_zip('companyfacts.zip'):
-    #     if await facts.parse_response():
-    #         if await facts.insert_table():
-    #             pass
-    #         else:
-    #             print('Facts not inserted into table.')
-    #     else:
-    #         print('Facts not parsed.')
-    # else:
-    #     print('Facts not downloaded from zip.')
+
     t1 = time.time()
     del facts
     msg = f"Facts time: {(t1-t0)/60} minutes."
@@ -48,16 +39,7 @@ async def get_submissions():
     vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
                                 submissions.parse_response(), \
                                 submissions.insert_table())
-    # if submissions.insert_submissions_from_zip('submissions.zip'):
-    #     if submissions.parse_response():
-    #         if submissions.insert_table():
-    #             pass
-    #         else:
-    #             print('Submissions not inserted into table.')
-    #     else:
-    #         print('Submissions not parsed.')
-    # else:
-    #     print('Submissions not downloaded from zip.')
+    
     t1 = time.time()
     del submissions
     msg = f"Submissions time: {(t1-t0)/60} minutes."
