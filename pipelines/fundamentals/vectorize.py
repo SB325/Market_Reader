@@ -1,27 +1,67 @@
 from vespa.application import ApplicationPackage
-from vespa.package import Schema, Document, Field, FieldSet, HNSW, RankProfile
+from vespa.package import Schema, Document, Field, FieldSet, HNSW, RankProfile, Component, Parameter
 from vespa.deployment import VespaDocker
 import os
+from dotenv import load_dotenv
 import pdb
 import docker
+import asyncio
+from sentence_transformers import SentenceTransformer
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document as langchain_doc
+import torch
+from tqdm import tqdm
 
-VESPA_VAR_STORAGE = os.getenv('VESPA_VAR_STORAGE')
-VESPA_LOG_STORAG = os.getenv('VESPA_LOG_STORAGE')
+# from optimum.onnxruntime import ORTModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModel, pipeline
+
+load_dotenv()   
+# https://github.com/huggingface/tokenizers/tree/main/bindings/python 
+
+# model_path = '../../../../tokenizers/bindings/python/models/'
+model_checkpoint = "google-bert/bert-base-uncased"
+onnx_model_directory = "models"
+CONTAINER_MODEL_DIR = '/opt/vespa/var/models'
+VESPA_MODEL_STORAGE = os.getenv("VESPA_VAR_STORAGE") + '/models'
+VESPA_LOG_STORAGE = os.getenv('VESPA_LOG_STORAGE')
 VESPA_CONTAINER_IP = '172.22.0.1'
 VESPA_CONFIG_PORT = '19071'
+
+if not os.path.exists(f'{VESPA_MODEL_STORAGE}/model.safetensors'):
+    model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+    # Load a model from transformers and export it to ONNX
+    # ort_model = ORTModelForSequenceClassification.from_pretrained(model_checkpoint, export=True)
+    # tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+    # Save the onnx model and tokenizer
+    # ort_model.save_pretrained(VESPA_MODEL_STORAGE)
+    # tokenizer.save_pretrained(VESPA_MODEL_STORAGE)
+    model.save_pretrained(VESPA_MODEL_STORAGE)
+    tokenizer = AutoTokenizer.from_pretrained(VESPA_MODEL_STORAGE)
+else:
+    # ort_model = ORTModelForSequenceClassification.from_pretrained(VESPA_MODEL_STORAGE)
+    # tokenizer = AutoTokenizer.from_pretrained(VESPA_MODEL_STORAGE)
+    model = AutoModel.from_pretrained(VESPA_MODEL_STORAGE)
+    tokenizer = AutoTokenizer.from_pretrained(VESPA_MODEL_STORAGE)
 
 cli = docker.DockerClient()
 vespa_container_obj = [container for container in cli.containers.list() if container.name=='vespa_container']
 vespa_container_obj = vespa_container_obj[0]
 
+# cluster name is the apppackage name with "_content" appended to it.
 app_package = ApplicationPackage(
-    name="vector",                              
+    name="vector0",                              
     schema=[                                    
         Schema(
-            name="doc",
+            name="doc0",
             document=Document(
                 fields=[
                     Field(name="id", type="string", indexing=["attribute", "summary"]),
+                    Field(
+                        name="cik",
+                        type="string",
+                        indexing=["index", "summary"],
+                        index="enable-bm25",
+                    ),
                     Field(
                         name="uri",
                         type="uri",
@@ -42,7 +82,7 @@ app_package = ApplicationPackage(
                     ),
                     Field(
                         name="filing_content_embedding",
-                        type="tensor<bfloat16>(x[1536])",
+                        type="tensor<bfloat16>(x[768])",
                         indexing=["attribute", "summary", "index"],
                         ann=HNSW(       # https://zilliz.com/learn/hierarchical-navigable-small-worlds-HNSW
                             distance_metric="innerproduct",
@@ -62,8 +102,14 @@ app_package = ApplicationPackage(
             ],
         )
     ],
+    # components=[Component(id="hf-embedder", type="hugging-face-embedder",
+    #                     parameters=[
+    #                         Parameter("transformer-model", {"path": f"{CONTAINER_MODEL_DIR}/model.onnx"}),
+    #                         Parameter("tokenizer-model", {"path": f"{CONTAINER_MODEL_DIR}/tokenizer.json"}),
+    #                         ]         
+    #                     )
+    #             ],
 )
-
 
 # '''
 # port – Container port. Default is 8080.
@@ -81,8 +127,46 @@ vespa_docker = VespaDocker(port=8080,
                            debug_port=5005,
                            container=vespa_container_obj,
                            )
+
 app = vespa_docker.deploy(application_package=app_package)
-pdb.set_trace()
+
+def response_callback(response, id):
+    print(f"Response for id {id}: {response.status_code}")
+
+text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=768,  # chars, not llm tokens
+                chunk_overlap=0,
+                length_function=len,
+                is_separator_regex=False,
+                )
+
+def chunk(str_to_chunk: str):
+    chunks = text_splitter.transform_documents([str_to_chunk])
+    return chunks
+
+def add_data_to_vector_db(data: list):
+    data_chunks = []
+    for dat in tqdm(data, desc='embedding...'):
+        str_to_embed = dat['filing_content_string']
+        if str_to_embed:
+            doc_to_embed = langchain_doc(page_content=str_to_embed, 
+                                    metadata={"source": f"{dat['uri']}"}
+                                    )
+            
+            chunked_str_to_embed = chunk(doc_to_embed)
+            chunked_list = [sentence.page_content for sentence in chunked_str_to_embed]
+            embedded_list = tokenizer(chunked_list, padding=True, truncation=True, return_tensors='pt')
+
+            with torch.no_grad():
+                model_output = model(**embedded_list)
+
+            dat.update( { 'filing_content_embedding': model_output } )
+        else:
+            pdb.set_trace()
+            print('this shouldnt happen')
+    # pdb.set_trace()
+    # Feed iterable takes list of dicts as -data-
+    app.feed_iterable(data, schema="doc", callback=response_callback) 
 
 # '''
 # If :class: ContainerCluster is used, any :class: Component`s must be added to the :class: 
@@ -101,7 +185,7 @@ pdb.set_trace()
 # )
 
 # '''
-# Define a simple application package: https://pyvespa.readthedocs.io/en/latest/reference-api.html
+# Define a simple application package:      
 # https://docs.vespa.ai/en/reference/schema-reference.html#field
 # '''
 
@@ -202,6 +286,6 @@ pdb.set_trace()
 #     print(response.is_successful())
 #     print(response.get_json())
 
-# # Cleanup
+# Cleanup
 # vespa_docker.container.stop()
 # vespa_docker.container.remove()
