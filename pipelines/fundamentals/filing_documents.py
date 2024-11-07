@@ -33,7 +33,7 @@ async def query_files():
     if response_slim:
         if isinstance(response_slim, list):
             filing_content_list = []
-
+            cnt = 0
             for link in tqdm(response_slim, desc="Downloading Filing Document:"):
                 cik = link[0]
                 primaryDocDescription = link[3]
@@ -43,12 +43,18 @@ async def query_files():
                 # pdb.set_trace()
                 if resp:
                     soup = BeautifulSoup(resp.content, 'html5lib')
-
-                    filing_content_list.append({'cik': cik, 
-                                        'uri': uri, 
-                                        'primaryDocDescription': primaryDocDescription, 
-                                        'filing_content_string': soup.get_text()}
-                                        )
+                    filing_content_list.append({
+                                        'id': cnt,
+                                        'fields': {
+                                            'cik': cik, 
+                                            'uri': uri, 
+                                            'primaryDocDescription': primaryDocDescription, 
+                                            'filing_content_string': soup.get_text()
+                                            }
+                                        }
+                                    )
+                    # pdb.set_trace()
+                    cnt = cnt + 1
                 else:
                     print(f"failed to get filing: \n{uri}")
 

@@ -1,115 +1,32 @@
-from vespa.application import ApplicationPackage
+# from vespa.application import ApplicationPackage
+from app_package import app_package
 from vespa.package import Schema, Document, Field, FieldSet, HNSW, RankProfile, Component, Parameter
 from vespa.deployment import VespaDocker
 import os
 from dotenv import load_dotenv
+from vespa.io import VespaResponse
 import pdb
 import docker
 import asyncio
-from sentence_transformers import SentenceTransformer
+from pipelines.fundamentals.load_model import tokenizer, model
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document as langchain_doc
 import torch
 from tqdm import tqdm
 
-# from optimum.onnxruntime import ORTModelForSequenceClassification
-from transformers import AutoTokenizer, AutoModel, pipeline
-
 load_dotenv()   
-# https://github.com/huggingface/tokenizers/tree/main/bindings/python 
 
-# model_path = '../../../../tokenizers/bindings/python/models/'
 model_checkpoint = "google-bert/bert-base-uncased"
 onnx_model_directory = "models"
 CONTAINER_MODEL_DIR = '/opt/vespa/var/models'
-VESPA_MODEL_STORAGE = os.getenv("VESPA_VAR_STORAGE") + '/models'
+
 VESPA_LOG_STORAGE = os.getenv('VESPA_LOG_STORAGE')
 VESPA_CONTAINER_IP = '172.22.0.1'
 VESPA_CONFIG_PORT = '19071'
 
-if not os.path.exists(f'{VESPA_MODEL_STORAGE}/model.safetensors'):
-    model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
-    # Load a model from transformers and export it to ONNX
-    # ort_model = ORTModelForSequenceClassification.from_pretrained(model_checkpoint, export=True)
-    # tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    # Save the onnx model and tokenizer
-    # ort_model.save_pretrained(VESPA_MODEL_STORAGE)
-    # tokenizer.save_pretrained(VESPA_MODEL_STORAGE)
-    model.save_pretrained(VESPA_MODEL_STORAGE)
-    tokenizer = AutoTokenizer.from_pretrained(VESPA_MODEL_STORAGE)
-else:
-    # ort_model = ORTModelForSequenceClassification.from_pretrained(VESPA_MODEL_STORAGE)
-    # tokenizer = AutoTokenizer.from_pretrained(VESPA_MODEL_STORAGE)
-    model = AutoModel.from_pretrained(VESPA_MODEL_STORAGE)
-    tokenizer = AutoTokenizer.from_pretrained(VESPA_MODEL_STORAGE)
-
 cli = docker.DockerClient()
 vespa_container_obj = [container for container in cli.containers.list() if container.name=='vespa_container']
 vespa_container_obj = vespa_container_obj[0]
-
-# cluster name is the apppackage name with "_content" appended to it.
-app_package = ApplicationPackage(
-    name="vector0",                              
-    schema=[                                    
-        Schema(
-            name="doc0",
-            document=Document(
-                fields=[
-                    Field(name="id", type="string", indexing=["attribute", "summary"]),
-                    Field(
-                        name="cik",
-                        type="string",
-                        indexing=["index", "summary"],
-                        index="enable-bm25",
-                    ),
-                    Field(
-                        name="uri",
-                        type="uri",
-                        indexing=["index", "summary"],
-                        index="enable-bm25",
-                    ),
-                    Field(
-                        name="primaryDocDescription",
-                        type="string",
-                        indexing=["attribute", "index", "summary"],
-                        index="enable-bm25",
-                    ),
-                    Field(
-                        name="filing_content_string",
-                        type="string",
-                        indexing=["attribute", "index", "summary"],
-                        index="enable-bm25",
-                    ),
-                    Field(
-                        name="filing_content_embedding",
-                        type="tensor<bfloat16>(x[768])",
-                        indexing=["attribute", "summary", "index"],
-                        ann=HNSW(       # https://zilliz.com/learn/hierarchical-navigable-small-worlds-HNSW
-                            distance_metric="innerproduct",
-                            max_links_per_node=16,
-                            neighbors_to_explore_at_insert=128,
-                        ),
-                    ),
-                ]
-            ),
-            fieldsets=[FieldSet(name="default", fields=["primaryDocDescription", "filing_content_string"])],
-            rank_profiles=[
-                RankProfile(   # https://docs.vespa.ai/en/reference/schema-reference.html#rank-profile
-                    name="default",
-                    inputs=[("query(q)", "tensor<float>(x[1536])")],
-                    first_phase="closeness(field, filing_content_embedding)",
-                )
-            ],
-        )
-    ],
-    # components=[Component(id="hf-embedder", type="hugging-face-embedder",
-    #                     parameters=[
-    #                         Parameter("transformer-model", {"path": f"{CONTAINER_MODEL_DIR}/model.onnx"}),
-    #                         Parameter("tokenizer-model", {"path": f"{CONTAINER_MODEL_DIR}/tokenizer.json"}),
-    #                         ]         
-    #                     )
-    #             ],
-)
 
 # '''
 # port – Container port. Default is 8080.
@@ -130,8 +47,9 @@ vespa_docker = VespaDocker(port=8080,
 
 app = vespa_docker.deploy(application_package=app_package)
 
-def response_callback(response, id):
-    print(f"Response for id {id}: {response.status_code}")
+def response_callback(response: VespaResponse, id: str):
+    if not response.is_successful():
+        print(f"Response for id {id}:\n{response.get_json()}\n{response.is_successful()}")
 
 text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=768,  # chars, not llm tokens
@@ -146,11 +64,13 @@ def chunk(str_to_chunk: str):
 
 def add_data_to_vector_db(data: list):
     data_chunks = []
-    for dat in tqdm(data, desc='embedding...'):
-        str_to_embed = dat['filing_content_string']
+    for dat in data:
+    #for dat in tqdm(data, desc='embedding...'):
+        str_to_embed = dat['fields']['filing_content_string']
         if str_to_embed:
-            doc_to_embed = langchain_doc(page_content=str_to_embed, 
-                                    metadata={"source": f"{dat['uri']}"}
+            doc_to_embed = langchain_doc(
+                                    page_content=str_to_embed, 
+                                    metadata={"source": f"{dat['fields']['uri']}"}
                                     )
             
             chunked_str_to_embed = chunk(doc_to_embed)
@@ -164,10 +84,11 @@ def add_data_to_vector_db(data: list):
         else:
             pdb.set_trace()
             print('this shouldnt happen')
-    # pdb.set_trace()
     # Feed iterable takes list of dicts as -data-
-    app.feed_iterable(data, schema="doc", callback=response_callback) 
-
+    app.feed_iterable(data, 
+                      schema="doc0", 
+                      callback=response_callback
+                      ) 
 # '''
 # If :class: ContainerCluster is used, any :class: Component`s must be added to the :class: 
 # `ContainerCluster, rather than to the :class: ApplicationPackage, 
