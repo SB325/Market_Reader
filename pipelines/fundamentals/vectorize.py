@@ -59,11 +59,11 @@ text_splitter = RecursiveCharacterTextSplitter(
                 )
 
 def chunk(str_to_chunk: str):
-    chunks = text_splitter.transform_documents([str_to_chunk])
+    # chunks = text_splitter.transform_documents([str_to_chunk])
+    chunks = text_splitter.split_documents([str_to_chunk])
     return chunks
 
 def add_data_to_vector_db(data: list):
-    data_chunks = []
     for dat in data:
     #for dat in tqdm(data, desc='embedding...'):
         str_to_embed = dat['fields']['filing_content_string']
@@ -75,20 +75,25 @@ def add_data_to_vector_db(data: list):
             
             chunked_str_to_embed = chunk(doc_to_embed)
             chunked_list = [sentence.page_content for sentence in chunked_str_to_embed]
-            embedded_list = tokenizer(chunked_list, padding=True, truncation=True, return_tensors='pt')
-
+            
             with torch.no_grad():
-                model_output = model(**embedded_list)
-
-            dat.update( { 'filing_content_embedding': model_output } )
+                model_output = model.encode(chunked_list)
+            dat['fields'].update( {  
+                'embedding': {cnt: val for cnt,val in enumerate(model_output.tolist())}
+                } )
         else:
             pdb.set_trace()
             print('this shouldnt happen')
-    # Feed iterable takes list of dicts as -data-
+
     app.feed_iterable(data, 
-                      schema="doc0", 
-                      callback=response_callback
-                      ) 
+                schema="doc0", 
+                callback=response_callback
+                ) 
+#     return data
+
+# def feed_iterable(data):
+#     # Feed iterable takes list of dicts as -data-
+    
 # '''
 # If :class: ContainerCluster is used, any :class: Component`s must be added to the :class: 
 # `ContainerCluster, rather than to the :class: ApplicationPackage, 
