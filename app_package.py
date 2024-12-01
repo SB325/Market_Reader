@@ -32,10 +32,23 @@ app_package = ApplicationPackage(
                         index="enable-bm25",
                     ),
                     Field(
-                        name="date_string",
+                        name="reportDate",
                         type="string",
                         indexing=["index", "summary"],
                         index="enable-bm25",
+                    ),
+                    Field(
+                        name="acceptanceDateTime",
+                        type="string",
+                        indexing=["index", "summary"],
+                        index="enable-bm25",
+                    ),
+                    Field(
+                        name="date",
+                        type="long",
+                        indexing=["input acceptanceDateTime", "to_epoch_second", "attribute", "summary"],
+                        index="enable-bm25",
+                        is_document_field=False,
                     ),
                     Field(
                         name="uri",
@@ -67,6 +80,19 @@ app_package = ApplicationPackage(
                     ),
                 ]
             ),
+            fieldsets=[
+            FieldSet(
+                name="default", 
+                fields=["id", 
+                    "cik", 
+                    "uri", 
+                    "reportDate",
+                    "date",
+                    "primaryDocDescription", 
+                    "filing_content_string",
+                    ]
+                )
+            ],
             rank_profiles=[
                 RankProfile(
                     name="bm25_ranking",
@@ -79,31 +105,31 @@ app_package = ApplicationPackage(
                     first_phase="distance(field, embedding)"
                 )
             ],
-        )
+        ),
     ]
 )
 
 # 'date' field is a synthetic field that converts date_string provided by
 # data source to an epoch (long). 'date' must be set outside of the
 # document section.
-app_package.schema.add_fields(
-            Field(
-                name="date",
-                type="long",
-                indexing=input["date_string", "to_epoch_second", "attribute", "summary"],
-                index="enable-bm25",
-            ),
-            fieldsets=[
-                FieldSet(
-                    name="default", 
-                    fields=["id", 
-                        "cik", 
-                        "uri", 
-                        "reportDate",
-                        "date",
-                        "primaryDocDescription", 
-                        "filing_content_string",
-                    ]
-                )
-            ]
-)
+# app_package.schema.add_fields(
+#             Field(
+#                 name="date",
+#                 type="long",
+#                 indexing=input["date_string", "to_epoch_second", "attribute", "summary"],
+#                 index="enable-bm25",
+#             ),
+#             fieldsets=[
+#                 FieldSet(
+#                     name="default", 
+#                     fields=["id", 
+#                         "cik", 
+#                         "uri", 
+#                         "reportDate",
+#                         "date",
+#                         "primaryDocDescription", 
+#                         "filing_content_string",
+#                     ]
+#                 )
+#             ]
+# )

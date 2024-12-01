@@ -1,6 +1,8 @@
 import time
 import math
 import requests
+from requests.models import Response
+import pdb
 
 class requests_util:
     '''
@@ -30,9 +32,13 @@ class requests_util:
         
     def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}, stream_in: bool = False):
         self.wait_half_second()
-        response = requests.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in)
-        
-        if not response.ok:
+        try:
+            response = requests.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
+        except:
+            response = Response()
+            response.code = "expired"
+            response.error_type = "expired"
+            response.status_code = 408
             print(f"GET Request for \n{response.url}\n Failed. {response.status_code}")
                 
         self.set_request_time()    

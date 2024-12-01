@@ -56,34 +56,42 @@ class vector_query():
                         hits=hits,
                         query=query_str,
                         ranking="bm25_ranking",
+                        timeout="5s",
                     )
             if verbose:
                 self.assess_response(response)
-                self.get_hits_uri(response)
+                # self.get_hits_uri(response)
         return response
         
     def query_semantic(self, 
                        query_str : str,
                        yql : str = "select * from sources * WHERE userQuery()", 
                        verbose : bool = True,
-                       hits : int = 10,
+                       hits : int = 100,
                        ):
         with app.syncio() as session:
             response: VespaQueryResponse = session.query(
                         yql=yql,
-                        hits=10,
+                        hits=hits,
                         query=query_str,
                         ranking="semantic_ranking",
+                        timeout="5s",
                     )
             if verbose:
                 self.assess_response(response)
-                self.get_hits_uri(response)
+                # self.get_hits_uri(response)
         return response
 
     def get_hits_uri(self, response):
         return [print(f"{hit['fields']['uri']} {hit['relevance']}") 
                 for hit in response.hits]
 
+    def get_returned_documents(self, response) -> list:
+        if len(response.hits):
+            return [doc['fields']['filing_content_string'] for doc in response.hits]
+        else:
+            return []
+        
 if __name__ == "__main__":
     vquery = vector_query()
 
