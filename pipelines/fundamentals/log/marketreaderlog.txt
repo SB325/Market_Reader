@@ -1,0 +1,67 @@
+[2024-12-01T23:03:37] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:04:19] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:04:21] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:04:21] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:04:21] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:04:44] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:04:45] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:04:46] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:04:46] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:06:05] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:06:06] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:06:07] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:06:07] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:14:27] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:14:29] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:14:29] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:14:29] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:22:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:22:20] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:22:20] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:22:20] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:24:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:24:20] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:24:20] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:24:20] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:29:59] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:30:01] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:30:01] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:30:01] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:32:46] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:32:48] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:32:48] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:32:48] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:37:49] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:37:51] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:37:51] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:37:51] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:41:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:41:19] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:41:19] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:41:19] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:47:01] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:47:03] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:47:03] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:47:03] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:57:15] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:57:17] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:57:17] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:57:17] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:59:14] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:59:15] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:59:16] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:59:16] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en

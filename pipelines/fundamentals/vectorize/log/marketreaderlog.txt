@@ -1,0 +1,425 @@
+[2024-12-01T21:09:37] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:09:39] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:09:39] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:09:39] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:10:34] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:10:36] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:10:36] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:10:36] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:12:31] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:12:33] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:12:33] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:12:33] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:13:10] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:13:12] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:13:12] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:12] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:13:12] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:13:12] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:12] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:13] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:13] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:13:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:15:45] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:15:47] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:15:47] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:15:47] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:16:22] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:16:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:24] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:24] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:24] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:16:24] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:16:24] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:16:24] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:25] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:25] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:25] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:26] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:26] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:26] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:27] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:27] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:27] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:28] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:28] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:28] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:29] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:29] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:16:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:25:35] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:25:36] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:25:37] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:25:37] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:29:58] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:29:59] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:30:00] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:30:00] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:30:28] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:30:30] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:30:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:30] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:30:30] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:30:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:31] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:31] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:31] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:32] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:32] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:32] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:33] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:33] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:34] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:34] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:34] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:35] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:35] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:35] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:36] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:36] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:36] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:37] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:37] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:37] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:38] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:38] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:38] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:30:39] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:37:49] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:37:51] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:37:51] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:37:51] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:38:17] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:38:18] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:38:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:18] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:38:18] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:38:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:24] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:24] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:24] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:25] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:25] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:25] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:26] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:26] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:26] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:27] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:27] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:27] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:28] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:28] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:28] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:29] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:29] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:30] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:31] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:31] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:31] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:38:32] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:39:45] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:39:46] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:39:46] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:39:46] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:40:14] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:40:16] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:40:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:16] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:40:16] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:40:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:40:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:04] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:47:06] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:47:06] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:47:06] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:47:33] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T21:47:35] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T21:47:35] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:35] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T21:47:35] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T21:47:35] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:36] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:36] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:37] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:37] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:37] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:38] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:38] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:38] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:39] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:39] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:39] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:40] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:40] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T21:47:40] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:12] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:01:13] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:01:13] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:01:13] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:01:45] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:01:47] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:01:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:47] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:01:47] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:01:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:48] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:48] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:49] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:49] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:49] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:50] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:50] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:50] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:51] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:51] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:51] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:52] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:52] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:52] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:01:53] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:14] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:04:16] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:04:16] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:04:16] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:04:42] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:04:43] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:04:43] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:43] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:04:43] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:04:44] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:44] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:44] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:45] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:45] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:45] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:46] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:46] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:46] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:04:48] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:05:46] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:05:48] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:05:48] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:05:48] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:06:16] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:06:18] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:06:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:18] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:06:18] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:06:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:06:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:07:14] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:07:16] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:07:16] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:07:16] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:08:01] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:08:02] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:08:03] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:08:03] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:09:17] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:09:18] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:09:19] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:09:19] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:11:42] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:11:44] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:11:44] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:11:44] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:12:12] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:12:14] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:12:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:14] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:12:14] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:12:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:12:34] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:12:36] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:12:36] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:12:36] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:13:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:13:20] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:13:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:20] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:13:20] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:13:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:13:23] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:09] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:14:11] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:14:11] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:14:11] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:14:41] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:14:43] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:14:43] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:43] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:14:43] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:14:43] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:44] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:44] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:44] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:45] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:45] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:46] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:46] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:46] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:47] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:48] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:48] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:48] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:49] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:49] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:49] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:50] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:50] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:50] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:51] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:14:51] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:28:33] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:28:35] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:28:35] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:28:35] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:38:41] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:38:43] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:38:43] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:38:43] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:39:12] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T22:39:13] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T22:39:13] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:13] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T22:39:13] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T22:39:13] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:14] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:15] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:16] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:17] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:18] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:19] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:20] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:21] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:22] INFO [watchfiles.main._log_changes:308] 1 change detected
+[2024-12-01T22:39:22] INFO [watchfiles.main._log_changes:308] 1 change detected

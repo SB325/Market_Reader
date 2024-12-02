@@ -33,7 +33,7 @@ class requests_util:
     def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}, stream_in: bool = False):
         self.wait_half_second()
         try:
-            response = requests.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
+            response = requests.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=5)
         except:
             response = Response()
             response.code = "expired"

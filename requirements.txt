@@ -29,6 +29,8 @@ html5lib==1.1
 pyvespa
 docker
 
+fastapi[standard]
+
 langchain
 langchain_community
 langchain_core

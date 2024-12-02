@@ -64,6 +64,7 @@ def chunk(str_to_chunk: str):
     return chunks
 
 def add_data_to_vector_db(data: list):
+    status = False
     for dat in data:
     #for dat in tqdm(data, desc='embedding...'):
         str_to_embed = dat['fields']['filing_content_string']
@@ -81,12 +82,15 @@ def add_data_to_vector_db(data: list):
             dat['fields'].update( {  
                 'embedding': {cnt: val for cnt,val in enumerate(model_output.tolist())}
                 } )
+            status = True
+            pdb.set_trace()
         else:
             pdb.set_trace()
             print('this shouldnt happen')
-
+    
     app.feed_iterable(data, 
                 schema="doc0", 
                 callback=response_callback
                 ) 
+    return status
     
