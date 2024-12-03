@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 import time
 from tqdm import tqdm
 import json
-from vectorize.vectorize import add_data_to_vector_db
+# from vectorize.vectorize import add_data_to_vector_db
 
 crud_util = crud()
 requests = requests_util(rate_limit = 1.5)
@@ -57,7 +57,7 @@ async def query_files():
                     soup = soup.get_text().replace("\xe2\x80\x99", " ")
                     soup.replace('\n',' ').replace('\xa0',' ')
                     soup = re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', soup)
-                    content_element ={
+                    content_element =   {
                                         'id': cnt,
                                         'fields': {
                                             'cik': cik,  
@@ -70,12 +70,12 @@ async def query_files():
                                         }
                     filing_content_list.append(content_element)
                     cnt = cnt + 1
-                    pdb.set_trace()
-                    resp_vec = requests.get(url_in="http://0.0.0.0:8000/add_str_as_vector", 
-                                            headers_in=header_vec, 
-                                            params_dict=[content_element],
-                                            )
                     
+                    resp_vec = requests.post(url_in="http://0.0.0.0:8000/add_str_as_vector", 
+                                            headers_in=header_vec, 
+                                            json_in=[content_element],
+                                            )
+                    # pdb.set_trace()
                     # add_data_to_vector_db([content_element])
                 else:
                     print(f"failed to get filing: \n{uri}")

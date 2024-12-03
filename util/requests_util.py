@@ -44,13 +44,12 @@ class requests_util:
         self.set_request_time()    
         return response    
 
-    def post(self, url_in, data_in, headers_in={}):
+    def post(self, url_in: str, data_in: str = None, json_in: str = None, headers_in={}):
         if len(headers_in.keys()):
-            response = requests.post(url=url_in, data=data_in, headers=headers_in)
+            response = requests.post(url=url_in, data=data_in, json=json_in, headers=headers_in)
         else:
-            response = requests.post(url=url_in, data=data_in)
+            response = requests.post(url=url_in, data=data_in, json=json_in)
 
         if response.status_code != 200:
             print(f"Post Error! Code {response.status_code}: {response.reason}") 
-            raise Exception()
         return response  

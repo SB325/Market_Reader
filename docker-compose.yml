@@ -1,0 +1,12 @@
+services:
+  vectorize:
+    image: postgis/postgis
+    env_file:
+      - .env
+    build: 
+      context: "./pipelines/fundamentals/vectorize/"
+      no_cache: true
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    container_name: vectorize_filings

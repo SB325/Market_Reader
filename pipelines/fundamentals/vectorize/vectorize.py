@@ -49,7 +49,9 @@ app = vespa_docker.deploy(application_package=app_package)
 
 def response_callback(response: VespaResponse, id: str):
     if not response.is_successful():
-        print(f"Response for id {id}:\n{response.get_json()}\n{response.is_successful()}")
+        print(f"Response for id {id} not successful")
+    else:
+        print(f"Response for id {id} successful")
 
 text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=768,  # chars, not llm tokens
@@ -65,6 +67,7 @@ def chunk(str_to_chunk: str):
 
 def add_data_to_vector_db(data: list):
     status = False
+    resp = ''
     for dat in data:
     #for dat in tqdm(data, desc='embedding...'):
         str_to_embed = dat['fields']['filing_content_string']
@@ -83,7 +86,6 @@ def add_data_to_vector_db(data: list):
                 'embedding': {cnt: val for cnt,val in enumerate(model_output.tolist())}
                 } )
             status = True
-            pdb.set_trace()
         else:
             pdb.set_trace()
             print('this shouldnt happen')
