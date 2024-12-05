@@ -1,6 +1,5 @@
 services:
   vectorize:
-    image: postgis/postgis
     env_file:
       - .env
     build: 
@@ -9,4 +8,8 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+     - homeserver
     container_name: vectorize_filings

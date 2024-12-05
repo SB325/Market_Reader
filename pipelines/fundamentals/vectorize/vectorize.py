@@ -3,26 +3,27 @@ from app_package import app_package
 from vespa.package import Schema, Document, Field, FieldSet, HNSW, RankProfile, Component, Parameter
 from vespa.deployment import VespaDocker
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from vespa.io import VespaResponse
 import pdb
 import docker
 import asyncio
-from pipelines.fundamentals.load_model import tokenizer, model
+from load_model import tokenizer, model
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document as langchain_doc
 import torch
 from tqdm import tqdm
+import requests
 
-load_dotenv()   
+# load_dotenv()   
 
-model_checkpoint = "google-bert/bert-base-uncased"
-onnx_model_directory = "models"
-CONTAINER_MODEL_DIR = '/opt/vespa/var/models'
+# model_checkpoint = "google-bert/bert-base-uncased"
+# onnx_model_directory = "models"
+# CONTAINER_MODEL_DIR = '/opt/vespa/var/models'
 
-VESPA_LOG_STORAGE = os.getenv('VESPA_LOG_STORAGE')
-VESPA_CONTAINER_IP = '172.22.0.1'
-VESPA_CONFIG_PORT = '19071'
+# VESPA_LOG_STORAGE = os.getenv('VESPA_LOG_STORAGE')
+VESPA_CONTAINER_IP = 'vespa_container'
+VESPA_API_PORT = '8080'
 
 cli = docker.DockerClient()
 vespa_container_obj = [container for container in cli.containers.list() if container.name=='vespa_container']

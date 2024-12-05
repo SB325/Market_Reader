@@ -71,7 +71,7 @@ async def query_files():
                     filing_content_list.append(content_element)
                     cnt = cnt + 1
                     
-                    resp_vec = requests.post(url_in="http://0.0.0.0:8000/add_str_as_vector", 
+                    resp_vec = requests.post(url_in="http://172.23.0.2:8000/add_str_as_vector", 
                                             headers_in=header_vec, 
                                             json_in=[content_element],
                                             )
