@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 import time
 from tqdm import tqdm
 import json
-# from vectorize.vectorize import add_data_to_vector_db
+from vectorize.vectorize import add_data_to_vector_db
 
 crud_util = crud()
 requests = requests_util(rate_limit = 1.5)

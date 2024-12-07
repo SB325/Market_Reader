@@ -8,12 +8,11 @@ tqdm==4.66.2
 typing_extensions==4.10.0
 html5lib==1.1
 pyvespa
-docker
 sentence-transformers
 
 fastapi[standard]
 
 langchain
 # langchain_community
-langchain_core
+# langchain_core
 # langchain-ollama

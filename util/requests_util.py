@@ -53,3 +53,7 @@ class requests_util:
         if response.status_code != 200:
             print(f"Post Error! Code {response.status_code}: {response.reason}") 
         return response  
+    
+    def put(self, url_in: str, data_in: str, json_in: str = {}):
+        response = requests.put(url = url_in, data = data_in)
+        return response
