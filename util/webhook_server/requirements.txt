@@ -1,0 +1,18 @@
+# dataclasses
+# pydantic
+# python-dateutil==2.9.0.post0
+# python-dotenv==1.0.1
+requests==2.27.1
+schedule==1.2.1
+tqdm==4.66.2
+typing_extensions==4.10.0
+html5lib==1.1
+# sentence-transformers
+
+fastapi==0.115.6
+uvicorn
+
+# langchain
+# langchain_elasticsearch
+# langchain_core
+# langchain-ollama
