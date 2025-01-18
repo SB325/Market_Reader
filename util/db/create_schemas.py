@@ -1,6 +1,5 @@
 from sqlalchemy.schema import CreateSchema
-# from util.db.models.tickers import Base as Symbols_Base
-from util.db.models.filings import Base as Filings_Base
+from util.db.models.news import Base as News_Base
 from util.db.conn import insert_engine
 
 import os
@@ -18,7 +17,7 @@ def create_schemas():
             conn.commit()
 
     with engine.connect() as conn:
-        Filings_Base.metadata.create_all(engine)
+        News_Base.metadata.create_all(engine)
         conn.commit()
         conn.close()
     engine.dispose()
