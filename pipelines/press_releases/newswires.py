@@ -4,11 +4,11 @@ import os
 import sys
 from dotenv import load_dotenv
 import pdb 
-os.path('../../')
+sys.path.append("../../")
 from util.requests_util import requests_util
-from util.db.models.news import News as NewsTable
+# from util.db.models.news import News as NewsTable
 from api_headers import NewsAPIParams
-from util.crud import crud as crud
+# from util.crud import crud as crud
 
 load_dotenv(override=True, dotenv_path='newsapi_creds.env')  
 key = os.getenv("BENZINGA_API_KEY")
@@ -19,7 +19,7 @@ webhook_url = "https://api.benzinga.com/api/v1/webhook/"
 headers = {"accept": "application/json"}
 
 requests = requests_util()
-crud_util = crud()
+# crud_util = crud()
 
 class newswire():
     def __init__(self, key: str = key):
@@ -27,18 +27,21 @@ class newswire():
 
     def get_news_history(self, params: NewsAPIParams):
         # Get news history queried by configs in NewsAPIParams
-        querystring = {"token":self.key}.update(params.model_dump())
-        response = requests.get(url, headers=headers, params=querystring)
+        querystring = {}
+        querystring.update({"token":self.key})
+        querystring.update(params)
+
+        response = requests.get(url, headers_in=headers, params_dict=querystring)
 
         return response.json()
 
-    def get_news_webhook(self):
-        # Get news webhook
-        querystring = {"version":"webhook/v1", "kind":"News/v1", "destination": webhook_dest}
-        response = requests.get(webhook_url, headers=headers, params=querystring)
+    # def get_news_webhook(self):
+    #     # Get news webhook
+    #     querystring = {"version":"webhook/v1", "kind":"News/v1", "destination": webhook_dest}
+    #     response = requests.get(webhook_url, headers_in=headers, params_dict=querystring)
+    #     pdb.set_trace()
+    #     return response.json()
 
-        return response.json()
-
-    def to_db(self, newsAPIResponse):
-        # Push newsdata to Postgres DB
-        await crud_util.insert_rows(NewsTable, df)
+    # def to_db(self, newsAPIResponse):
+    #     # Push newsdata to Postgres DB
+    #     await crud_util.insert_rows(NewsTable, df)

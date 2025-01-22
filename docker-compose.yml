@@ -1,15 +1,33 @@
 services:
-  vectorize:
-    env_file:
-      - .env
+  # vectorize:
+  #   env_file:
+  #     - .env
+  #   build: 
+  #     context: "./pipelines/fundamentals/vectorize/"
+  #     no_cache: true
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:8000"
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   networks:
+  #    - homeserver
+  #   profiles:
+  #     - llm
+  #   container_name: vectorize_filings
+
+  webhook:
     build: 
-      context: "./pipelines/fundamentals/vectorize/"
+      context: "./util/webhook_server/"
       no_cache: true
     restart: unless-stopped
+    volumes:
+      - ./util/webhook_server/webhook_server.py:/webhook/webhook_server.py
+      - ./util/webhook_server/webhook_response_model.py:/webhook/webhook_response_model.py
     ports:
-      - "8000:8000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "8001:8001"
     networks:
      - homeserver
-    container_name: vectorize_filings
+    profiles:
+      - llm
+    container_name: benzinga_webhook
