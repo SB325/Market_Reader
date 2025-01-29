@@ -22,10 +22,12 @@ services:
       no_cache: true
     restart: unless-stopped
     volumes:
+      - ./util/webhook_server/omit_tickers.json:/webhook/omit_tickers.json
+      - ./util/webhook_server/omit_words.json:/webhook/omit_words.json
       - ./util/webhook_server/webhook_server.py:/webhook/webhook_server.py
       - ./util/webhook_server/webhook_response_model.py:/webhook/webhook_response_model.py
     ports:
-      - "8001:8001"
+      - 8001:8001
     networks:
      - homeserver
     profiles:

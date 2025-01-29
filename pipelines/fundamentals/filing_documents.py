@@ -7,7 +7,7 @@ import sys
 sys.path.append('../../')
 from util.logger import log
 from util.requests_util import requests_util
-from util.crud import crud as crud
+from apps.Market_Reader.util.crud_pg import crud as crud
 from util.db.models.filings import Filings as company_filings
 import pdb
 import re

@@ -3,7 +3,7 @@ Requests list of company names, their ticker symbols and their SEC Filing CIK
 '''
 import asyncio
 from util.logger import log
-from util.crud import crud as crud
+from apps.Market_Reader.util.crud_pg import crud as crud
 from util.db.models.tickers import Symbols as SymbolTable
 import pandas as pd
 import requests

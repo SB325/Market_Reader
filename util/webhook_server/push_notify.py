@@ -1,10 +1,10 @@
-from logger import log
-from requests_util import requests_util
 import json
 import pdb
 import os
 from pushover import Client
 from dotenv import load_dotenv
+import asyncio
+
 load_dotenv(override=True, dotenv_path="notify_creds.env")   
 
 key = os.getenv("PUSHOVER_KEY")
@@ -21,7 +21,7 @@ class push_notify():
                     retry: int = None,
                     url: str = None,
                     url_title: str = None,
-                    html: bool = None,
+                    html: int = 0,
                     timestamp: int = None,
                 ):
         if priority:
@@ -37,8 +37,8 @@ class push_notify():
                                 priority=priority,  # Lowest(-2), Low(-1), Normal(0)-default, High(1), Emergency(2)                                                                                                                                             
                                 expire=expire,      # in seconds
                                 retry=retry,        # retry period in seconds  
-                                url=None,           # Clickable link that opens in browser
-                                url_title=None,     # 
+                                url=url,           # Clickable link that opens in browser
+                                url_title=url_title,     # 
                                 html=html,          # If message contains html, set this flag to true and tags will be implemented
                                 timestamp=timestamp # Unix timestamp of message, regardless of time displayed on device
                             )
@@ -47,5 +47,9 @@ class push_notify():
 
 if __name__ == "__main__":
     pn = push_notify()
-    response = pn.send(title="TSLA", priority=2, expire=60, retry=30, message="TSLA lost money today!")
+    response = pn.send(title="TSLA", 
+                       priority=2, 
+                       expire=60, 
+                       retry=30, 
+                       message="TSLA lost money today!")
     print(response)

@@ -7,7 +7,7 @@ import pdb
 sys.path.append("../../")
 from util.requests_util import requests_util
 # from util.db.models.news import News as NewsTable
-from api_headers import NewsAPIParams
+from newswire_params import NewsAPIParams
 # from util.crud import crud as crud
 
 load_dotenv(override=True, dotenv_path='newsapi_creds.env')  
@@ -18,7 +18,6 @@ url = "https://api.benzinga.com/api/v2/news"
 webhook_url = "https://api.benzinga.com/api/v1/webhook/"
 headers = {"accept": "application/json"}
 
-requests = requests_util()
 # crud_util = crud()
 
 class newswire():

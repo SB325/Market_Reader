@@ -21,8 +21,6 @@ class requests_util:
         self.last_request_time = math.floor(time.time())*1000
         
     def wait_half_second(self):
-        # TDAPI requests are limited to 120 requests per minute
-        # SNAPI requests may/may not have same limitation.
         time_since_last_request = math.floor(time.time())*1000 - self.get_last_request_time()
         # if wait_time < 0s, set to 0s (no negatives, shouldn't be the case)
         wait_time = self.rate_limit-time_since_last_request
