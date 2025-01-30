@@ -19,6 +19,7 @@ webhook_url = "https://api.benzinga.com/api/v1/webhook/"
 headers = {"accept": "application/json"}
 
 # crud_util = crud()
+requests = requests_util()
 
 class newswire():
     def __init__(self, key: str = key):
@@ -44,3 +45,6 @@ class newswire():
     # def to_db(self, newsAPIResponse):
     #     # Push newsdata to Postgres DB
     #     await crud_util.insert_rows(NewsTable, df)
+
+if __name__ == "__main__":
+    nw = newswire()

@@ -4,7 +4,8 @@
 # This script pulls raw technical data from schwab
 #   and ingests them into the database
 
-# from ameritrade_auth import schwab_auth
+from ameritrade_auth import schwab_auth
+import pdb
 
 class tech_ingest():
     def __init__(self, auth):
@@ -65,3 +66,8 @@ class tech_ingest():
         else:
             self.auth.log(['tda_market_data: Downloaded quote for ' + tick + '.'])
         return data
+
+if __name__ == "__main__":
+    auth = schwab_auth()
+    ti = tech_ingest(auth)
+    pdb.set_trace()
