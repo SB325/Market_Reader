@@ -139,3 +139,21 @@
 ----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
 [2024-12-02T23:43:21] INFO [root.message:37] 
 ----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2025-02-01T23:01:11] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:19:28] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:50:34] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:51:02] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:51:32] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:52:01] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:52:48] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:53:38] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-02T00:18:40] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.3:5432 successful !!!! -----------

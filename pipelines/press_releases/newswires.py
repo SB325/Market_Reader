@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 import pdb 
 sys.path.append("../../")
 from util.requests_util import requests_util
-# from util.db.models.news import News as NewsTable
+from util.elastic.crud_elastic import crud_elastic
+from util.elastic.models import news_article_model
 from newswire_params import NewsAPIParams
-# from util.crud import crud as crud
 
 load_dotenv(override=True, dotenv_path='newsapi_creds.env')  
 key = os.getenv("BENZINGA_API_KEY")
@@ -18,33 +18,33 @@ url = "https://api.benzinga.com/api/v2/news"
 webhook_url = "https://api.benzinga.com/api/v1/webhook/"
 headers = {"accept": "application/json"}
 
-# crud_util = crud()
+crud = crud_elastic()
 requests = requests_util()
 
 class newswire():
     def __init__(self, key: str = key):
         self.key = key
+        self.index = 'market_news'
 
     def get_news_history(self, params: NewsAPIParams):
         # Get news history queried by configs in NewsAPIParams
-        querystring = {}
-        querystring.update({"token":self.key})
-        querystring.update(params)
+        try:
+            querystring = {}
+            querystring.update({"token":self.key})
+            querystring.update(params)
 
-        response = requests.get(url, headers_in=headers, params_dict=querystring)
-
+            response = requests.get(url, headers_in=headers, params_dict=querystring)
+        except Exception as e:
+            print(f"Error: {e}")
+        
         return response.json()
 
-    # def get_news_webhook(self):
-    #     # Get news webhook
-    #     querystring = {"version":"webhook/v1", "kind":"News/v1", "destination": webhook_dest}
-    #     response = requests.get(webhook_url, headers_in=headers, params_dict=querystring)
-    #     pdb.set_trace()
-    #     return response.json()
-
-    # def to_db(self, newsAPIResponse):
-    #     # Push newsdata to Postgres DB
-    #     await crud_util.insert_rows(NewsTable, df)
+    def to_db(self, newsdata: news_article_model):
+        # Push newsdata to Postgres DB
+        try:
+            crud.insert_document(index = self.index, document = newsdata)
+        except Exception as e:
+            print(f"Error: {e}")
 
 if __name__ == "__main__":
     nw = newswire()

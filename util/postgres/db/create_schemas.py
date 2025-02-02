@@ -1,6 +1,6 @@
 from sqlalchemy.schema import CreateSchema
-from util.db.models.news import Base as News_Base
-from util.db.conn import insert_engine
+from models.tickers import Base
+from conn import insert_engine
 
 import os
 db_schema = os.environ.get("DATABASE_SCHEMA")
@@ -17,7 +17,7 @@ def create_schemas():
             conn.commit()
 
     with engine.connect() as conn:
-        News_Base.metadata.create_all(engine)
+        Base.metadata.create_all(engine)
         conn.commit()
         conn.close()
     engine.dispose()

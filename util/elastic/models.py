@@ -8,12 +8,12 @@ class msg_str_operator(Enum):
 
 class msg_fuzziness(Enum):
     # The maximum allowed Levenshtein Edit Distance
-    0 = '0'
-    1 = '1'
-    2 = '2'
-    3 = '3'
-    4 = '4'
-    5 = '5'
+    _0 = '0'
+    _1 = '1'
+    _2 = '2'
+    _3 = '3'
+    _4 = '4'
+    _5 = '5'
     AUTO = 'AUTO'
 
 class msg_zero_terms_query(Enum):
@@ -63,3 +63,14 @@ news_article_mapping =  {
                                 }
                             }
                         }
+
+class news_article_model(BaseModel):
+    id: int
+    author: str
+    created: str
+    updated: str
+    title: str
+    teaser: str
+    body: str
+    channels: str
+    stocks: str

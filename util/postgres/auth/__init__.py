@@ -6,8 +6,8 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import delete, update
 from flask import jsonify
-from util.db.models.user_accounts import User_Creds, User_Metrics
-from util.db.conn import insert_engine
+from util.postgres.db.models.user_accounts import User_Creds, User_Metrics
+from util.postgres.db.conn import insert_engine
 import pdb
 
 Session = sessionmaker(bind=insert_engine())

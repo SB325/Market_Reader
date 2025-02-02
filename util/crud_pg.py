@@ -3,7 +3,7 @@ Class that manages all data transfers to and from the databases
 '''
 import asyncio
 # from util.db.models.tickers import Symbols as SymbolTable
-from util.db.conn import insert_engine
+from util.postgres.db.conn import insert_engine
 from util.logger import log
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import delete, select, column, table
