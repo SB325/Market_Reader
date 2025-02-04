@@ -1,13 +1,16 @@
 import os
+import sys
+sys.path.append('../../../../')
 from sqlalchemy import text
 from flask import Flask
 from sqlalchemy import create_engine
 from flask_sqlalchemy import SQLAlchemy
-import util.logger as log
+# import logger as log
 from dotenv import load_dotenv
 import pdb
 
-load_dotenv(override=True)
+load_dotenv()
+
 app = Flask(__name__)
 db = None
 env = os.environ.get("ENV")
@@ -20,6 +23,7 @@ port = os.getenv("DATABASE_PORT")
 database_name = os.getenv("DATABASE_NAME")
 database_schema = os.environ.get('DATABASE_SCHEMA')
 debug = os.environ.get('DATA_DEBUG')
+
 if debug == 'True' or debug == 'False':
     debug = eval(debug)
 
@@ -39,7 +43,7 @@ if database_name != None and user != None and password != None and hostname != N
 
     db = SQLAlchemy(app)
 else:
-    log.error(
+    print(
         f'\n____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist')
     exit()
 
@@ -49,10 +53,10 @@ db.create_all()
 with db.engine.connect() as conn:
     try:
         result = conn.scalar(text('SELECT 1'))
-        log.message(f'Connection to DB: {database_name} @ {hostname}:{port} successful !!!!')
+        print(f'Connection to DB: {database_name} @ {hostname}:{port} successful !!!!')
         conn.close()
     except Exception as e:
-        log.error('\n----------- Connection failed !!!! ERROR : ',
+        print('\n----------- Connection failed !!!! ERROR : ',
                   e, ' -----------')
         exit()
 

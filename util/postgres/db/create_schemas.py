@@ -1,7 +1,6 @@
 from sqlalchemy.schema import CreateSchema
-# from util.db.models.tickers import Base as Symbols_Base
-from util.db.models.filings import Base as Filings_Base
-from util.db.conn import insert_engine
+from util.postgres.db.models.tickers import Base
+from util.postgres.db.conn import insert_engine
 
 import os
 db_schema = os.environ.get("DATABASE_SCHEMA")
@@ -18,7 +17,7 @@ def create_schemas():
             conn.commit()
 
     with engine.connect() as conn:
-        Filings_Base.metadata.create_all(engine)
+        Base.metadata.create_all(engine)
         conn.commit()
         conn.close()
     engine.dispose()

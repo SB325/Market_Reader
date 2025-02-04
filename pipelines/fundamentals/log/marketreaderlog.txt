@@ -1,0 +1,166 @@
+[2024-12-01T23:03:37] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:04:19] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:04:21] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:04:21] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:04:21] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:04:44] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:04:45] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:04:46] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:04:46] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:06:05] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:06:06] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:06:07] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:06:07] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:14:27] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:14:29] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:14:29] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:14:29] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:22:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:22:20] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:22:20] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:22:20] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:24:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:24:20] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:24:20] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:24:20] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:29:59] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:30:01] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:30:01] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:30:01] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:32:46] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:32:48] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:32:48] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:32:48] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:37:49] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:37:51] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:37:51] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:37:51] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:41:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:41:19] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:41:19] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:41:19] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:47:01] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:47:03] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:47:03] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:47:03] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:57:15] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:57:17] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:57:17] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:57:17] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-01T23:59:14] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-01T23:59:15] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-01T23:59:16] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-01T23:59:16] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-02T15:51:16] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T15:51:18] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-02T15:51:18] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-02T15:51:18] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-02T16:04:17] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T16:04:19] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-02T16:04:19] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-02T16:04:19] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-02T16:08:33] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T16:08:34] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-02T16:08:34] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-02T16:08:34] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-02T20:26:24] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T20:26:26] INFO [datasets.<module>:58] PyTorch version 2.5.0 available.
+[2024-12-02T20:26:26] INFO [sentence_transformers.SentenceTransformer.__init__:208] Use pytorch device_name: cuda
+[2024-12-02T20:26:26] INFO [sentence_transformers.SentenceTransformer.__init__:216] Load pretrained SentenceTransformer: BAAI/bge-base-en
+[2024-12-02T20:27:41] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T20:33:00] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T20:33:40] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T20:36:45] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T20:42:42] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T21:41:48] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T21:47:32] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T21:53:13] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T21:59:40] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:00:22] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:01:39] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:05:58] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:08:58] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:10:06] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:14:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:31:37] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:36:59] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:48:18] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:51:56] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:57:10] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T22:59:20] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T23:02:12] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T23:04:59] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T23:11:23] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T23:22:35] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T23:27:54] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2024-12-02T23:43:21] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.4:5432 successful !!!! -----------
+[2025-02-01T23:01:11] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:19:28] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:50:34] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:51:02] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:51:32] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:52:01] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:52:48] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-01T23:53:38] ERROR [root.error:53] 
+____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist
+[2025-02-02T00:18:40] INFO [root.message:37] 
+----------- Connection to DB: market_reader @ 172.22.0.3:5432 successful !!!! -----------
+[2025-02-03T10:03:26] WARNING [root.insert_table:159] No shares outstanding data to insert.
+[2025-02-03T10:03:26] WARNING [root.insert_table:174] No float data to insert.
+[2025-02-03T10:03:26] WARNING [root.insert_table:191] No accounting data to insert.
+[2025-02-03T10:03:26] WARNING [root.insert_table:119] No filings data to insert for cik None.
+[2025-02-03T10:03:26] WARNING [root.insert_table:134] No meta_data to insert for cik None
+[2025-02-03T10:03:26] WARNING [root.insert_table:151] No meta_data to insert for cik None
+[2025-02-03T10:03:26] WARNING [root.insert_table:165] No meta_data to insert for cik None

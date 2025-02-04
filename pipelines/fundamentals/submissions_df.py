@@ -1,11 +1,11 @@
 import asyncio
 from util.logger import log
 from util.requests_util import requests_util
-from util.db.models.tickers import Symbols as symbols
-from util.db.models.tickers import Company_Meta as cmeta
-from util.db.models.tickers import Company_Mailing_Addresses as cmailing
-from util.db.models.tickers import Company_Business_Addresses as cbusiness
-from util.db.models.filings import Filings as filings
+from util.postgres.db.models.tickers import Symbols as symbols
+from util.postgres.db.models.tickers import Company_Meta as cmeta
+from util.postgres.db.models.tickers import Company_Mailing_Addresses as cmailing
+from util.postgres.db.models.tickers import Company_Business_Addresses as cbusiness
+from util.postgres.db.models.tickers import Filings as filings
 
 import pandas as pd
 import os
@@ -15,7 +15,7 @@ import zipfile
 from tqdm import tqdm
 import time
 import json
-from util.db.create_schemas import create_schemas
+from util.postgres.db.create_schemas import create_schemas
 
 create_schemas()
 requests = requests_util()

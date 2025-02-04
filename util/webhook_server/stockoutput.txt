@@ -1,0 +1,311 @@
+Message Arrived at 2025-01-28 12:18:41.157874-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:51746 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:19:13.252270-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:36880 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:20:27.176976-05:00.
+Securities list too long.
+INFO:     172.22.0.10:45016 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:20:55.782883-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:53596 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:27:01.183881-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:47276 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:27:16.644956-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:34958 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:28:34.705499-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:47270 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:28:35.986665-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:47282 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:28:58.166595-05:00.
+Securities list too long.
+INFO:     172.22.0.10:39346 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:31:05.741922-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:57316 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:31:16.593785-05:00.
+{'TWLO': datetime.datetime(2025, 1, 28, 12, 16, 44, 3487, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'TWLD': datetime.datetime(2025, 1, 28, 12, 17, 42, 640015, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'RIVN': datetime.datetime(2025, 1, 28, 12, 17, 10, 693023, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'ASML Q4 Earnings Preview: DeepSeek, Export Controls, EUV Bookings '
+          'In The Spotlight',
+ 'securities': ['ASML', 'TXN']}
+INFO:     172.22.0.10:51388 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:32:33.703419-05:00.
+{'TWLO': datetime.datetime(2025, 1, 28, 12, 16, 44, 3487, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'TWLD': datetime.datetime(2025, 1, 28, 12, 17, 42, 640015, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'RIVN': datetime.datetime(2025, 1, 28, 12, 17, 10, 693023, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'ASML': datetime.datetime(2025, 1, 28, 12, 31, 16, 593785, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'TXN': datetime.datetime(2025, 1, 28, 12, 31, 16, 593785, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'On CNBC: Stephanie Link Sells Freeport-McMoRan And Exxon Mobil',
+ 'securities': ['FCX', 'XOM']}
+INFO:     172.22.0.10:39580 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:35:12.706845-05:00.
+Securities list too long.
+INFO:     172.22.0.10:37202 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:35:18.344094-05:00.
+Securities list too long.
+INFO:     172.22.0.10:47008 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:35:23.788962-05:00.
+Securities list too long.
+INFO:     172.22.0.10:57798 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:37:06.988052-05:00.
+{}*************************
+{'title': 'Wabtec Wins $248M Order For Evolution Series ES43ACmi Locomotives '
+          'And Services From Winning Consortium Simandou',
+ 'securities': ['WAB']}
+INFO:     172.22.0.10:49792 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:37:50.023986-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:57662 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:39:06.844798-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:45842 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:45:17.326780-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:36646 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:45:22.406301-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:36650 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:45:27.627041-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:60192 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:45:47.686265-05:00.
+{'WAB': datetime.datetime(2025, 1, 28, 12, 37, 6, 988052, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': "'Major US Steel Investor Pentwater Opposes Ancora's Proxy Proposal'",
+ 'securities': ['X']}
+INFO:     172.22.0.10:46362 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:48:12.265375-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:57424 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:51:06.739159-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:46316 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:52:00.923769-05:00.
+Securities list too long.
+INFO:     172.22.0.10:44218 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:54:52.925594-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:58728 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:57:01.204632-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:48132 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:58:22.249354-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:32910 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 12:59:37.064572-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:58500 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:17.644949-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:51848 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:18.540103-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:51860 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:25.379563-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:50314 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:33.424030-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:34774 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:41.125669-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:34786 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:42.873447-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:34794 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:00:51.363930-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:43932 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:01:00.836732-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:39780 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:01:48.021230-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:46324 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:01:53.694307-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:54206 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:02:19.213443-05:00.
+{'X': datetime.datetime(2025, 1, 28, 12, 45, 47, 686265, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Lichen China Announces $3.4M Registered Direct Offering Of '
+          '42,500,000 Shares At $0.08/Share',
+ 'securities': ['LICN']}
+INFO:     172.22.0.10:58642 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:02:51.133131-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:33634 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:03:07.464485-05:00.
+{'LICN': datetime.datetime(2025, 1, 28, 13, 2, 19, 213443, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Final Trades On CNBC Crowdstrike, Cisco, Boeing',
+ 'securities': ['BA', 'CRWD', 'CSCO']}
+INFO:     172.22.0.10:46706 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:03:49.618722-05:00.
+{'BA': datetime.datetime(2025, 1, 28, 13, 3, 7, 464485, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'CRWD': datetime.datetime(2025, 1, 28, 13, 3, 7, 464485, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>), 'CSCO': datetime.datetime(2025, 1, 28, 13, 3, 7, 464485, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Fed Set To Signal No Rush To Cut Rates As Wall Street Awaits Policy '
+          'Clarity',
+ 'securities': ['NVDA']}
+INFO:     172.22.0.10:54594 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:06:30.484560-05:00.
+{'NVDA': datetime.datetime(2025, 1, 28, 13, 3, 49, 618722, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Surgery Partners Confirms Receipt Of Non-Binding Acquisition '
+          'Proposal From Bain Capital; Proposed To Acquire All Outstanding '
+          'Shares Not Currently Owned For $25.75/Share',
+ 'securities': ['SGRY']}
+INFO:     172.22.0.10:54346 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:06:35.770977-05:00.
+Securities Field not present.
+INFO:     172.22.0.10:57734 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:10:30.904832-05:00.
+Omit Ticker Found.
+INFO:     172.22.0.10:60974 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:12:08.311573-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:41326 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:13:29.541875-05:00.
+Omit Ticker Found.
+INFO:     172.22.0.10:51606 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:14:16.964347-05:00.
+{'SGRY': datetime.datetime(2025, 1, 28, 13, 6, 30, 484560, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Nvidia Supplier SK Hynix Soars 102% In Revenue, But Stock Drops '
+          'Despite AI Memory Boom',
+ 'securities': ['NVDA']}
+INFO:     172.22.0.10:60894 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:14:19.916358-05:00.
+Omit Ticker Found.
+INFO:     172.22.0.10:60898 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:15:17.578919-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:38928 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:15:22.558851-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:38932 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:15:27.301659-05:00.
+Benzinga Insights author omitted.
+INFO:     172.22.0.10:45414 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:16:17.937408-05:00.
+{'NVDA': datetime.datetime(2025, 1, 28, 13, 14, 16, 964347, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'White House: Drones in New Jersey Were Authorized to Be Flown by '
+          'FAA for Research And Other Reasons',
+ 'securities': ['SPY']}
+INFO:     172.22.0.10:34956 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:18:00.713446-05:00.
+{'SPY': datetime.datetime(2025, 1, 28, 13, 16, 17, 937408, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Hewlett Packard Enterprise Names Maeve Culloty As Executive Vice '
+          'President, President And CEO Of HPE Financial Services, Effective '
+          'May 1, 2025.',
+ 'securities': ['HPE']}
+INFO:     172.22.0.10:41036 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:18:11.559799-05:00.
+{'HPE': datetime.datetime(2025, 1, 28, 13, 18, 0, 713446, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Fed Set To Signal No Rush To Cut Rates As Wall Street Awaits Policy '
+          'Clarity',
+ 'securities': ['NVDA']}
+INFO:     172.22.0.10:49140 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:23:51.628922-05:00.
+{'NVDA': datetime.datetime(2025, 1, 28, 13, 18, 11, 559799, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Fed Set To Signal No Rush To Cut Rates As Wall Street Awaits Policy '
+          'Clarity',
+ 'securities': ['NVDA']}
+INFO:     172.22.0.10:55864 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:24:36.208366-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:56990 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:25:01.613750-05:00.
+Securities list too long.
+INFO:     172.22.0.10:39090 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:28:20.463605-05:00.
+{'NVDA': datetime.datetime(2025, 1, 28, 13, 23, 51, 628922, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Rivian Automotive Option Alert: Feb 21 $13 Calls Sweep (25) Near '
+          'The Ask: 1000 @ $0.891 vs 9808 OI; Earnings 2/20 After Close '
+          'Ref=$12.57',
+ 'securities': ['RIVN']}
+INFO:     172.22.0.10:51908 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:29:00.421576-05:00.
+{'RIVN': datetime.datetime(2025, 1, 28, 13, 28, 20, 463605, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Merck Announces $10B Share Repurchase Authorization',
+ 'securities': ['MRK']}
+INFO:     172.22.0.10:35742 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:30:27.836056-05:00.
+Securities list too long.
+INFO:     172.22.0.10:33086 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:33:59.927963-05:00.
+Title has an Omit word.
+INFO:     172.22.0.10:47390 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:34:49.346706-05:00.
+{}*************************
+{'title': 'U.S. Bancorp Appoints President Gunjan Kedia As Chief Executive '
+          "Officer At The Conclusion Of The Organization's Annual Meeting Of "
+          'Shareholders On April 15; Company Chairman And CEO Andy Cecere To '
+          'Serve In Executive Chairman Role',
+ 'securities': ['USB']}
+INFO:     172.22.0.10:42480 - "POST / HTTP/1.0" 200 OK
+
+Message Arrived at 2025-01-28 13:35:09.624666-05:00.
+{'USB': datetime.datetime(2025, 1, 28, 13, 34, 49, 346706, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)}*************************
+{'title': 'Box Option Alert: Jun 20 $39 Calls At The Ask: 2500 @ $0.95 vs 11 '
+          'OI; Earnings 3/4 After Close [est] Ref=$33.42',
+ 'securities': ['BOX']}
+INFO:     172.22.0.10:39972 - "POST / HTTP/1.0" 200 OK

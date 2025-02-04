@@ -1,6 +1,8 @@
 '''
 Requests list of company names, their ticker symbols and their SEC Filing CIK 
 '''
+import sys
+sys.path.append('../../')
 import asyncio
 from util.logger import log
 from util.requests_util import requests_util
@@ -9,7 +11,7 @@ from pipelines.fundamentals.facts_df import Facts
 from pipelines.fundamentals.get_ticker_list import save_ticker_data
 import pdb
 import time
-from util.crud import crud as crud
+from apps.Market_Reader.util.crud_pg import crud as crud
 
 requests = requests_util()
 crud_util = crud()

@@ -10,6 +10,8 @@ python-dotenv==1.0.1
 PyYAML==6.0.1
 requests==2.27.1
 schedule==1.2.1
+Flask
+Flask-SQLAlchemy
 SQLAlchemy==2.0.25
 SQLAlchemy-Utils==0.41.2
 tqdm==4.66.2
@@ -19,17 +21,18 @@ urllib3==1.26.13
 Werkzeug==2.3.5
 marshmallow-sqlalchemy
 psycopg2-binary==2.9.5
-Flask==2.3.2
-Flask-SQLAlchemy==3.0.5
-flask-swagger-ui==4.11.1
 pandas==2.2.3
 psycopg2==2.9.9
 beautifulsoup4==4.12.3
 html5lib==1.1
-pyvespa
 docker
 
-langchain
-langchain_community
-langchain_core
-langchain-ollama
+fastapi[standard]
+
+# langchain
+# langchain_community
+# langchain_core
+# langchain-ollama
+
+python-pushover
+elasticsearch

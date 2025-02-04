@@ -1,10 +1,10 @@
 import asyncio
 from util.logger import log
 from util.requests_util import requests_util
-from util.db.models.tickers import Symbols as symbols
-from util.db.models.filings import SharesOutstanding as SharesOutstanding
-from util.db.models.filings import StockFloat as FloatTable
-from util.db.models.filings import Accounting as AccountingTable
+from util.postgres.db.models.tickers import Symbols as symbols
+from util.postgres.db.models.tickers import SharesOutstanding as SharesOutstanding
+from util.postgres.db.models.tickers import StockFloat as FloatTable
+from util.postgres.db.models.tickers import Accounting as AccountingTable
 
 import pandas as pd
 import os
@@ -14,7 +14,7 @@ import zipfile
 from tqdm import tqdm
 import time
 import math
-from util.db.create_schemas import create_schemas
+from util.postgres.db.create_schemas import create_schemas
 
 create_schemas()
 requests = requests_util()

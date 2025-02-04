@@ -1,3 +1,4 @@
+**/log/*
 downloads/
 **/__pycache__/
 .venv/
@@ -7,3 +8,4 @@ log/*
 *.zip
 *.csv
 *.pyc
+*creds.env
