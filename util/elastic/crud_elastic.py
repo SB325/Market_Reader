@@ -2,11 +2,11 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import sys, os
 sys.path.append("../../")
-from .models import query_model, insert_method, news_article_model, news_article_mapping
+from .models import query_model, insert_method
 from typing import List
-
 import pdb
 from dotenv import load_dotenv
+
 
 load_dotenv(override=True, dotenv_path='../../creds.env')  
 load_dotenv(override=True, dotenv_path='../../../../.env')
@@ -34,48 +34,55 @@ class crud_elastic():
         if verbose:
             print(self.client.info())
 
-    def create_schema(self, 
-                        new_mapping: dict = news_article_mapping,
-                        new_index: str = '', 
-                        new_settings: dict = {}, 
+    def create_index(self, 
+                        new_index: str = '',
+                        new_mapping: dict = {}
                         ):
         resp = {}
         try:
-            resp = self.client.indices.create(index=new_index, settings=new_settings, mappings=new_mapping)
+            resp = self.client.indices.create(index=new_index, mappings=new_mapping)
         except Exception as e:
             print(f"Error: {e}")
         return resp
 
-    def get_schemas(self):
+    def get_index(self, index: str):
+        return self.client.indices.exists(index=index)
+
+    def get_mappings(self):
         all_indices = {}
         try:
-            all_indices = self.client.indices.get_alias()
-            pdb.set_trace()
+            all_indices = self.client.indices.get_mapping()
         except Exception as e:
             print(f"Error: {e}")
-        return all_indices
+        return all_indices.raw
         
     def insert_document(self, 
                         method: insert_method = 'index', 
                         index: str = '', 
-                        document: news_article_model = {},
+                        document: dict = {},
                         ):
+        resp = []
         try:
-            resp = getattr(self.client, method.value)(index=index, id=id, document=document.model_dump())
+            resp = getattr(self.client, method)(index=index, id=id, document=document)
         except Exception as e:
             print(f"Error: {e}")
         return resp['result']
 
-    def bulk_insert_documents(self, 
-                        doclist: List[news_article_model] = {},
+    # https://elasticsearch-py.readthedocs.io/en/stable/helpers.html
+    def bulk_insert_documents(self,
+                        index: str,
+                        body: List[dict] = {},
                         ):
-        # https://elasticsearch-py.readthedocs.io/en/stable/helpers.html
+        
         resp = {}
         try:
             def gendata():
-                for doc in doclist:
-                    yield doc
-
+                for doc in body:
+                   yield {
+                       "_index" : index,
+                       "source": doc
+                   }
+            
             resp = bulk(self.client, gendata())
         except Exception as e:
             print(f"Error: {e}")
@@ -92,20 +99,25 @@ class crud_elastic():
             
         return resp['_source']
 
-    def search(self, 
-                index: str ='', 
-                query: query_model = {},
+    def search_ticker(self, 
+                index: str, 
+                ticker: str,
                 ):
+        resp = {}
+        
         try:
-            resp = self.client.search(index=index, query={"match_all": {}})
-            print("Got %d Hits:" % resp['hits']['total']['value'])
-            hits = []
-            for hit in resp['hits']['hits']:
-                hits.append("%(timestamp)s %(author)s: %(text)s" % hit["_source"])
+            query = {"query_string" : {
+                "query": ticker,
+                }
+            }
+            resp = self.client.search(index=index, query=query)
+            print(f"Got {len(resp['hits']['hits'])} Hits.")
+            
+            
         except Exception as e:
             print(f"Error: {e}")
 
-        return {'NHits': len(hits), 'hits': hits}
+        return resp
     
     def refresh_index(self, 
                       index: str = '',
@@ -117,6 +129,18 @@ class crud_elastic():
         
         return resp
     
+    def count_documents(self, 
+                        index: str ='*', 
+                        id: int = None,
+                        ):
+        ndocs = self.client.count(index=index)
+        return ndocs
+    
+    def delete_index(self,
+                     index: str,
+                     ):
+        self.client.indices.delete(index=index)
+
     def delete_document(self, 
                         index: str ='', 
                         id: int = None,

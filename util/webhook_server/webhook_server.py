@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from webhook_response_model import webhook_response
 import json
 import pdb
+import csv
 import pprint
 from datetime import datetime
 from pytz import timezone
@@ -19,6 +20,16 @@ to_pop = ['body','id','revision_id','type',
         'updated_at','authors','teaser',
         'tags','channels', 'url', 'created_at']
 
+caplimit = 1_000_000_000
+with open('nasdaq_screener.csv', 'r') as file:
+    reader = csv.DictReader(file)
+    bigtick = []
+    for row in reader:
+        if float(row['Market Cap']) > caplimit:
+            bigtick.append(row['Symbol'])
+
+print(f"Number of Tickers with MCap > {caplimit}: {len(bigtick)}")
+
 with open('omit_words.json', 'r') as f:
     omit_words_dict = json.load(f)
     owd = list(omit_words_dict.keys())
@@ -26,15 +37,12 @@ with open('omit_words.json', 'r') as f:
 def has_omit_words(title: str):
     for word in owd:
         if word.lower() in title.lower():
-            return True
-    return False
-
-with open('omit_tickers.json', 'r') as f:
-    ot = json.load(f)
+            return True, word.lower()
+    return False, None
 
 def has_omit_ticker(ticker: str):
     for tick in ticker:
-        if tick in ot or '$' in tick:
+        if tick in bigtick or '$' in tick:
             return True
     return False
 
@@ -81,11 +89,12 @@ async def root(data: webhook_response):
                         author = content.get('authors', None)
                         if author:
                             if 'Benzinga Insights' not in author:
-                                title = content.get('title', None)
-                                if title:
-                                    if not has_omit_words(title):
-                                        content['securities'] = [sym['symbol'] for sym in content['securities']] 
-                                        if not has_omit_ticker(content['securities']):
+                                content['securities'] = [sym['symbol'] for sym in content['securities']] 
+                                if not has_omit_ticker(content['securities']):
+                                    title = content.get('title', None)
+                                    if title:
+                                        omitted, word = has_omit_words(title)
+                                        if not omitted:
                                             hastick, lentick = has_recent_tickers(current_time, content['securities'])
                                             if not hastick:
                                                 for p in to_pop:
@@ -101,11 +110,11 @@ async def root(data: webhook_response):
                                             else:
                                                 print(f"Omitted Repeated Ticker {content['securities']} from recent list {lentick} long.")
                                         else:
-                                            print(f"Omit Ticker Found {content['securities']}.")
+                                            print(f"Title has an Omit word [{word}] for ticker {content['securities']}.")
                                     else:
-                                        print(f"Title has an Omit word for ticker {content['securities']}.")
+                                        print('No title field found.')
                                 else:
-                                    print('No title field found.')
+                                    print(f"Omit Ticker Found {content['securities']}.")
                             else:
                                 print('Benzinga Insights author omitted.')
                         else:

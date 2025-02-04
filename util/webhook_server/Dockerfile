@@ -8,5 +8,6 @@ RUN pip install --upgrade pip setuptools==57.5.0
 RUN python -m pip install -r requirements.txt
 COPY *.py .
 COPY *.env .
+COPY *.csv .
 
 ENTRYPOINT python webhook_server.py

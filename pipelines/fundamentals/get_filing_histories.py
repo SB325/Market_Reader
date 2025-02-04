@@ -1,6 +1,8 @@
 '''
 Requests list of company names, their ticker symbols and their SEC Filing CIK 
 '''
+import sys
+sys.path.append('../../')
 import asyncio
 from util.logger import log
 from util.requests_util import requests_util

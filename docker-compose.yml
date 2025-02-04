@@ -1,20 +1,19 @@
 services:
-  # vectorize:
-  #   env_file:
-  #     - .env
-  #   build: 
-  #     context: "./pipelines/fundamentals/vectorize/"
-  #     no_cache: true
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8000:8000"
-  #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
-  #   networks:
-  #    - homeserver
-  #   profiles:
-  #     - llm
-  #   container_name: vectorize_filings
+  press_release_etl:
+    env_file:
+      - .env
+    build: 
+      context: "."
+      dockerfile: Dockerfile_pr
+      no_cache: true
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+     - homeserver
+    profiles:
+      - elastic
+    container_name: press_releases
 
   webhook:
     build: 
@@ -22,7 +21,7 @@ services:
       no_cache: true
     restart: unless-stopped
     volumes:
-      - ./util/webhook_server/omit_tickers.json:/webhook/omit_tickers.json
+      - ./util/webhook_server/nasdaq_screener.csv:/webhook/nasdaq_screener.csv
       - ./util/webhook_server/omit_words.json:/webhook/omit_words.json
       - ./util/webhook_server/webhook_server.py:/webhook/webhook_server.py
       - ./util/webhook_server/webhook_response_model.py:/webhook/webhook_response_model.py

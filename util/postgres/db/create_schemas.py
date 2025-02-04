@@ -1,6 +1,6 @@
 from sqlalchemy.schema import CreateSchema
-from models.tickers import Base
-from conn import insert_engine
+from util.postgres.db.models.tickers import Base
+from util.postgres.db.conn import insert_engine
 
 import os
 db_schema = os.environ.get("DATABASE_SCHEMA")

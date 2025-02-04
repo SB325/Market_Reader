@@ -30,7 +30,6 @@ class msg_struct(BaseModel):
 
 class message(BaseModel):
     message: msg_str_operator |  msg_struct
-    
 
 class sqs(BaseModel):
     query: str = ""
@@ -42,6 +41,7 @@ class query_model(BaseModel):
     match: Optional[message]
     match_all: Optional[dict]
     match_none: Optional[dict]
+    term: Optional[dict]  # exact match of field. {'term': {'ticker': 'AAPL'}}
     simple_query_string: Optional[sqs]
 
 class insert_method(Enum):
@@ -49,23 +49,23 @@ class insert_method(Enum):
     update = 'update'
 
 news_article_mapping =  {
-                            "mappings": {
-                                "properties": {
-                                    "id":    { "type": "integer" },  
-                                    "author":  { "type": "text"  }, 
-                                    "created":   { "type": "date"  },
-                                    "updated":  { "type": "date"  },
-                                    "title":  { "type": "semantic_text"  }, 
-                                    "teaser":  { "type": "semantic_text"  }, 
-                                    "body":  { "type": "text"  }, 
-                                    "channels":  { "type": "object"  }, 
-                                    "stocks":  { "type": "object"  }, 
-                                }
+                            "properties": {
+                                "_id":    { "type": "integer" }, 
+                                "ticker": { "type": "keyword"}, 
+                                "author":  { "type": "text"  }, 
+                                "created":   { "type": "date"  },
+                                "updated":  { "type": "date"  },
+                                "title":  { "type": "semantic_text"  }, 
+                                "teaser":  { "type": "semantic_text"  }, 
+                                "body":  { "type": "text"  }, 
+                                "channels":  { "type": "text" },    
+                                "stocks":  { "type": "object"  }
                             }
                         }
 
 class news_article_model(BaseModel):
-    id: int
+    _id: int
+    ticker: str
     author: str
     created: str
     updated: str
