@@ -41,8 +41,10 @@ class crud_elastic():
         resp = {}
         try:
             resp = self.client.indices.create(index=new_index, mappings=new_mapping)
+
         except Exception as e:
             print(f"Error: {e}")
+        
         return resp
 
     def get_index(self, index: str):
@@ -98,26 +100,6 @@ class crud_elastic():
             print(f"Error: {e}")
             
         return resp['_source']
-
-    def search_ticker(self, 
-                index: str, 
-                ticker: str,
-                ):
-        resp = {}
-        
-        try:
-            query = {"query_string" : {
-                "query": ticker,
-                }
-            }
-            resp = self.client.search(index=index, query=query)
-            print(f"Got {len(resp['hits']['hits'])} Hits.")
-            
-            
-        except Exception as e:
-            print(f"Error: {e}")
-
-        return resp
     
     def refresh_index(self, 
                       index: str = '',

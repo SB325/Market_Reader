@@ -32,10 +32,19 @@ print(f"Number of Tickers with MCap > {caplimit}: {len(bigtick)}")
 
 with open('omit_words.json', 'r') as f:
     omit_words_dict = json.load(f)
-    owd = list(omit_words_dict.keys())
+    omit_words_dict = list(omit_words_dict.keys())
+
+with open('good_words.json', 'r') as f:
+    good_word_list = json.load(f)
+
+def has_good_words(title: str):
+    for word in good_word_list:
+        if word.lower() in title.lower():
+            return True, word.lower()
+    return False, None
 
 def has_omit_words(title: str):
-    for word in owd:
+    for word in omit_words_dict:
         if word.lower() in title.lower():
             return True, word.lower()
     return False, None
@@ -101,10 +110,11 @@ async def root(data: webhook_response):
                                                     content.pop(p)
 
                                                 secstr = get_links(content['securities'])    
-                                                
+                                                if has_good_words(title):
+                                                    title = '***' + title
                                                 pprint.pp(content)
                                                 _ = pn.send(title='News',
-                                                            message=f"<b>{content['title']}</b>\n{secstr[:-2]}",
+                                                            message=f"<b>{title}</b>\n{secstr[:-2]}",
                                                             html = 1
                                                             )
                                             else:

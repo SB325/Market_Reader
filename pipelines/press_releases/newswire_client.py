@@ -14,9 +14,14 @@ import time
 
 load_dotenv('.env')
 
-nw = newswire()
-crudpg = crud()
 celastic = crud_elastic()
+nw = newswire(celastic)  # Constructor creates index and mapping
+crudpg = crud()
+
+# nw.crud.delete_index('market_news')
+# celastic.get_mappings()
+# nw.search_ticker(index="market_news", ticker="AAPL")
+# pdb.set_trace()
 
 # load tickers
 async def get_tickers() -> list:
@@ -36,8 +41,8 @@ if __name__ == "__main__":
     nresults = 20
     pbar = tqdm(tickers)
     for ticker in pbar:
-        
-        latest = nw.get_latest_news_from_ticker('AAPL')
+        latest = nw.get_latest_news_from_ticker(ticker)
+
         page = 0
         while not done:
             pbar.set_description(f"Capturing {ticker} news data, page {page}")
@@ -58,6 +63,7 @@ if __name__ == "__main__":
             # print(f"{time.time() - start} seconds elapsed.")
 
             page = page + 1
-            # pdb.set_trace()   
+            # val = celastic.search_ticker(index="market_news", ticker="AAPL")
+            pdb.set_trace()   
             
 

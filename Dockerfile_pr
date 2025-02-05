@@ -4,6 +4,7 @@ USER root
 WORKDIR /press_releases
 
 COPY requirements.txt .
+
 RUN python -m pip install -r requirements.txt
 
 COPY pipelines/press_releases/* /press_releases/pipelines/press_releases/

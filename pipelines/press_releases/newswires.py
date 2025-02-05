@@ -20,16 +20,16 @@ url = "https://api.benzinga.com/api/v2/news"
 webhook_url = "https://api.benzinga.com/api/v1/webhook/"
 headers = {"accept": "application/json"}
 
-crud = crud_elastic()
 requests = requests_util()
 
 class newswire():
-    def __init__(self, key: str = key):
+    def __init__(self, crud: crud_elastic, key: str = key):
         self.key = key
         self.index = 'market_news'
+        self.crud = crud
         # check if index exists, create if it doesn't
-        if not crud.get_index(index="market_news"):
-            crud.create_index(new_index = self.index,
+        if not self.crud.get_index(index="market_news"):
+            self.crud.create_index(new_index = self.index,
                               new_mapping = news_article_mapping,
                         )
 
@@ -50,7 +50,7 @@ class newswire():
         # Push newsdata to elastic DB
         newsdata.update({'ticker': ticker})
         try:
-            crud.insert_document(index = self.index, document = newsdata)
+            self.crud.insert_document(index = self.index, document = newsdata)
         except Exception as e:
             print(f"Error: {e}")
 
@@ -59,21 +59,45 @@ class newswire():
         for article in newsdata:
             article.update({'ticker': ticker})
         try:
-            crud.bulk_insert_documents(index=self.index, body = newsdata)
+            self.crud.bulk_insert_documents(index=self.index, body = newsdata)
         except Exception as e:
             print(f"Error: {e}")
-            
-    def search_ticker(self, ticker: str):
-        return crud.search_ticker(index=self.index, ticker=ticker)
 
+    def search_ticker(self, 
+                index: str, 
+                ticker: str,
+                ):
+        # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
+        resp = {}
+        try:
+            # cannot perform exact match, so match_all and return latest
+            query = {"match_all": {}}
+            resp = self.crud.client.search(index=index, 
+                                           query=query, 
+                                           pretty=True, 
+                                           source={"includes":["source.created", "source.ticker"]}, 
+                                           sort=[{"created": {"order": "desc" }}],
+                                           size=1
+                                           )
+            print(f"Got {resp['hits']['total']['value']} Hits.")
+            
+        except Exception as e:
+            print(f"Error: {e}")
+
+        return resp
+    
     def get_latest_news_from_ticker(self, ticker: str):
-        val = self.search_ticker(ticker)
-        nhits = val['hits']['total']['value']
-        
-        if nhits:
-            dates = [dat['_source']['source']['created'] for dat in val['hits']['hits']]
-            date_format = "%a, %d %b %Y %H:%M:%S %z"
-            latest_date = datetime.strptime(min(dates), date_format)
+        # self.crud.client.search(index="market_news", query={"query_string": {"query": "Apple"}}, source={"includes":["source.created"]}, sort=[{"source.created": {"format": "strict_date_optional_time_nanos" }}])
+        val = self.search_ticker(index=self.index, ticker=ticker)
+        if val:
+            nhits = val['hits']['total']['value']
+            
+            if nhits:
+                dates = [dat['_source']['source']['created'] for dat in val['hits']['hits']]
+                date_format = "%a, %d %b %Y %H:%M:%S %z"
+                latest_date = datetime.strptime(min(dates), date_format)
+            else:
+                return "2020-01-01"
         else:
             return "2020-01-01"
         return latest_date.strftime("%Y-%m-%d")
