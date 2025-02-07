@@ -78,14 +78,24 @@ class crud_elastic():
         
         resp = {}
         try:
-            def gendata():
-                for doc in body:
-                   yield {
-                       "_index" : index,
-                       "source": doc
-                   }
-            
-            resp = bulk(self.client, gendata())
+            doclist = []
+            for doc in body:
+                doclist.extend(  
+                    [
+                        { "_id" : doc['id']} ,
+                        {"_index" : index},
+                        doc
+                        #{"_source" : doc }
+                    ]
+                )
+
+            #def gendata():
+            #    for doc in body:
+            #        yield { 
+            #                "_index" : index,
+            #                "_source" : doc
+            #        }
+            resp = bulk(self.client, doclist, index=index)
         except Exception as e:
             print(f"Error: {e}")
         return resp

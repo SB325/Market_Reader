@@ -50,26 +50,19 @@ class insert_method(Enum):
 
 news_article_mapping =  {
                             "properties": {
-                                "id":    { "type" : "keyword" }, 
+                                "id":    { "type" : "keyword"},
                                 "ticker": { "type" : "keyword" }, 
-                                "author":  { "type" : "text"  }, 
-                                "created":  { 
-                                                "type" : "date",
-                                                "format" : "EEE, dd LLL yyyy HH:mm:ss ZZZZZ||epoch_millis"  
-                                            },
-                                "updated":  { 
-                                                "type" : "date",
-                                                "format" : "EEE, dd LLL yyyy HH:mm:ss ZZZZZ||epoch_millis"    
-                                            },
-                                "title":  { "type" : "semantic_text" }, 
-                                "teaser":  { "type" : "semantic_text" }, 
-                                "body":  { "type" : "text" }, 
+                                "author":  { "type" : "text"}, 
+                                "created":  { "type" : "date" },
+                                "updated":  { "type" : "date" },
+                                "title":  { "type" : "text" }, 
+                                "teaser":  { "type" : "text" }, 
+                                # "body":  { "type" : "text" }, 
                                 "channels":  { "type" : "text" },    
-                                "stocks":  { "type" : "object"  }
+                                # "stocks":  { "type" : "object"  }
                             },
-                            "dynamic" : False,
                             "dynamic_date_formats" : [
-                                "EEE, dd LLL yyyy HH:mm:ss ZZZZZ||epoch_millis"  
+                                "EEE, dd LLL yyyy HH:mm:ss ZZZZZ||epoch_second"  
                             ],
                         }
 
@@ -81,6 +74,6 @@ class news_article_model(BaseModel):
     updated: str
     title: str
     teaser: str
-    body: str
+    # body: str
     channels: str
-    stocks: str
+    # stocks: str

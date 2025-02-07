@@ -20,7 +20,7 @@ to_pop = ['body','id','revision_id','type',
         'updated_at','authors','teaser',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 1_000_000_000
+caplimit = 500_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigtick = []

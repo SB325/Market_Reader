@@ -2,7 +2,17 @@ import time
 import math
 import requests
 from requests.models import Response
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 import pdb
+
+retry = Retry(
+        total=5,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+
+adapter = HTTPAdapter(max_retries=retry)
 
 class requests_util:
     '''
@@ -13,7 +23,9 @@ class requests_util:
         self.last_request_time = last_request_time
         self.access_token = access_token
         self.rate_limit = rate_limit  # minimum period or 1/max rate per second. For edgar, limit is listed at 10/sec
-        
+        self.session = requests.Session()
+        self.session.mount('http://', adapter)
+
     def get_last_request_time(self):
         return self.last_request_time
     
@@ -31,7 +43,7 @@ class requests_util:
     def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}, stream_in: bool = False):
         self.wait_half_second()
         try:
-            response = requests.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=5)
+            response = self.session.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
         except:
             response = Response()
             response.code = "expired"
@@ -44,14 +56,14 @@ class requests_util:
 
     def post(self, url_in: str, data_in: str = None, json_in: str = None, headers_in={}):
         if len(headers_in.keys()):
-            response = requests.post(url=url_in, data=data_in, json=json_in, headers=headers_in)
+            response = self.session.post(url=url_in, data=data_in, json=json_in, headers=headers_in)
         else:
-            response = requests.post(url=url_in, data=data_in, json=json_in)
+            response = self.session.post(url=url_in, data=data_in, json=json_in)
 
         if response.status_code != 200:
             print(f"Post Error! Code {response.status_code}: {response.reason}") 
         return response  
     
     def put(self, url_in: str, data_in: str, json_in: str = {}):
-        response = requests.put(url = url_in, data = data_in)
+        response = self.session.put(url = url_in, data = data_in)
         return response

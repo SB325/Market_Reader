@@ -4,7 +4,7 @@ from newswires import newswire
 from util.postgres.db.models.tickers import Symbols as symbols
 from util.crud_pg import crud
 from util.elastic.crud_elastic import crud_elastic
-
+from util.time_utils import to_posix, posix_to_datestr
 from tqdm import tqdm
 import pdb
 import json
@@ -33,37 +33,63 @@ def parse_for_elastic(data: dict):
         dat.pop('url')
         dat.pop('tags')
         dat.pop('image')
+        dat.pop('body')
+        dat.pop('stocks')
 
+def convert_date_to_posix(dateobj, datefmt: str):
+    for date in dateobj:
+        date['created'] =  to_posix(date['created'], datefmt)
+        date['updated'] =  to_posix(date['updated'], datefmt)
+
+def extract_channels(data: list):
+    for dat in data:
+        dat['channels'] = [val['name'] for val in dat['channels']]
+
+earliest_date = "2025-02-01"
 if __name__ == "__main__":
-
+    datefmt = "%a, %d %b %Y %H:%M:%S %z"
     tickers = asyncio.run(get_tickers())
-    done = False
-    nresults = 20
+    pageSize = 20
     pbar = tqdm(tickers)
     for ticker in pbar:
-        latest = nw.get_latest_news_from_ticker(ticker)
+        newTicker = True
+        if newTicker:
+            latest_data = nw.get_latest_news_from_ticker(ticker, default_latest=earliest_date)
+            
+            latest = latest_data.get(ticker, None)
+            if not latest:
+                latest = earliest_date
 
+            newTicker = False
         page = 0
+        nresults = pageSize
+        done = False
         while not done:
-            pbar.set_description(f"Capturing {ticker} news data, page {page}")
-            if nresults<20:
+            if nresults == 0:
+                break
+            if nresults < pageSize:
+                print(f"Press release corpus has been updated for {ticker}")
                 done = True
+            pbar.set_description(f"Capturing {ticker} news data, page {page}. Last nresult: {nresults}")
             params = {'page': page,
-                    'pageSize': 20,
+                    'pageSize': pageSize,
                     'displayOutput': 'full',
                     'tickers': ticker,
-                    'sort': 'created:desc',
+                    'sort': 'created:asc',
                     'dateFrom': latest}
             results = nw.get_news_history(params = params)
             nresults = len(results)
             parse_for_elastic(results)
+            convert_date_to_posix(results, datefmt)
+            extract_channels(results)
 
-            # start = time.time()
-            nw.to_db_bulk(ticker, results)
-            # print(f"{time.time() - start} seconds elapsed.")
+            for result in results:
+                # nsuccess = nw.to_db_bulk(ticker, results)
+                ret = nw.to_db(ticker,result)
+                #ObjectApiResponse({'_index': 'market_news', '_id': 'elTP4ZQBh3wAbWxnBBes', '_version': 1, 'result': 'created', '_shards': {'total': 2, 'successful': 2, 'failed': 0}, '_seq_no': 32, '_primary_term': 1})
+            #pdb.set_trace()
+            # print(f"{int(nsuccess[0])} Records successfully indexed. ")
 
             page = page + 1
-            # val = celastic.search_ticker(index="market_news", ticker="AAPL")
-            pdb.set_trace()   
             
 
