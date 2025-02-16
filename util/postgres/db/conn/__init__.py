@@ -18,6 +18,8 @@ env = os.environ.get("ENV")
 user = os.getenv("DATABASE_USER")
 password = os.getenv("DATABASE_PASSWORD")
 hostname = os.getenv("DB_HOSTNAME")
+if os.getenv('INDOCKER'):
+    hostname = 'postgres_container'
 
 port = os.getenv("DATABASE_PORT")
 database_name = os.getenv("DATABASE_NAME")

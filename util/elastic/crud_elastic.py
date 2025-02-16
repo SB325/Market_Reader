@@ -2,21 +2,24 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import sys, os
 sys.path.append("../../")
-from .models import query_model, insert_method
+from util.elastic.models import query_model, insert_method
 from typing import List
 import pdb
 from dotenv import load_dotenv
 
-
-load_dotenv(override=True, dotenv_path='../../creds.env')  
-load_dotenv(override=True, dotenv_path='../../../../.env')
+load_dotenv(override=True, dotenv_path='../../.env')
 pw = os.getenv("ELASTIC_PASSWORD")
 cert_loc = os.getenv("ELASTIC_CERT_LOC")
-cert = "/home/sheldon/src/homeserver/elastic/certs/ca/ca.crt"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+cert = f"{dir_path}/certs/ca/ca.pem"
+
+hostname = '127.0.0.1'
+if os.getenv('INDOCKER'):
+    hostname = 'es01' 
 
 class crud_elastic():
     def __init__(self, 
-                node_url = "https://127.0.0.1:9200", 
+                node_url = f"https://{hostname}:9200", 
                 certfile = cert,
                 password = pw,
                 max_retries=5,
@@ -26,13 +29,16 @@ class crud_elastic():
         self.client = Elasticsearch(
             node_url,
             ca_certs=certfile,
-            # verify_certs=False,
+            verify_certs=True,
             max_retries=max_retries,
             basic_auth=("elastic", password)
         )
-
         if verbose:
             print(self.client.info())
+            print(f"Cert Path: {cert}")
+            print(f"Dir Path: {dir_path}")
+            print(f"password {pw}")
+            print(f"Hostname: {hostname}")
 
     def create_index(self, 
                         new_index: str = '',
@@ -150,5 +156,4 @@ class crud_elastic():
     #         self.client.options(max_retries=0).index()
 
 if __name__ == "__main__":
-    crud = crud_elastic()
-    pdb.set_trace()
+    crud = crud_elastic(verbose=True)

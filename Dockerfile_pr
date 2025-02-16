@@ -1,16 +1,17 @@
-FROM python:3.10-bullseye
+FROM python:3.10.12
 
 USER root
-WORKDIR /press_releases
+WORKDIR /pr
 
-COPY requirements.txt .
-
+COPY requirements.txt /pr/requirements.txt
 RUN python -m pip install -r requirements.txt
 
-COPY pipelines/press_releases/* /press_releases/pipelines/press_releases/
-COPY util/elastic/* /press_releases/util/elastic/
-COPY util/postgres/db/* press_releases/util/postgres/db/
-COPY util/crud_pg.py press_releases/util/
-COPY util/requests_util.py press_releases/util/
+COPY pipelines/press_releases/* /pr/pipelines/press_releases/
+COPY util/ /pr/util/
+COPY *.env /pr/
 
+ENV INDOCKER=True
+
+WORKDIR /pr/pipelines/press_releases/
 ENTRYPOINT python newswire_client.py
+# ["tail", "-f", "/dev/null"]

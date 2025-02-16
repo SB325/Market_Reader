@@ -67,3 +67,6 @@ class requests_util:
     def put(self, url_in: str, data_in: str, json_in: str = {}):
         response = self.session.put(url = url_in, data = data_in)
         return response
+    
+if __name__ == '__main__':
+    pass

@@ -4,7 +4,7 @@ from newswires import newswire
 from util.postgres.db.models.tickers import Symbols as symbols
 from util.crud_pg import crud
 from util.elastic.crud_elastic import crud_elastic
-from util.time_utils import to_posix, posix_to_datestr
+from util.time_utils import to_posix
 from tqdm import tqdm
 import pdb
 import json
@@ -20,6 +20,8 @@ crudpg = crud()
 
 # nw.crud.delete_index('market_news')
 # celastic.get_mappings()
+# celastic.delete_index(index='market_news')
+# celastic.get_index(index='market_news')
 # nw.search_ticker(index="market_news", ticker="AAPL")
 # pdb.set_trace()
 
@@ -31,10 +33,7 @@ async def get_tickers() -> list:
 def parse_for_elastic(data: dict):
     for dat in data:
         dat.pop('url')
-        dat.pop('tags')
         dat.pop('image')
-        dat.pop('body')
-        dat.pop('stocks')
 
 def convert_date_to_posix(dateobj, datefmt: str):
     for date in dateobj:
@@ -45,11 +44,11 @@ def extract_channels(data: list):
     for dat in data:
         dat['channels'] = [val['name'] for val in dat['channels']]
 
-earliest_date = "2025-02-01"
+earliest_date = "2020-01-01"
 if __name__ == "__main__":
     datefmt = "%a, %d %b %Y %H:%M:%S %z"
     tickers = asyncio.run(get_tickers())
-    pageSize = 20
+    pageSize = 99
     pbar = tqdm(tickers)
     for ticker in pbar:
         newTicker = True

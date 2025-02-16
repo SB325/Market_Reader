@@ -3,17 +3,21 @@ services:
     env_file:
       - .env
     build: 
-      context: "."
       dockerfile: Dockerfile_pr
+      context: .
       no_cache: true
     restart: unless-stopped
+    volumes:
+      - ./util/elastic/certs:/pt/util/elastic/certs
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
      - homeserver
     profiles:
       - elastic
-    container_name: press_releases
+    depends_on:
+      - es02
+    container_name: pr
 
   webhook:
     build: 
