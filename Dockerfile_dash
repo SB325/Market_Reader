@@ -1,0 +1,18 @@
+FROM python:3.10.12
+
+USER root
+WORKDIR /dashboard
+
+COPY ui/requirements.txt ui/requirements.txt
+RUN python -m pip install -r ui/requirements.txt
+
+COPY util/elastic util/ 
+COPY util/postgres util/
+COPY util/crud_pg.py util/
+COPY *.env .
+
+COPY ui/ ui/
+ENV INDOCKER=True
+
+WORKDIR /dashboard/ui
+ENTRYPOINT python -m streamlit run app.py

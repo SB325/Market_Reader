@@ -1,4 +1,17 @@
 services:
+  press_release_dashboard:
+    build:
+      dockerfile: Dockerfile_dash
+      context: .
+    restart: unless-stopped
+    ports:
+      - 8502:8502
+    volumes:
+      - ./ui:/dashboard/ui
+    networks:
+     - homeserver
+    container_name: dashboard
+
   press_release_etl:
     env_file:
       - .env
