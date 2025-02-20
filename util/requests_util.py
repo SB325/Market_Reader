@@ -19,9 +19,8 @@ class requests_util:
     requests_util is a clean, simple interface for requests get, post etc requests
     Requests_Util forces a time period between consecutive REST requests in order to comply with API rate limits.
     '''
-    def __init__(self, last_request_time: int = 0, access_token: str = '', rate_limit: int = 1):
+    def __init__(self, last_request_time: int = 0, rate_limit: int = 1):
         self.last_request_time = last_request_time
-        self.access_token = access_token
         self.rate_limit = rate_limit  # minimum period or 1/max rate per second. For edgar, limit is listed at 10/sec
         self.session = requests.Session()
         self.session.mount('http://', adapter)
