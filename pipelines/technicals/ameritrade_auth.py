@@ -52,10 +52,12 @@ class schwab_auth(requests_util):
     def get_request(self, url, params={}, headers={}):
         self.refresh()
         headers['Authorization']='Bearer ' + self.access_token
-        headers["Content-Type"]="application/json"
-        params.update({'apikey': self.app_key})
+        headers["accept"]="application/json" #omitted for get_quote endpt
+        # params.update({'apikey': self.app_key})
+
         response = self.get(url_in=url, params_dict=params, headers_in=headers)
         if not response.ok:
+            pdb.set_trace()
             raise Exception(f'GET Request failed.\n{response.reason}')
         return response
     
