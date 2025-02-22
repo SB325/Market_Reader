@@ -1,5 +1,6 @@
 from datetime import datetime
 import pdb
+import time
 
 def to_posix(datestring: str, dateformat_str: str):
     dt = datetime.strptime(datestring, dateformat_str)
@@ -12,3 +13,6 @@ def to_y_m_d(datestring: str, dateformat_str: str):
 def posix_to_datestr(posixt: int, outformat: str = "%Y-%m-%d"):
     dt = datetime.fromtimestamp(posixt)
     return dt.strftime(outformat)
+
+def posix_now():
+    return time.mktime(datetime.now().timetuple())

@@ -5,10 +5,10 @@
 #   and ingests them into the database
 
 from ameritrade_auth import schwab_auth
-from params_formats import priceHistoryFormat
+from params_formats import priceHistoryFormat, marketHoursFormat
 import sys
 sys.path.append('../../')
-from util.time_utils import to_posix
+from util.time_utils import to_posix, posix_now 
 from enum import Enum
 import pdb
 
@@ -17,8 +17,36 @@ class tech_ingest():
         self.auth = auth
         self.resource_url = 'https://api.schwabapi.com/marketdata/v1'
 
+    def market_hours(self, date):
+        '''
+        Get Market Hours for dates in the future across different markets.
+        Date cannot be more than 7 days in the past.
+        '''
+        
+        querydate = to_posix(
+            f"{date} 12:00 AM EST", dateformat_str = "%Y-%m-%d %I:%M %p %Z"
+            )
+        now = posix_now()
+
+        span = now-querydate
+        assert span < (3600 * 24 * 7), "Date cannot be more than 7 days in the past."
+
+        data = self.auth.get_request(
+                    url=f"{self.resource_url}/markets", 
+                    params={'markets':'equity', 'date': date}
+            )  
+
+        if not data.ok:
+            msg=f'{ __file__}: market_hours data call failed'
+            print(msg)
+        else:
+            print(f"{__file__}: Downloaded Market Hours for {date}.")
+
+        return data
+    
     def get_price_history(self, price_query: priceHistoryFormat):
         # args are described in the priceHistoryFormat pydantic model
+        # query ranges of no more than 10 business days.
         '''
             parameters: ... 
                 when startDate set to a low time, candles are returned as far back as 
@@ -76,20 +104,27 @@ if __name__ == "__main__":
     auth = schwab_auth()
     ti = tech_ingest(auth)
     # response = ti.get_quotes(['TSLA','AA'])
-    price_history_query = {
-        'symbol': 'TSLA',
-        'periodType': 'day',
-        'period': '10',
-        'frequency': '1',
-        'frequencyType': 'minute',
-        'startDate': to_posix(
-            "12/01/2024 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
-            )*1000,
-        'needExtendedHoursData': 'true',
-        'needPreviousClose': 'true'
-        }
 
-    val = ti.get_price_history(
-                price_query=priceHistoryFormat(**price_history_query)
-                )
+    # price_history_query = {
+    #     'symbol': 'TSLA',
+    #     'periodType': 'day',
+    #     'period': '10',
+    #     'frequency': '1',
+    #     'frequencyType': 'minute',
+    #     'startDate': to_posix(
+    #         "12/01/2024 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
+    #         )*1000,
+    #     'endDate': to_posix(
+    #         "02/01/2025 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
+    #         )*1000,
+    #     'needExtendedHoursData': 'true',
+    #     'needPreviousClose': 'true'
+    #     }
+
+    # val = ti.get_price_history(
+    #             price_query=priceHistoryFormat(**price_history_query)
+    #             )
+
+    val = ti.market_hours(date='2025-02-18')
+    print(val.json())
     pdb.set_trace()

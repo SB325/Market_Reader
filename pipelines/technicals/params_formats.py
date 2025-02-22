@@ -46,3 +46,17 @@ class priceHistoryFormat(BaseModel):
     endDate: Optional[int] = None # posixtime
     needExtendedHoursData: Optional[bool_str] = None 
     needPreviousClose: Optional[bool_str] = None 
+
+class marketNames(Enum):
+    equity = 'equity'
+    option = 'option'
+    bond = 'bond'
+    future = 'future'
+    forex = 'forex'
+
+    def __str__(self):
+        return str.__str__(self.value)
+        
+class marketHoursFormat(BaseModel):
+    markets: marketNames
+    date: str                   # Date format:YYYY-MM-DD
