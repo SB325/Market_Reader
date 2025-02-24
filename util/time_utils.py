@@ -15,4 +15,9 @@ def posix_to_datestr(posixt: int, outformat: str = "%Y-%m-%d"):
     return dt.strftime(outformat)
 
 def posix_now():
-    return time.mktime(datetime.now().timetuple())
+    return int(time.mktime(datetime.now().timetuple()))
+
+def date_now_str(format_string: str):
+    datetime_object = datetime.fromtimestamp(posix_now())
+    return datetime_object.strftime(format_string)
+    

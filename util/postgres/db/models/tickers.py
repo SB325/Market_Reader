@@ -3,7 +3,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     # DateTime,
-    # Float,
+    Float,
     ForeignKey,
     Integer,
     # Text,
@@ -160,3 +160,15 @@ class Accounting(Base):
     type = Column(String)
     frame = Column(String)
     cik_rel = relationship("Symbols", back_populates="filing_acct")
+
+class Technicals(Base):
+    __tablename__ = "technicals"
+    __table_args__ = ({"schema": db_schema})
+    ticker = Column(String, primary_key=True)
+    open = Column(Float)
+    high = Column(Float)
+    low = Column(Float)
+    close = Column(Float)
+    volume = Column(Integer)
+    datetime = Column(Integer, primary_key=True)
+    

@@ -4,20 +4,22 @@
 # This script pulls raw technical data from schwab
 #   and ingests them into the database
 
-from ameritrade_auth import schwab_auth
-from params_formats import priceHistoryFormat
-import sys
-sys.path.append('../../')
+from source_data_interface.ameritrade_auth import schwab_auth
+from source_data_interface.params_formats import priceHistoryFormat
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
 from util.time_utils import to_posix, posix_now 
 from enum import Enum
 import pdb
 
-class tech_ingest():    
-    def __init__(self, auth: schwab_auth):
+auth = schwab_auth()
+
+class technicals():    
+    def __init__(self):
         self.auth = auth
         self.resource_url = 'https://api.schwabapi.com/marketdata/v1'
 
-    def market_hours(self, date):
+    def market_hours(self, date: str):
         '''
         Get Market Hours for dates in the future across different markets.
         Date cannot be more than 7 days in the past.
@@ -40,10 +42,10 @@ class tech_ingest():
         if not data.ok:
             msg=f'{ __file__}: market_hours data call failed'
             print(msg)
-        else:
-            print(f"{__file__}: Downloaded Market Hours for {date}.")
+        # else:
+            # print(f"{__file__}: Downloaded Market Hours for {date}.")
 
-        return data
+        return data.json()
     
     def get_price_history(self, price_query: priceHistoryFormat):
         # args are described in the priceHistoryFormat pydantic model
@@ -73,7 +75,7 @@ class tech_ingest():
         else:
             print(f"{__file__}: Downloaded price history for {query_ready['symbol']}.")
 
-        return data
+        return data.json()
             
     def get_quotes(self,tickers: list):        
         ticker_list_string = ','.join(tickers)
@@ -86,7 +88,7 @@ class tech_ingest():
             print(msg)
         else:
             print([f'{ __file__}: Downloaded quotes for {ticker_list_string}.'])
-        return data
+        return data.jsion()
 
     def get_quote(self,tick: str):
         # len(varargin) must be 2. varargin[0] is a ticker symbol        
@@ -99,33 +101,34 @@ class tech_ingest():
             print(msg)
         else:
             print([f'{ __file__}: Downloaded quote for {tick}.'])
-        return data
+        return data.jsion()
 
 if __name__ == "__main__":
-    auth = schwab_auth()
-    ti = tech_ingest(auth)
+    ti = technicals()
     # response = ti.get_quotes(['TSLA','AA'])
 
-    # price_history_query = {
-    #     'symbol': 'TSLA',
-    #     'periodType': 'day',
-    #     'period': '10',
-    #     'frequency': '1',
-    #     'frequencyType': 'minute',
-    #     'startDate': to_posix(
-    #         "12/01/2024 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
-    #         )*1000,
-    #     'endDate': to_posix(
-    #         "02/01/2025 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
-    #         )*1000,
-    #     'needExtendedHoursData': 'true',
-    #     'needPreviousClose': 'true'
-    #     }
+    price_history_query = {
+        'symbol': 'TSLA',
+        'periodType': 'day',
+        'period': '10',
+        'frequency': '1',
+        'frequencyType': 'minute',
+        'startDate': to_posix(
+            "12/01/2024 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
+            )*1000,
+        'endDate': to_posix(
+            "02/01/2025 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
+            )*1000,
+        'needExtendedHoursData': 'true',
+        'needPreviousClose': 'false'
+        }
 
-    # val = ti.get_price_history(
-    #             price_query=priceHistoryFormat(**price_history_query)
-    #             )
-
-    val = ti.market_hours(date='2025-02-18')
-    print(val.json())
+    val = ti.get_price_history(
+                price_query=priceHistoryFormat(**price_history_query)
+                )
+    # {'open': 392.1, 'high': 392.39, 'low': 391.7598, 'close': 391.9999, 'volume': 9567, 'datetime': 1736518620000}
+    
+    # val = ti.market_hours(date='2025-02-18')
     pdb.set_trace()
+    print(val)
+    

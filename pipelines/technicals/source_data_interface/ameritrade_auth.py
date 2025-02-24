@@ -15,14 +15,16 @@ import pdb
 from os import fdopen
 import os.path
 import base64
-sys.path.append('../../')
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
 from util.requests_util import requests_util
 from util.replace_line_env import replace
 from dotenv import load_dotenv
 from urllib.parse import unquote
 
-creds_file = 'tech_creds.env'
-load_dotenv(override=True, dotenv_path=creds_file)  
+
+filepath = os.path.dirname(__file__)
+creds_file = os.path.join(filepath, 'tech_creds.env')
+load_dotenv(override=True, dotenv_path= creds_file)  
 APP_KEY = os.getenv("APP_KEY")
 CALLBACK_URL = os.getenv("CALLBACK_URL")
 RESOURCE_URL = os.getenv("RESOURCE_URL")
