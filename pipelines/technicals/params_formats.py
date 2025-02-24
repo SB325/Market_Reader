@@ -56,7 +56,4 @@ class marketNames(Enum):
 
     def __str__(self):
         return str.__str__(self.value)
-        
-class marketHoursFormat(BaseModel):
-    markets: marketNames
-    date: str                   # Date format:YYYY-MM-DD
+

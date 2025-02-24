@@ -5,7 +5,7 @@
 #   and ingests them into the database
 
 from ameritrade_auth import schwab_auth
-from params_formats import priceHistoryFormat, marketHoursFormat
+from params_formats import priceHistoryFormat
 import sys
 sys.path.append('../../')
 from util.time_utils import to_posix, posix_now 
@@ -21,6 +21,7 @@ class tech_ingest():
         '''
         Get Market Hours for dates in the future across different markets.
         Date cannot be more than 7 days in the past.
+        Date format:YYYY-MM-DD
         '''
         
         querydate = to_posix(
