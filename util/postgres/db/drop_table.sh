@@ -10,4 +10,4 @@ else
     TABLE_TO_DROP=$3
 fi
 docker exec postgres_container \
-        sh -c "psql -d ${DATABASE} -U sheldon -v schema=${SCHEMA} -v table_to_drop=${TABLE_TO_DROP}  -a -q -f /home/drop_bantam_table.sql"
+        sh -c "psql -d ${DATABASE} -U sheldon -v schema=${SCHEMA} -v table_to_drop=${TABLE_TO_DROP}  -a -q -f /home/drop_table.sql"

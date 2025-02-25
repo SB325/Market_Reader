@@ -5,7 +5,8 @@ import asyncio
 from util.postgres.db.conn import insert_engine
 from util.logger import log
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import delete, select, column, table
+from sqlalchemy import delete, select, column, table, text
+from sqlalchemy.orm import Session
 import pdb
 from io import StringIO
 import pandas as pd
@@ -59,28 +60,52 @@ class crud():
         
         return status
     
-    async def query_table(self, tablename:str, cols: Union[str, list], query_val: str = '', query_operation: operationType = 'eq'):
-        with self.engine.connect() as conn:
+    async def query_table(self, tablename, 
+                          return_cols: Union[str, list] = '',
+                          query_cols: Union[str, list] = '', 
+                          query_val: str = '', 
+                          query_operation: operationType = 'eq', 
+                          unique_column_values: bool = ''):
+        with Session(self.engine) as session:
+            pdb.set_trace()
+            out_col_obj = tablename.__table__.columns
+            if return_cols:
+                out_col_obj = [tablename.__table__.columns[col] for col in return_cols]
+
+            col_obj = tablename.__table__
+            if unique_column_values:
+                col_obj = col_obj.distinct()
+
             if query_val:
+                col_obj = col_obj.columns[query_cols]
                 if 'eq' in query_operation:
-                    stmt = select(table(tablename)).where(column(cols) == query_val)
+                    result = session.query(col_obj).filter(col_obj == query_val)
+                    # stmt = select(tablename).where(column(cols) == query_val)
                 if 'gt' in query_operation:
-                    stmt = select(table(tablename)).where(column(cols) > query_val)
+                    result = session.query(col_obj).filter(col_obj > query_val)
+                    # stmt = select(tablename).where(column(cols) > query_val)
                 if 'lt' in query_operation:
-                    stmt = select(table(tablename)).where(column(cols) < query_val)
-                out = conn.execute(stmt).all()
+                    result = session.query(col_obj).filter(col_obj < query_val)
+                    # stmt = select(tablename).where(column(cols) < query_val)
+                # if unique_column_values:
+                #     stmt.distinct(column(unique_column_values))
+                out = result.all()
             else:
                 if isinstance(cols, list):
-                    cols_ = [column(col) for col in cols]
-                    stmt = select(table(tablename.__tablename__, *cols_))
-                    result = conn.execute(stmt)
-                    out = result.all()
+                    col_obj = [tablename.__table__.columns[col] for col in cols]
+                    
+                    if unique_column_values:
+                        col_obj = col_obj.distinct()
+                    out = session.query(col_obj).all()
                 else:
-                    stmt = select(table(tablename), column(cols))
-                    result = conn.execute(stmt)
-                    out = result.all()
-                    if out:
-                        out = [n[0] for n in out]
+                    col_obj = tablename.__table__.columns[cols]
+                    
+                    if unique_column_values:
+                        col_obj = col_obj.distinct()
+                    out = session.query(col_obj).all()
+
+                if out:
+                    out = [n[0] for n in out]
             
         return out
 
@@ -111,17 +136,17 @@ class crud():
     
     async def insert_rows_orm(self, tablename, index_elements: list, data: Union[list, pd.DataFrame]) -> bool:
         status = False
-        # pdb.set_trace()
+
         if isinstance(data, pd.DataFrame):
             with self.engine.connect() as conn:
-                conn.execute(insert(table(tablename)).on_conflict_do_nothing(
+                conn.execute(insert(tablename).on_conflict_do_nothing(
                             index_elements=index_elements
                             ).values(data))
                 conn.commit()
                 status = True
         else:
             with self.engine.connect() as conn:
-                conn.execute(insert(table(tablename)).on_conflict_do_nothing(
+                conn.execute(insert(tablename).on_conflict_do_nothing(
                             index_elements=index_elements
                             ), data)
                 conn.commit()

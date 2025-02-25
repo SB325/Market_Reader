@@ -88,7 +88,7 @@ class technicals():
             print(msg)
         else:
             print([f'{ __file__}: Downloaded quotes for {ticker_list_string}.'])
-        return data.jsion()
+        return data.json()
 
     def get_quote(self,tick: str):
         # len(varargin) must be 2. varargin[0] is a ticker symbol        

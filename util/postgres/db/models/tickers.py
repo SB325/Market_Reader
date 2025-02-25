@@ -163,12 +163,16 @@ class Accounting(Base):
 
 class Technicals(Base):
     __tablename__ = "technicals"
-    __table_args__ = ({"schema": db_schema})
-    ticker = Column(String, primary_key=True)
-    open = Column(Float)
-    high = Column(Float)
-    low = Column(Float)
-    close = Column(Float)
-    volume = Column(Integer)
+    __table_args__ = (UniqueConstraint(
+                        'ticker', 
+                        'datetime', 
+                        name='technical_uc'),
+                        {"schema": db_schema}
+                    )
+    ticker = Column(String, primary_key=True, index=True)
+    open = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    volume = Column(BigInteger, nullable=False)
     datetime = Column(Integer, primary_key=True)
-    

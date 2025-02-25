@@ -12,6 +12,19 @@ services:
      - homeserver
     container_name: dashboard
 
+  technicals_etl:
+    build:
+      dockerfile: Dockerfile_tech
+      context: .
+    restart: unless-stopped
+    networks:
+     - homeserver
+    depends_on:
+      - postgres
+    profiles:
+      - llm
+    container_name: tech
+
   press_release_etl:
     env_file:
       - .env
@@ -39,7 +52,10 @@ services:
     restart: unless-stopped
     volumes:
       - ./util/webhook_server/nasdaq_screener.csv:/webhook/nasdaq_screener.csv
+      - ./util/webhook_server/nyse_screener.csv:/webhook/nyse_screener.csv
+      - ./util/webhook_server/amex_screener.csv:/webhook/amex_screener.csv
       - ./util/webhook_server/omit_words.json:/webhook/omit_words.json
+      - ./util/webhook_server/good_words.json:/webhook/good_words.json
       - ./util/webhook_server/webhook_server.py:/webhook/webhook_server.py
       - ./util/webhook_server/webhook_response_model.py:/webhook/webhook_response_model.py
     ports:

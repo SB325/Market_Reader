@@ -13,6 +13,7 @@ tz = timezone('US/Eastern')
 
 recent_tickers = {'records': {}}  # {"<ticker>", current_time}
 recent_lookback_m = 30
+send_push_notifications = False
 
 app: FastAPI = FastAPI(root_path="/bzwebhook")
 pn = push_notify()
@@ -107,55 +108,56 @@ async def root(data: webhook_response):
         current_time = datetime.now(tz)
         print(f'\nMessage Arrived at {current_time}.')
         data = data.model_dump()
-        if data.get('data', None):
-            content = data['data'].get('content', None)
-            if content:
-                securities = content.get('securities', None)
-                if securities:
-                    if len(securities)<=3:
-                        author = content.get('authors', None)
-                        if author:
-                            if 'Benzinga Insights' not in author:
-                                content['securities'] = [sym['symbol'] for sym in content['securities']] 
-                                if not has_omit_ticker(content['securities']):
-                                    title = content.get('title', None)
-                                    if title:
-                                        omitted, word = has_omit_words(title)
-                                        if not omitted:
-                                            hastick, lentick = has_recent_tickers(current_time, content['securities'])
-                                            if not hastick:
-                                                for p in to_pop:
-                                                    content.pop(p)
-
-                                                secstr = get_links(content['securities'])    
-                                                if has_good_words(title):
-                                                    title = '***' + title
-                                                pprint.pp(content)
-                                                _ = pn.send(title='News',
-                                                            message=f"<b>{title}</b>\n{secstr[:-2]}",
-                                                            html = 1
-                                                            )
-                                            else:
-                                                print(f"Omitted Repeated Ticker {content['securities']} from recent list {lentick} long.")
-                                        else:
-                                            print(f"Title has an Omit word [{word}] for ticker {content['securities']}.")
-                                    else:
-                                        print('No title field found.')
-                                else:
-                                    print(f"Omit Ticker Found {content['securities']}.")
-                            else:
-                                print('Benzinga Insights author omitted.')
-                        else:
-                            print("No author field found.")
-                    else:
-                        print('Securities list too long.')
-                else:
-                    print('Securities Field not present.')
-            else:
-                print('Content Field not present.')
-        else:
+        if not data.get('data', None):
             print('Data Field not present.')
-    
+            return response
+        content = data['data'].get('content', None)
+        if not content:
+            print('Content Field not present.')
+            return response
+        securities = content.get('securities', None)
+        if not securities:
+            print('Securities Field not present.')
+            return response
+        if not len(securities)<=3:
+            print('Securities list too long.')
+            return response
+        author = content.get('authors', None)
+        if not author:
+            print("No author field found.")
+            return response
+        if 'Benzinga Insights' in author:
+            print('Benzinga Insights author omitted.')
+            return response
+        content['securities'] = [sym['symbol'] for sym in content['securities']] 
+        if has_omit_ticker(content['securities']):
+            print(f"Omit Ticker Found {content['securities']}.")
+            return response
+        title = content.get('title', None)
+        if not title:
+            print('No title field found.')
+            return response
+        omitted, word = has_omit_words(title)
+        if omitted:
+            print(f"Title has an Omit word [{word}] for ticker {content['securities']}.")
+            return response
+        hastick, lentick = has_recent_tickers(current_time, content['securities'])
+        if hastick:
+            print(f"Omitted Repeated Ticker {content['securities']} from recent list {lentick} long.")
+            return response
+        for p in to_pop:
+            content.pop(p)
+
+        secstr = get_links(content['securities'])    
+        if has_good_words(title):
+            title = '***' + title
+        pprint.pp(content)
+        if send_push_notifications:
+            _ = pn.send(title='News',
+                        message=f"<b>{title}</b>\n{secstr[:-2]}",
+                        html = 1
+                        )
+            
     except:
       
         return JSONResponse(status_code=204, content="NoContent")
