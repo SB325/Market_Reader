@@ -25,10 +25,8 @@ class technicals():
         Date cannot be more than 7 days in the past.
         Date format:YYYY-MM-DD
         '''
-        
-        querydate = to_posix(
-            f"{date} 12:00 AM EST", dateformat_str = "%Y-%m-%d %I:%M %p %Z"
-            )
+
+        querydate = to_posix(f"{date} 12:00 AM", dateformat_str = "%Y-%m-%d %I:%M %p")
         now = posix_now()
 
         span = now-querydate
@@ -114,10 +112,10 @@ if __name__ == "__main__":
         'frequency': '1',
         'frequencyType': 'minute',
         'startDate': to_posix(
-            "12/01/2024 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
+            "12/01/2024 12:00 AM", dateformat_str = "%m/%d/%Y %I:%M %p"
             )*1000,
         'endDate': to_posix(
-            "02/01/2025 12:00 AM EST", dateformat_str = "%m/%d/%Y %I:%M %p %Z"
+            "02/01/2025 12:00 AM", dateformat_str = "%m/%d/%Y %I:%M %p"
             )*1000,
         'needExtendedHoursData': 'true',
         'needPreviousClose': 'false'

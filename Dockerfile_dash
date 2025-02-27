@@ -3,8 +3,8 @@ FROM python:3.10.12
 USER root
 WORKDIR /dashboard
 
-COPY ui/requirements.txt ui/requirements.txt
-RUN python -m pip install -r ui/requirements.txt
+COPY ui/requirements_dash.txt ui/requirements_dash.txt
+RUN python -m pip install -r ui/requirements_dash.txt
 
 COPY util/elastic util/ 
 COPY util/postgres util/

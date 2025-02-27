@@ -61,51 +61,56 @@ class crud():
         return status
     
     async def query_table(self, tablename, 
-                          return_cols: Union[str, list] = '',
-                          query_cols: Union[str, list] = '', 
+                          return_cols: str = None,
+                          query_col: Union[str, list] = '', 
                           query_val: str = '', 
                           query_operation: operationType = 'eq', 
-                          unique_column_values: bool = ''):
+                          unique_column_values: str = None):
         with Session(self.engine) as session:
-            pdb.set_trace()
-            out_col_obj = tablename.__table__.columns
+            if return_cols:
+                if not isinstance(return_cols, list):
+                    return_cols = [return_cols]
+
             if return_cols:
                 out_col_obj = [tablename.__table__.columns[col] for col in return_cols]
+            else:
+                out_col_obj = [tablename.__table__.columns]
 
-            col_obj = tablename.__table__
+            unique_columns = False
             if unique_column_values:
-                col_obj = col_obj.distinct()
+                unique_columns=True
+                unique_column_values = tablename.__table__.columns[unique_column_values]
 
             if query_val:
-                col_obj = col_obj.columns[query_cols]
+                col_obj = tablename.__table__.columns[query_col]
                 if 'eq' in query_operation:
-                    result = session.query(col_obj).filter(col_obj == query_val)
+                    result = session.query(*out_col_obj).filter(col_obj == query_val)
                     # stmt = select(tablename).where(column(cols) == query_val)
                 if 'gt' in query_operation:
-                    result = session.query(col_obj).filter(col_obj > query_val)
+                    result = session.query(*out_col_obj).filter(col_obj > query_val)
                     # stmt = select(tablename).where(column(cols) > query_val)
                 if 'lt' in query_operation:
-                    result = session.query(col_obj).filter(col_obj < query_val)
+                    result = session.query(*out_col_obj).filter(col_obj < query_val)
                     # stmt = select(tablename).where(column(cols) < query_val)
-                # if unique_column_values:
-                #     stmt.distinct(column(unique_column_values))
+                
+                if unique_columns:
+                    result = result.distinct(unique_column_values)
                 out = result.all()
-            else:
-                if isinstance(cols, list):
-                    col_obj = [tablename.__table__.columns[col] for col in cols]
-                    
-                    if unique_column_values:
-                        col_obj = col_obj.distinct()
-                    out = session.query(col_obj).all()
-                else:
-                    col_obj = tablename.__table__.columns[cols]
-                    
-                    if unique_column_values:
-                        col_obj = col_obj.distinct()
-                    out = session.query(col_obj).all()
 
-                if out:
-                    out = [n[0] for n in out]
+            else:
+                stmt = select(*out_col_obj)
+
+                if unique_columns:
+                    stmt = stmt.distinct()
+
+                out = session.execute(stmt).all()
+            if return_cols:
+                if len(return_cols)==1:
+                    # while not isinstance(out[0], str):
+                    out = [n[0] for n in out] 
+                    # print(f"{isinstance(out[0], str)} {type(out[0])}")
+                else:
+                    out = [n[:len(return_cols)] for n in out]
             
         return out
 

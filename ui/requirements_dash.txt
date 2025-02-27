@@ -1,4 +1,5 @@
-dataclasses
+streamlit==1.37.1
+streamlit-echarts
 pydantic
 prettyprint
 pytest==8.1.1
@@ -23,15 +24,4 @@ Werkzeug==2.3.5
 marshmallow-sqlalchemy
 psycopg2-binary==2.9.5
 pandas==2.2.3
-beautifulsoup4==4.12.3
 html5lib==1.1
-docker
-
-fastapi[standard]
-
-# langchain
-# langchain_community
-# langchain_core
-# langchain-ollama
-
-elasticsearch

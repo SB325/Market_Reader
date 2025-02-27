@@ -3,16 +3,15 @@ FROM python:3.10.12
 USER root
 WORKDIR /tech
 
-COPY requirements.txt /tech/requirements.txt
+COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
-COPY pipelines/technicals/* /tech/pipelines/technicals/
-COPY util/postgres/ /tech/util/postgres/
-COPY util/*.py /tech/util/*.py
-COPY *.env /tech/
+COPY pipelines/technicals/ pipelines/technicals/
+COPY util/postgres/ util/postgres/
+COPY util/*.py util/
+COPY util/logger/ util/logger/
+COPY *.env .
 
 ENV INDOCKER=True
 
-WORKDIR /tech/pipelines/technicals/
-ENTRYPOINT python technicals_ingest.py
-# ["tail", "-f", "/dev/null"]
+ENTRYPOINT python pipelines/technicals/technicals_ingest.py

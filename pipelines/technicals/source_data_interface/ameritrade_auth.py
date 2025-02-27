@@ -5,17 +5,16 @@
 #   a way that manages the refreshing and re-authorization of keys
 #   so that it is an afterthought during development.
 
-from pprint import pprint
 import os
 import sys
 import time 
 import math
 import json
 import pdb
-from os import fdopen
 import os.path
 import base64
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
+appendpath = os.path.join(os.path.dirname(__file__), '../../../')
+sys.path.append(appendpath)
 from util.requests_util import requests_util
 from util.replace_line_env import replace
 from dotenv import load_dotenv
