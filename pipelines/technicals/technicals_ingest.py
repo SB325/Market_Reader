@@ -8,6 +8,7 @@ from util.crud_pg import crud
 from util.postgres.db.models.tickers import Technicals as Technicals
 from util.postgres.db.models.tickers import Symbols as Symbols
 
+
 import pdb
 import asyncio
 import pandas as pd

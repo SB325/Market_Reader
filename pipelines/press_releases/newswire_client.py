@@ -37,8 +37,8 @@ def parse_for_elastic(data: dict):
 
 def convert_date_to_posix(dateobj, datefmt: str):
     for date in dateobj:
-        date['created'] =  to_posix(date['created'], datefmt)
-        date['updated'] =  to_posix(date['updated'], datefmt)
+        date['created'] =  to_posix(date['created'], datefmt)*1000
+        date['updated'] =  to_posix(date['updated'], datefmt)*1000
 
 def extract_channels(data: list):
     for dat in data:

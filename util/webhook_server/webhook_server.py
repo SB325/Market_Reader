@@ -13,7 +13,7 @@ tz = timezone('US/Eastern')
 
 recent_tickers = {'records': {}}  # {"<ticker>", current_time}
 recent_lookback_m = 30
-send_push_notifications = False
+send_push_notifications = True
 
 app: FastAPI = FastAPI(root_path="/bzwebhook")
 pn = push_notify()
@@ -21,30 +21,18 @@ to_pop = ['body','id','revision_id','type',
         'updated_at','authors','teaser',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 500_000_000
+caplimit = 50_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigticknas = []
     for row in reader:
-        if float(row['Market Cap']) > caplimit:
-            bigticknas.append(row['Symbol'])
-
-with open('nyse_screener.csv', 'r') as file:
-    reader = csv.DictReader(file)
-    bigtickny = []
-    for row in reader:
-        if float(row['Market Cap']) > caplimit:
-            bigtickny.append(row['Symbol'])
-
-with open('amex_screener.csv', 'r') as file:
-    reader = csv.DictReader(file)
-    bigtickam = []
-    for row in reader:
-        if float(row['Market Cap']) > caplimit:
-            bigtickam.append(row['Symbol'])
+        mktcap = row['Market Cap']
+        if mktcap:
+            if float(mktcap) > caplimit:
+                bigticknas.append(row['Symbol'])
 
 print(f"Number of Tickers with MCap > {caplimit}:")
-print(f"{len(bigtickny) + len(bigticknas) + len(bigtickam)}")
+print(f"{len(bigticknas)}")
 
 with open('omit_words.json', 'r') as f:
     omit_words_dict = json.load(f)
@@ -67,10 +55,7 @@ def has_omit_words(title: str):
 
 def has_omit_ticker(ticker: str):
     for tick in ticker:
-        if tick in bigticknas or \
-            tick in bigtickam or \
-            tick in bigtickny or \
-            '$' in tick:
+        if tick in bigticknas or '$' in tick:
             return True
     return False
 

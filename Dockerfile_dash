@@ -6,9 +6,12 @@ WORKDIR /dashboard
 COPY ui/requirements_dash.txt ui/requirements_dash.txt
 RUN python -m pip install -r ui/requirements_dash.txt
 
-COPY util/elastic util/ 
-COPY util/postgres util/
+COPY util/elastic util/elastic/
+COPY util/postgres util/postgres/
+COPY util/logger util/logger/
 COPY util/crud_pg.py util/
+COPY util/time_utils.py util/
+
 COPY *.env .
 
 COPY ui/ ui/

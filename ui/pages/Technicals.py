@@ -1,17 +1,21 @@
 import streamlit as st
-from streamlit_echarts import st_echarts
-# https://github.com/andfanilo/streamlit-echarts/tree/develop/img
-# https://github.com/arnaudmiribel/streamlit-extras?tab=readme-ov-file
-# https://medium.com/nerd-for-tech/build-your-first-candlestick-chart-with-streamlit-7edd31ae559d
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
+from query_utils.technical_utils import technicals_ticker_stats
+import pdb
+import asyncio
 
-options = {
-    "xAxis": {
-        "type": "category",
-        "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    },
-    "yAxis": {"type": "value"},
-    "series": [
-        {"data": [820, 932, 901, 934, 1290, 1330, 1320], "type": "line"}
-    ],
-}
-st_echarts(options=options)
+# async def get_technicals():
+    # Technicals Card
+nTickers, nLatestTickers = asyncio.run(technicals_ticker_stats())
+
+st.metric(label="Tickers\n(Technicals)", 
+            value=f"{nTickers}", 
+            delta=f"{nLatestTickers} in last day", 
+            delta_color="normal", 
+            help=None, 
+            label_visibility="visible"
+)
+
+# if __name__ == "__main__":
+#     asyncio.run(get_technicals())

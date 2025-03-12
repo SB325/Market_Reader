@@ -1,5 +1,5 @@
 streamlit==1.37.1
-streamlit-echarts
+plotly
 pydantic
 prettyprint
 pytest==8.1.1
@@ -25,3 +25,7 @@ marshmallow-sqlalchemy
 psycopg2-binary==2.9.5
 pandas==2.2.3
 html5lib==1.1
+elasticsearch
+plotly
+# Replace Streamlit with Dash !! (https://plotly.com/python/candlestick-charts/)
+dash 

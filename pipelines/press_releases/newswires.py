@@ -1,10 +1,9 @@
 # Benzinga News API client
 import pdb
-import os
-import sys
+import os, sys
 from dotenv import load_dotenv
-import pdb 
-sys.path.append("../../")
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.append(os.path.join(os.path.dirname(__file__)))
 from util.requests_util import requests_util
 from util.elastic.crud_elastic import crud_elastic
 from util.elastic.models import news_article_model, news_article_mapping
@@ -84,17 +83,18 @@ class newswire():
             print(f"Error: {e}")
         return ret
     
-    def search_ticker(self, 
+
+    def search_ticker_match(self, 
                 index: str, 
                 ticker: str,
                 ):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
         resp = {}
         try:
-            # query = {"match_all": {}}
             # self.crud.client.indices.refresh(index=self.index)
             resp = self.crud.client.search(index=index, 
                                            ignore_unavailable=True,
+                                           query={"match": {'ticker': {'query': ticker}}},
                                            aggs={
                                                 "tickerfilt" : {
                                                     "terms": {
@@ -109,6 +109,29 @@ class newswire():
                                                     },
                                                 }
                                             }
+                                           
+                                           )
+            print(f"Got {resp['hits']['total']['value']} Hits.")
+            # pdb.set_trace()
+            
+        except Exception as e:
+            raise  Exception(f"Error: {e}")
+
+        return resp
+    
+    def search_ticker(self, 
+                index: str, 
+                ticker: str,
+                ):
+        # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
+        resp = {}
+        try:
+            # query = {"match_all": {}}
+            # self.crud.client.indices.refresh(index=self.index)
+            resp = self.crud.client.search(index=index, 
+                                           ignore_unavailable=True,
+                                           query={"match": {'ticker': {'query': ticker}}},
+                                           size=10_000
                                            )
             print(f"Got {resp['hits']['total']['value']} Hits.")
             # pdb.set_trace()
@@ -120,7 +143,7 @@ class newswire():
     
     def get_latest_news_from_ticker(self, ticker: str, default_latest: str="2020-01-01"):
         latest_dates = {'*': default_latest}
-        val = self.search_ticker(index=self.index, ticker=ticker)
+        val = self.search_ticker_match(index=self.index, ticker=ticker)
         if val.raw.get('aggregations', None): 
             buckets = val.raw['aggregations']['tickerfilt']['buckets']
             if buckets:

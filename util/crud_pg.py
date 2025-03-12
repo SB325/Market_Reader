@@ -1,6 +1,8 @@
 '''
 Class that manages all data transfers to and from the databases
 '''
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 import asyncio
 from util.postgres.db.conn import insert_engine
 from util.logger import log
@@ -61,7 +63,7 @@ class crud():
         return status
     
     async def query_table(self, tablename, 
-                          return_cols: str = None,
+                          return_cols: Union[str, list] = None,
                           query_col: Union[str, list] = '', 
                           query_val: str = '', 
                           query_operation: operationType = 'eq', 
