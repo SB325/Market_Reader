@@ -8,4 +8,5 @@ log/*
 *.zip
 *.csv
 *.pyc
+*.pkl
 *creds.env

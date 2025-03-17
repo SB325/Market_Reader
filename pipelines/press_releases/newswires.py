@@ -122,16 +122,40 @@ class newswire():
     def search_ticker(self, 
                 index: str, 
                 ticker: str,
+                conditional: str = 'lte', # or 'gte'
+                query_on_key: str = '',
+                query_on_val: list = None
                 ):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
         resp = {}
         try:
-            # query = {"match_all": {}}
+            if query_on_key:
+                assert query_on_val, "Missing value for -query_on_val-"
+                query = {'bool': {'must': [
+                                {"term": {'ticker': ticker}},
+                                {"range": {query_on_key: {'gte': query_on_val[0],
+                                                          'lte': query_on_val[1]
+                                                        }
+                                            }
+                                }
+                            ]
+                        }
+                }
+            else:
+                query = {"match": {'ticker': {'query': ticker}}}
             # self.crud.client.indices.refresh(index=self.index)
             resp = self.crud.client.search(index=index, 
                                            ignore_unavailable=True,
-                                           query={"match": {'ticker': {'query': ticker}}},
-                                           size=10_000
+                                           query=query,
+                                           size=10_000,
+                                           sort=[
+                                                    {
+                                                        "created": {
+                                                            "order": "desc"
+                                                        }
+                                                    },
+                                                    "_score"
+                                                ]
                                            )
             print(f"Got {resp['hits']['total']['value']} Hits.")
             # pdb.set_trace()

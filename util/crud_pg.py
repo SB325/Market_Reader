@@ -15,6 +15,7 @@ import pandas as pd
 import time
 from typing import Union
 from enum import Enum
+from sqlalchemy import desc, asc
 
 class operationType(Enum):
     gt = 'gt'
@@ -67,7 +68,9 @@ class crud():
                           query_col: Union[str, list] = '', 
                           query_val: str = '', 
                           query_operation: operationType = 'eq', 
-                          unique_column_values: str = None):
+                          unique_column_values: str = None,
+                          sort_column: str = '',
+                          sort_order: str = 'desc'):
         with Session(self.engine) as session:
             if return_cols:
                 if not isinstance(return_cols, list):
@@ -97,7 +100,15 @@ class crud():
                 
                 if unique_columns:
                     result = result.distinct(unique_column_values)
+                
+                if sort_column:
+                    sort_by = tablename.__table__.columns[sort_column]
+                    if sort_order=='desc':
+                        result = result.order_by(desc(sort_by))
+                    else:
+                        result = result.order_by(asc(sort_by))
                 out = result.all()
+                
 
             else:
                 stmt = select(*out_col_obj)
@@ -106,6 +117,7 @@ class crud():
                     stmt = stmt.distinct()
 
                 out = session.execute(stmt).all()
+
             if return_cols:
                 if len(return_cols)==1:
                     # while not isinstance(out[0], str):

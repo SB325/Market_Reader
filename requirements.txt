@@ -35,3 +35,7 @@ fastapi[standard]
 # langchain-ollama
 
 elasticsearch
+sentence-transformers
+peft
+torch
+networkx[default]

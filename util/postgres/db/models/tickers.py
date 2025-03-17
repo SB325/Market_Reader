@@ -175,4 +175,4 @@ class Technicals(Base):
     low = Column(Float, nullable=False)
     close = Column(Float, nullable=False)
     volume = Column(BigInteger, nullable=False)
-    datetime = Column(Integer, primary_key=True)
+    datetime = Column(Integer, primary_key=True, index=True)
