@@ -38,4 +38,6 @@ elasticsearch
 sentence-transformers
 peft
 torch
-networkx[default]
+numpy
+tensorflow
+tf-keras

@@ -21,7 +21,7 @@ to_pop = ['body','id','revision_id','type',
         'updated_at','authors','teaser',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 50_000_000
+caplimit = 10_000_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigticknas = []

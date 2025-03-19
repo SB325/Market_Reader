@@ -10,10 +10,15 @@ from util.time_utils import to_posix
 from pipelines.press_releases.newswire_client import get_tickers
 import pandas as pd
 from models.embeddings import group_similar_documents, return_documents_in_group
+from labeled_data import labeleddata
 import asyncio
 from tqdm import tqdm
 import asyncio
 import csv
+import numpy as np
+from keras.utils import to_categorical
+from keras import models
+from keras import layers
 
 elastic = crud_elastic()
 nw = newswire(elastic)
@@ -71,18 +76,20 @@ def get_price_features_from_news(created_date,
 
     return value
 
-caplimit = 200_000
+securities = []
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
-    bigticknas = []
     for row in reader:
-        mktcap = row['Market Cap']
-        if mktcap:
-            if float(mktcap) > caplimit:
-                bigticknas.append(row['Symbol'])
-
-print(f"Number of Tickers with MCap > {caplimit}:")
-print(f"{len(bigticknas)}")
+        if not row['Market Cap']:
+            row['Market Cap'] = -1
+        securities.append({
+                'symbol': row['Symbol'],
+                'market_cap': int(float(row['Market Cap'])),
+                'country': row['Country'],
+                'sector': row['Sector'],
+                'industry': row['Industry']
+        })
+securities_df = pd.DataFrame.from_dict(securities)
 
 if __name__ == "__main__":
     model_input = []
@@ -161,42 +168,18 @@ if __name__ == "__main__":
         full_model_df = pd.concat(model_input)
         full_model_df['title'] = full_model_df['title'].fillna('')
         full_model_df['ticker'] = full_model_df['ticker'].fillna('')
-        full_model_df.to_pickle('full_model_df.pkl')
+
+        # Add marketCap data to full_model_df
+        full_model_df = full_model_df.merge(full_model_df, securities_df, left_on='ticker', right_on='symbol', how='left').drop('symbol', axis=1)
+        ldata = labeleddata(full_model_df)
+        ldata.save_data()
+        # full_model_df.to_pickle('full_model_df.pkl')
 
     if from_pkl:
-        full_model_df = pd.read_pickle('full_model_df.pkl')
-        pos24_stats = pd.read_pickle('pos24_stats.pkl')
-        neu24_stats = pd.read_pickle('neu24_stats.pkl')
-        neg24_stats = pd.read_pickle('neg24_stats.pkl')
-    else:
-        N_max_gain = len(full_model_df.max_gain_24[full_model_df.max_gain_24==2])
-        N_day_gain = len(full_model_df.day_gain_24[full_model_df.day_gain_24==2])
-        N_max_loss = len(full_model_df.max_loss_24[full_model_df.max_loss_24==2])
-        print(f"N_max_gain: {N_max_gain}")
-        print(f"N_day_gain: {N_day_gain}")
-        print(f"N_max_loss: {N_max_loss}")
-        pos24 = full_model_df[full_model_df['day_gain_24']==2]
-        neu24 = full_model_df[full_model_df['day_gain_24']==1]
-        neg24 = full_model_df[full_model_df['day_gain_24']==0]
-        
-        thresh = 0.8
-        pos24_stats = group_similar_documents(pos24['title'].tolist(), thresh=thresh)
-        neu24_stats = group_similar_documents(neu24['title'].tolist(), thresh=thresh)
-        neg24_stats = group_similar_documents(neg24['title'].tolist(), thresh=thresh)
-        pos24_docs = return_documents_in_group(pos24_stats['corpus'], pos24_stats['ngroups']-1)
-        neu24_docs = return_documents_in_group(neu24_stats['corpus'], neu24_stats['ngroups']-1)
-        neg24_docs = return_documents_in_group(neg24_stats['corpus'], neg24_stats['ngroups']-1)
-        pos24_stats['corpus'].to_pickle('pos24_stats.pkl')
-        neu24_stats['corpus'].to_pickle('neu24_stats.pkl')
-        neg24_stats['corpus'].to_pickle('neg24_stats.pkl')
-    pdb.set_trace()
-    cheap_stock = full_model_df[~full_model_df['ticker'].str.contains("|".join(bigticknas))]
-    N_max_gain = len(cheap_stock.max_gain_24[cheap_stock.max_gain_24==2])
-    N_day_gain = len(cheap_stock.day_gain_24[cheap_stock.day_gain_24==2])
-    N_max_loss = len(cheap_stock.max_loss_24[cheap_stock.max_loss_24==2])
-
-    pos24 = cheap_stock[cheap_stock['day_gain_24']==2]
-    neu24 = cheap_stock[cheap_stock['day_gain_24']==1]
-    neg24 = cheap_stock[cheap_stock['day_gain_24']==0]
+        ldata = labeleddata()
+        ldata.load_data()
     
-# For each news entry, get time of entry and use schwab api to get the 24hrs prior and after
+    # Now build model from labeleddata object
+    ldata.train_test_split()
+    pdb.set_trace()
+

@@ -148,6 +148,7 @@ class newswire():
                                            ignore_unavailable=True,
                                            query=query,
                                            size=10_000,
+                                           request_timeout=30,
                                            sort=[
                                                     {
                                                         "created": {
