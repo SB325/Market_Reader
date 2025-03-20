@@ -34,7 +34,7 @@ class embeddings():
             self.model.save(full_model_path)
 
     def encode(self, text: str):
-        return self.model.encode(text)
+        return self.model.encode(text, device='cuda', normalize_embeddings=True)
     
     def similarity2(self, text_1: str, text_2: str):
         embedding1 = self.encode(text_1)

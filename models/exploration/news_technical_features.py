@@ -9,7 +9,7 @@ from util.postgres.db.models.tickers import Technicals
 from util.time_utils import to_posix, minute_of_day, day_of_week
 from pipelines.press_releases.newswire_client import get_tickers
 import pandas as pd
-from models.embeddings import group_similar_documents, return_documents_in_group
+from models.embeddings import group_similar_documents, return_documents_in_group, embeddings
 from labeled_data import labeleddata
 import asyncio
 from tqdm import tqdm
@@ -249,6 +249,42 @@ if __name__ == "__main__":
     
     # Now build model from labeleddata object
     training_set, testing_set = ldata.train_test_split(0.8)
+    
+    model = models.Sequential()
+    
+    # Input - Layer
+    model.add(layers.Dense(50, activation = "relu", input_shape=(10000, )))
+    # Hidden - Layers
+    model.add(layers.Dropout(0.3, noise_shape=None, seed=None))
+    model.add(layers.Dense(50, activation = "relu"))
+    model.add(layers.Dropout(0.2, noise_shape=None, seed=None))
+    model.add(layers.Dense(50, activation = "relu"))
+    # Output- Layer
+    model.add(layers.Dense(1, activation = "sigmoid"))
+    model.summary()
+    
+    model.compile(
+            optimizer = "adam",
+            loss = "binary_crossentropy",
+            metrics = ["accuracy"]
+            )
+    emb = embeddings()
+    train_x = emb.encode(training_set.title.tolist())
+    train_y = emb.encode(training_set.day_gain_24.tolist())
+    test_x = emb.encode(testing_set.title.tolist())
+    test_y = emb.encode(testing_set.day_gain_24.tolist())
+    
+    pdb.set_trace()
+    results = model.fit(
+            train_x, train_y,
+            epochs= 2,
+            batch_size = 32
+            )
+
+    pdb.set_trace()
+    
+    scores = model.evaluate(test_x, test_y, verbose=0)
+    print("Accuracy: %.2f%%" % (scores[1]*100))
 
     pdb.set_trace()
 
