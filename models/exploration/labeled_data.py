@@ -13,8 +13,8 @@ class labeleddata():
     labels : Label = None
     fulldata: pd.DataFrame
     model_data: dict = {}
-    def __init__(self, fulldata: pd.DataFrame = None):
-        if fulldata:
+    def __init__(self, fulldata: pd.DataFrame = pd.DataFrame()):
+        if not fulldata.empty:
             self.parse_data(fulldata)
 
     def parse_data(self, fulldata):
@@ -73,16 +73,15 @@ class labeleddata():
         self.fulldata = pd.read_pickle(filename)
         self.parse_data(self.fulldata)
 
-    def train_test_split(self):
+    def train_test_split(self, split: float = 0.8):
         # Get list of unique tickers in alphabetical order
         ticker_sorted = self.fulldata.ticker.dropna().sort_values().unique()
         ind = np.arange(len(ticker_sorted))
         np.random.shuffle(ind)
-        split_index = int(0.8 * len(ind))
+        split_index = int(split * len(ind))
         train_index, test_index = np.split(ind, [split_index])
-        pdb.set_trace()
-        training_set = self.fulldata[self.fulldata.ticker==ticker_sorted[train_index]]
-        testing_set = self.fulldata[self.fulldata.ticker==ticker_sorted[test_index]]
+        training_set = self.fulldata[self.fulldata.ticker.isin(ticker_sorted[train_index])]
+        testing_set = self.fulldata[self.fulldata.ticker.isin(ticker_sorted[test_index])]
         return training_set, testing_set
 ## NOTE ##
 # 90+ percent of positive and negative 24 hour price action after a news headline occurs

@@ -14,6 +14,14 @@ def to_y_m_d(datestring: str, dateformat_str: str):
     latest_date.replace(tzinfo=ZoneInfo('US/Eastern'))
     return latest_date.strftime("%Y-%m-%d")
 
+def minute_of_day(posixt_s: int):
+    dt = datetime.fromtimestamp(posixt_s).replace(tzinfo=ZoneInfo('US/Eastern'))
+    return dt.hour * 3600 + dt.minute * 60
+
+def day_of_week(posixt_s: int):
+    dt = datetime.fromtimestamp(posixt_s).replace(tzinfo=ZoneInfo('US/Eastern'))
+    return dt.weekday()
+
 def posix_to_datestr(posixt: Union[int,list], outformat: str = "%Y-%m-%d"):
     if isinstance(posixt, int):
         if len(str(posixt)) > 10:

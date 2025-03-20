@@ -6,7 +6,7 @@ from pipelines.press_releases.newswires import newswire
 from util.elastic.crud_elastic import crud_elastic
 from util.crud_pg import crud
 from util.postgres.db.models.tickers import Technicals
-from util.time_utils import to_posix
+from util.time_utils import to_posix, minute_of_day, day_of_week
 from pipelines.press_releases.newswire_client import get_tickers
 import pandas as pd
 from models.embeddings import group_similar_documents, return_documents_in_group
@@ -75,6 +75,60 @@ def get_price_features_from_news(created_date,
     ]
 
     return value
+
+# Add column for 
+    # - time of day (seconds since 12:00AM that day)
+    # - day of week
+
+def get_minute_of_day(news_time_s: int = 1740066998):
+    return minute_of_day(news_time_s)
+
+def get_day_of_week(news_time_s: int = 1740066998):
+    # Return the day of the week as an integer, where Monday is 0 and Sunday is 6
+    return day_of_week(news_time_s)
+
+def get_cum_volume_pre_news(symbol: str = 'TSLA', news_time_s: list[int] = [1740066998]):
+    
+    hour_before_news = [time_ - 3600 for time_ in news_time_s]
+    five_min_before_news = [time_ - (60 * 5) for time_ in news_time_s]
+    
+    symbol_volumes = asyncio.run(pg.query_table(Technicals, 
+                                                return_cols=['datetime', 
+                                                             'volume'],
+                                                query_col='ticker',
+                                                query_val=symbol,
+                                                sort_column = 'datetime',
+                                                sort_order = 'desc'
+                                                )
+    )
+    
+    if symbol_volumes:
+        volume_data = pd.DataFrame(symbol_volumes, columns=['posixtime','volume'])
+    
+    volume_trend_ratio = []
+    for ind, hour_before in enumerate(hour_before_news):
+        volume_hour_pre = volume_data.volume[
+            (volume_data.posixtime > hour_before) & 
+            (volume_data.posixtime <= news_time_s[ind])
+            ].median()
+        volume_minutes_pre = volume_data.volume[
+            (volume_data.posixtime > five_min_before_news[ind]) & 
+            (volume_data.posixtime <= news_time_s[ind])
+            ].median()
+    
+        if volume_hour_pre == 0:
+            ratio = np.nan
+        else:
+            ratio = volume_minutes_pre/volume_hour_pre
+        volume_trend_ratio.append(ratio)
+        
+    return volume_trend_ratio
+
+def get_minute_of_day(news_time_s: int):
+    return minute_of_day(news_time_s)
+
+def get_day_of_week(news_time_s: list[int] = [1740066998]):
+    return [day_of_week(time_) for time_ in news_time_s]
 
 securities = []
 with open('nasdaq_screener.csv', 'r') as file:
@@ -163,23 +217,38 @@ if __name__ == "__main__":
             feature_df = pd.DataFrame(features, 
                                     columns=['max_gain_24','day_gain_24','max_loss_24']
                         )
-            model_input.append(pd.concat([articles_df, feature_df], axis=1))
+            volume_trend = get_cum_volume_pre_news(ticker, [int(date_/1000) for date_ in articles_df.created])
+            day_of_wk = get_day_of_week([int(date_/1000) for date_ in articles_df.created])
+            volume_trend_df = pd.DataFrame(volume_trend, columns=['volume_trend'])
+            day_of_wk_df = pd.DataFrame(day_of_wk, columns=['day_of_week'])
+            
+            model_input.append(pd.concat([
+                                articles_df, 
+                                feature_df, 
+                                volume_trend_df,
+                                day_of_wk_df
+                                ], 
+                                axis=1))
     
         full_model_df = pd.concat(model_input)
         full_model_df['title'] = full_model_df['title'].fillna('')
         full_model_df['ticker'] = full_model_df['ticker'].fillna('')
 
         # Add marketCap data to full_model_df
-        full_model_df = full_model_df.merge(full_model_df, securities_df, left_on='ticker', right_on='symbol', how='left').drop('symbol', axis=1)
+        full_model_df = pd.merge(full_model_df, securities_df, left_on='ticker', right_on='symbol', how='left').drop('symbol', axis=1)
+        full_model_df.dropna(subset='id', inplace=True)
+
         ldata = labeleddata(full_model_df)
         ldata.save_data()
-        # full_model_df.to_pickle('full_model_df.pkl')
 
     if from_pkl:
         ldata = labeleddata()
         ldata.load_data()
     
+    
+    
     # Now build model from labeleddata object
-    ldata.train_test_split()
+    training_set, testing_set = ldata.train_test_split(0.8)
+
     pdb.set_trace()
 
