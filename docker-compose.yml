@@ -20,7 +20,7 @@ services:
     build:
       dockerfile: Dockerfile_tech
       context: .
-    restart: unless-stopped
+    restart: on-failure
     networks:
      - homeserver
     mem_limit: ${MEM_LIMIT}
@@ -38,7 +38,7 @@ services:
       dockerfile: Dockerfile_pr
       context: .
       no_cache: true
-    restart: unless-stopped
+    restart: on-failure
     volumes:
       - ./util/elastic/certs:/pt/util/elastic/certs
     extra_hosts:

@@ -17,7 +17,10 @@ dict_ = {'id': 'f0fe9cca-f2d0-452f-adb6-77f7c18a98d9',
                       'authors': ['Benzinga Newsdesk'],
                       'teaser': 'Goldman Sachs Kash Rangan  '
                                 'Twilio (NYSE:TWLO) from Neutral to Buy and '
-                                'raises the price targe from $77 to $185.',
+                                'raises the price targe from $77 to $185. '
+                                'and this tests the length of the news headline'
+                                'abra cadabra zenith peaks are the best peaks to '
+                                'see says the lovely goatsee.',
                       'url': 'https://www.benzinga.com/news/25/01/43221984/goldman-sachs-upgrades-twilio-to-buy-raises-price-target-to-185',
                       'tags': [],
                       'securities': [{'symbol': 'TWLD',

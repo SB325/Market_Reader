@@ -1,11 +1,12 @@
 import json
 import pdb
-import os
+import os, sys
 from pushover import Client
 from dotenv import load_dotenv
 import asyncio
+sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-load_dotenv(override=True, dotenv_path="notify_creds.env")   
+load_dotenv(os.path.join(os.path.dirname(__file__)) + "/notify_creds.env")   
 
 key = os.getenv("PUSHOVER_KEY")
 token = os.getenv("PUSHOVER_TOKEN")

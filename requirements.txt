@@ -41,3 +41,4 @@ torch
 numpy
 tensorflow
 tf-keras
+nvidia-cudnn-cu11

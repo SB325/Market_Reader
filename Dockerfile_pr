@@ -3,7 +3,8 @@ FROM python:3.10.12
 USER root
 WORKDIR /pr
 
-COPY requirements.txt /pr/requirements.txt
+COPY pipelines/press_releases/requirements.txt /pr/requirements.txt
+RUN pip install "setuptools<58.0.0"
 RUN python -m pip install -r requirements.txt
 
 COPY pipelines/press_releases/* /pr/pipelines/press_releases/

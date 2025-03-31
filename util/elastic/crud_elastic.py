@@ -1,11 +1,16 @@
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
+from elasticsearch.helpers import bulk, parallel_bulk
 import sys, os
 sys.path.append("../../")
 from util.elastic.models import query_model, insert_method
 from typing import List
 import pdb
 from dotenv import load_dotenv
+from pprint import pprint
+import logging
+
+es_logger = logging.getLogger("elastic_transport.transport")
+es_logger.setLevel(logging.WARNING)
 
 load_dotenv(override=True, dotenv_path='../../.env')
 pw = os.getenv("ELASTIC_PASSWORD")
@@ -84,24 +89,27 @@ class crud_elastic():
         
         resp = {}
         try:
-            doclist = []
-            for doc in body:
-                doclist.extend(  
-                    [
-                        { "_id" : doc['id']} ,
-                        {"_index" : index},
-                        doc
-                        #{"_source" : doc }
-                    ]
-                )
+            # doclist = []
+            # for doc in body:
+            #     doclist.extend(  
+            #         [
+            #             { "_id" : doc['id']} ,
+            #             {"_index" : index},
+            #             doc
+            #             #{"_source" : doc }
+            #         ]
+            #     )
 
-            #def gendata():
-            #    for doc in body:
-            #        yield { 
-            #                "_index" : index,
-            #                "_source" : doc
-            #        }
-            resp = bulk(self.client, doclist, index=index)
+            def gendata():
+               for doc in body:
+                   yield { 
+                            "_id" : doc['id'],
+                           "_index" : index,
+                           "_source" : doc
+                   }
+            # resp = bulk(self.client, doclist, index=index)
+            resp = bulk(client=self.client, 
+                        actions=gendata())
         except Exception as e:
             print(f"Error: {e}")
         return resp
@@ -110,11 +118,13 @@ class crud_elastic():
                           index: str ='', 
                           id: int = None,
                           ):
+        resp = {'value': ''}
         try:
+            pdb.set_trace()
             resp = self.client.get(index=index, id=id)
         except Exception as e:
             print(f"Error: {e}")
-            
+        
         return resp['_source']
     
     def refresh_index(self, 
@@ -150,10 +160,44 @@ class crud_elastic():
 
         return resp
     
+    # def delete_duplicate_doc_ids(self,
+    #                           index: str = ''
+    #                           ):
+    #     # Get list of document ids that are duplicates of originals
+    #     resp = 'empty'
+    #     try:
+    #         resp = self.client.search(index=index, 
+    #             ignore_unavailable=True,
+    #             query={"match": {'ticker': {'query': 'AAPL'}}},
+    #             aggs={
+    #                 "tickerfilt" : {
+    #                     "terms": {
+    #                         "field": "ticker"
+    #                     },
+    #                     "aggs": {
+    #                         "duplicateCount": {
+    #                         "terms": {
+    #                             "field": "id",
+    #                             "min_doc_count": 2,
+    #                             "size": 1000
+    #                         }
+    #                         }
+    #                     },
+    #                 }
+    #             }
+    #         )
+    #     except BaseException as be:
+    #         msg = f"Failed to query duplicate document ids.\n{be}"
+    #         print(msg)
+    #     # Delete duplicate documents
+
+    #     return resp
+
     # TODO: configure nodes
     # def adjust_client_options(self, options_dict: dict = {}):
     #     if options_dict:
     #         self.client.options(max_retries=0).index()
 
 if __name__ == "__main__":
-    crud = crud_elastic(verbose=True)
+    crud = crud_elastic(verbose=False)
+    pdb.set_trace()

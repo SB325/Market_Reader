@@ -42,11 +42,9 @@ class newswire():
 
             response = requests.get(url, headers_in=headers, params_dict=querystring)
             if not response.ok: #"json" in dir(response):
-                pdb.set_trace()
-        except:
-            #except Exception as e:
+                print(f"Response Failed: {querystring}")
+        except BaseException as e:
             print(f"Error: {e}")
-            pdb.set_trace()
 
         return response.json()
 
@@ -61,82 +59,106 @@ class newswire():
 
     def to_db_bulk(self, ticker: str, newsdata: List[news_article_model]):
         try:
+            [news.update({'ticker': ticker}) for news in newsdata]
+
             ### **** Client Bulk Method *******
             operations=[]
             ret = None
             # Push newsdata to elastic DB
-            for article in newsdata:
-                operations.append( 
-                            {
-                                "_index": self.index,
-                                "_id": article['id'],
-                                "_source": article
-                            }
-                )
+            # for article in newsdata:
+            #     operations.append( 
+            #                 {
+            #                     "_index": self.index,
+            #                     "_id": article['id'],
+            #                     "_source": article
+            #                 }
+            #     )
             # pdb.set_trace()
-            ret = bulk(self.crud.client, actions=operations)
+            # ret = bulk(self.crud.client, actions=operations)
 
             ### ** Helper Bulk Method *****
-            #ret = self.crud.bulk_insert_documents(self.index, newsdata)
+            ret = self.crud.bulk_insert_documents(self.index, newsdata)
             
         except Exception as e:
             print(f"Error: {e}")
         return ret
     
 
-    def search_ticker_match(self, 
-                index: str, 
-                ticker: str,
-                ):
-        # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
-        resp = {}
-        try:
-            # self.crud.client.indices.refresh(index=self.index)
-            resp = self.crud.client.search(index=index, 
-                                           ignore_unavailable=True,
-                                           query={"match": {'ticker': {'query': ticker}}},
-                                           aggs={
-                                                "tickerfilt" : {
-                                                    "terms": {
-                                                        "field": "ticker"
-                                                    },
-                                                    "aggs":{
-                                                            "latest_date": {
-                                                                "max": {
-                                                                    "field": "created"
-                                                                }
-                                                            }
-                                                    },
-                                                }
-                                            }
-                                           
-                                           )
-            print(f"Got {resp['hits']['total']['value']} Hits.")
-            # pdb.set_trace()
+    # def search_ticker_match(self, 
+    #             index: str, 
+    #             ticker: str,
+    #             ):
+    #     # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
+    #     resp = {}
+    #     try:
+    #         # self.crud.client.indices.refresh(index=self.index)
+    #         resp = self.crud.client.search(index=index, 
+    #                                        ignore_unavailable=True,
+    #                                        query={"match": {'ticker': {'query': ticker}}},
+    #                                        aggs={
+    #                                             "tickerfilt" : {
+    #                                                 "terms": {
+    #                                                     "field": "ticker"
+    #                                                 }
+    #                                                 # "aggs":{
+    #                                                 #         "latest_date": {
+    #                                                 #             "max": {
+    #                                                 #                 "field": "created"
+    #                                                 #             },
+    #                                                 #             "terms": {
+    #                                                 #                 "field": "_id"
+    #                                                 #             }
+    #                                                 #         }
+    #                                                 # }
+                                                    
+    #                                             }
+    #                                        },
+    #                                         sort=[
+    #                                             {
+    #                                                 "created": {
+    #                                                     "order": "desc"
+    #                                                 }
+    #                                             }
+    #                                         ],
+    #                                         size=1
+    #                                        )
+    #         # resp['hits']['hits'][0]['_source']['created']
+    #         pdb.set_trace()
+    #         print(f"Got {resp['hits']['total']['value']} Hits.")
+    #         # pdb.set_trace()
             
-        except Exception as e:
-            raise  Exception(f"Error: {e}")
+    #     except Exception as e:
+    #         raise  Exception(f"Error: {e}")
 
-        return resp
+    #     return resp
     
     def search_ticker(self, 
                 index: str, 
                 ticker: str,
-                conditional: str = 'lte', # or 'gte'
+                conditional: str = 'lte', # or 'gte' or 'eq'
                 query_on_key: str = '',
-                query_on_val: list = None
+                query_on_val: str = ''
                 ):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
         resp = {}
+        if conditional:
+            if 'lte' in conditional:
+                range_dict = {'lte': query_on_val}
+            if 'gte' in conditional:
+                range_dict = {'gte': query_on_val}
+            if 'eq' in conditional:
+                range_dict = {'gte': query_on_val,
+                            'lte': query_on_val
+                        }
         try:
             if query_on_key:
                 assert query_on_val, "Missing value for -query_on_val-"
                 query = {'bool': {'must': [
-                                {"term": {'ticker': ticker}},
-                                {"range": {query_on_key: {'gte': query_on_val[0],
-                                                          'lte': query_on_val[1]
-                                                        }
-                                            }
+                                {
+                                    "term": {'ticker': ticker}
+                                },
+                                {
+                                    "range": {query_on_key: range_dict}
                                 }
                             ]
                         }
@@ -166,17 +188,22 @@ class newswire():
 
         return resp
     
-    def get_latest_news_from_ticker(self, ticker: str, default_latest: str="2020-01-01"):
-        latest_dates = {'*': default_latest}
-        val = self.search_ticker_match(index=self.index, ticker=ticker)
-        if val.raw.get('aggregations', None): 
-            buckets = val.raw['aggregations']['tickerfilt']['buckets']
-            if buckets:
-                latest_dates = {}
-                [ latest_dates.update({val['key'] : posix_to_datestr(int(val['latest_date']['value'])) } ) 
-                            for val in buckets ]
+    def get_latest_news_from_ticker(self, ticker: str):
         
-        return latest_dates
+        try:
+            resp = self.crud.client.search(index=self.index, 
+                                           ignore_unavailable=True,
+                                           query={"match": {'ticker': {'query': ticker}}},
+                                            sort=[{"created": {"order": "desc"}}],
+                                            size=1
+                                           )
+        except Exception as e:
+            raise  Exception(f"Error: {e}")
+
+        if not resp['hits']['total']['value']:
+            return None
+        
+        return resp['hits']['hits'][0]['_source']
     
 if __name__ == "__main__":
     nw = newswire()

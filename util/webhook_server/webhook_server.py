@@ -17,11 +17,11 @@ send_push_notifications = True
 
 app: FastAPI = FastAPI(root_path="/bzwebhook")
 pn = push_notify()
-to_pop = ['body','id','revision_id','type',
-        'updated_at','authors','teaser',
+to_pop = ['body', 'id','revision_id','type',
+        'updated_at','authors',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 10_000_000_000
+caplimit = 100_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigticknas = []
@@ -44,8 +44,8 @@ with open('good_words.json', 'r') as f:
 def has_good_words(title: str):
     for word in good_word_list:
         if word.lower() in title.lower():
-            return True, word.lower()
-    return False, None
+            return True
+    return False
 
 def has_omit_words(title: str):
     for word in omit_words_dict:
@@ -96,50 +96,53 @@ async def root(data: webhook_response):
         if not data.get('data', None):
             print('Data Field not present.')
             return response
-        content = data['data'].get('content', None)
-        if not content:
+        data_content = data['data'].get('content', None)
+        if not data_content:
             print('Content Field not present.')
             return response
-        securities = content.get('securities', None)
+        securities = data_content.get('securities', None)
         if not securities:
             print('Securities Field not present.')
             return response
         if not len(securities)<=3:
             print('Securities list too long.')
             return response
-        author = content.get('authors', None)
+        author = data_content.get('authors', None)
         if not author:
             print("No author field found.")
             return response
         if 'Benzinga Insights' in author:
             print('Benzinga Insights author omitted.')
             return response
-        content['securities'] = [sym['symbol'] for sym in content['securities']] 
-        if has_omit_ticker(content['securities']):
-            print(f"Omit Ticker Found {content['securities']}.")
+        data_content['securities'] = [sym['symbol'] for sym in data_content['securities']] 
+        if has_omit_ticker(data_content['securities']):
+            print(f"Omit Ticker Found {data_content['securities']}.")
             return response
-        title = content.get('title', None)
+        title = data_content.get('title', None)
         if not title:
             print('No title field found.')
             return response
         omitted, word = has_omit_words(title)
         if omitted:
-            print(f"Title has an Omit word [{word}] for ticker {content['securities']}.")
+            print(f"Title has an Omit word [{word}] for ticker {data_content['securities']}.")
             return response
-        hastick, lentick = has_recent_tickers(current_time, content['securities'])
+        hastick, lentick = has_recent_tickers(current_time, data_content['securities'])
         if hastick:
-            print(f"Omitted Repeated Ticker {content['securities']} from recent list {lentick} long.")
+            print(f"Omitted Repeated Ticker {data_content['securities']} from recent list {lentick} long.")
             return response
         for p in to_pop:
-            content.pop(p)
+            data_content.pop(p)
 
-        secstr = get_links(content['securities'])    
-        if has_good_words(title):
-            title = '***' + title
-        pprint.pp(content)
+        secstr = get_links(data_content['securities'])    
+        # if has_good_words(title):
+        #     title = '***' + title
+        pprint.pp(f"Title: {data_content['title']}")
         if send_push_notifications:
+            msg = f"<b>{title}</b>\n{secstr[:-2]}\n{data_content['teaser']}"
+            if len(msg)>1024:
+                msg = msg[:1023]
             _ = pn.send(title='News',
-                        message=f"<b>{title}</b>\n{secstr[:-2]}",
+                        message=msg,
                         html = 1
                         )
             
