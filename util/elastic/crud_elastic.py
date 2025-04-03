@@ -45,7 +45,7 @@ class crud_elastic():
             print(f"password {pw}")
             print(f"Hostname: {hostname}")
 
-    def create_index(self, 
+    def     create_index(self, 
                         new_index: str = '',
                         new_mapping: dict = {}
                         ):
@@ -160,6 +160,99 @@ class crud_elastic():
 
         return resp
     
+    def create_ingest_pipeline(self, 
+                               pipeline_name: str,
+                               target_fields: List['str'],
+                               model: str):
+        in_out_fields = []
+        for field in target_fields:
+            in_out_fields.append( 
+                {
+                    "input_field": field,
+                    "output_field": f"{field}_embedding"
+                }
+            )
+        
+        pipeline_processors = [{
+            "inference": {
+                "model_id": model,
+                "input_output": in_out_fields
+            }
+        }]
+        pipeline_on_failure = [
+                        {
+                            "set": {
+                                "description": "Index document to 'failed-<index>'",
+                                "field": "_index",
+                                "value": "failed-{{{_index}}}"
+                            }
+                        },
+                        {
+                            "set": {
+                                "description": "Set error message",
+                                "field": "ingest.failure",
+                                "value": "{{_ingest.on_failure_message}}"
+                            }
+                        }
+                    ]
+        try:
+            resp = self.client.ingest.put_pipeline(
+                id=pipeline_name,
+                description="embedding pipeline",
+                processors=pipeline_processors,
+                on_failure=pipeline_on_failure
+            )
+        except BaseException as be:
+            print(f"Failed to create ingest pipeline -{pipeline_name}-")
+
+    def reindex_text_to_embedding_mappings(self,
+                    source_index: str, 
+                    destination_index: str,
+                    pipeline_name: str,
+                    verbose: bool = False):
+        pdb.set_trace()
+        resp = self.client.reindex(
+            source={
+                "index": source_index
+            },
+            dest={
+                "index": destination_index,
+                "pipeline": pipeline_name
+            },
+        )
+        pdb.set_trace()
+        if verbose:
+            print(resp)
+
+    def vector_search(self,
+               index: str,
+               embeddings_field: str,
+               embedding_model: str,
+               search_string: str,
+               k: int,
+               num_candidates: int,
+               returned_fields: List[str],
+               verbose: bool = False):
+        pdb.set_trace()
+        resp = self.client.search(
+            index=index,
+            knn={
+                "field": embeddings_field,
+                "query_vector_builder": {
+                    "body": {
+                        "model_id": embedding_model,
+                        "model_text": search_string
+                    }
+                },
+                "k": k,
+                "num_candidates": num_candidates
+            },
+            fields=["id"].extend(returned_fields)
+        )
+        pdb.set_trace()
+        if verbose:
+            print(resp)
+
     # def delete_duplicate_doc_ids(self,
     #                           index: str = ''
     #                           ):

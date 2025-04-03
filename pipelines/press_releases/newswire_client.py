@@ -115,8 +115,8 @@ def run():
     
 if __name__ == "__main__":
     print("Running Newswire_database_populater.")
-    schedule.every().day.at("21:00").do(run) 
+    schedule.every().day.at("15:29").do(run) 
 
     while True:
         schedule.run_pending()
-        time.sleep(3600)
+        time.sleep(1)

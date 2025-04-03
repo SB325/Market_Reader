@@ -62,8 +62,8 @@ services:
       - ./util/webhook_server/nasdaq_screener.csv:/webhook/nasdaq_screener.csv
       - ./util/webhook_server/omit_words.json:/webhook/omit_words.json
       - ./util/webhook_server/good_words.json:/webhook/good_words.json
-      - ./util/webhook_server/webhook_server.py:/webhook/webhook_server.py
-      - ./util/webhook_server/webhook_response_model.py:/webhook/webhook_response_model.py
+      - ./util/webhook_server/*.py:/webhook/*.py
+      # - ./util/webhook_server/webhook_response_model.py:/webhook/webhook_response_model.py
     ports:
       - 8001:8001
     networks:

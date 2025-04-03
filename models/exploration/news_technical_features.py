@@ -188,6 +188,7 @@ if __name__ == "__main__":
             # https://discuss.elastic.co/t/avoid-duplicate-insertions/374809/2
             response = nw.search_ticker(index=nw.index, 
                                         ticker=ticker,
+                                        conditional='eq',
                                         query_on_key = 'created',
                                         query_on_val = [desired_first_time,desired_last_time]
                                         )
@@ -246,7 +247,7 @@ if __name__ == "__main__":
     if from_pkl:
         ldata = labeleddata()
         ldata.load_data()
-    pdb.set_trace()
+    
     # Now build model from labeleddata object
     training_set, testing_set = ldata.train_test_split(0.8)
     

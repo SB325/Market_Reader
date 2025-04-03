@@ -9,6 +9,8 @@ import pprint
 from datetime import datetime
 from pytz import timezone
 from push_notify import push_notify
+from title_filter import TitleFilter
+
 tz = timezone('US/Eastern')
 
 recent_tickers = {'records': {}}  # {"<ticker>", current_time}
@@ -17,6 +19,8 @@ send_push_notifications = True
 
 app: FastAPI = FastAPI(root_path="/bzwebhook")
 pn = push_notify()
+tf = TitleFilter(0.5)  # EPS/Revenue title pairs and gain threshold betweeen them
+
 to_pop = ['body', 'id','revision_id','type',
         'updated_at','authors',
         'tags','channels', 'url', 'created_at']
@@ -129,6 +133,10 @@ async def root(data: webhook_response):
         hastick, lentick = has_recent_tickers(current_time, data_content['securities'])
         if hastick:
             print(f"Omitted Repeated Ticker {data_content['securities']} from recent list {lentick} long.")
+            return response
+        has_eps_revenue_jump,_  = tf.filter(data_content['title'])
+        if not has_eps_revenue_jump:
+            print('Title contains fundamental values that are not impressive.')
             return response
         for p in to_pop:
             data_content.pop(p)

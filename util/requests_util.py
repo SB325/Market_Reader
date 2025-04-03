@@ -4,14 +4,15 @@ import requests
 from requests.models import Response
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
+import logging
 import pdb
 
 retry = Retry(
-        total=5,
-        backoff_factor=2,
+        total=3,
+        backoff_factor=5,
         status_forcelist=[429, 500, 502, 503, 504],
     )
-
+logging.getLogger("urllib3").setLevel(logging.DEBUG)
 adapter = HTTPAdapter(max_retries=retry)
 
 class requests_util:
@@ -41,13 +42,14 @@ class requests_util:
         
     def get(self, url_in: str, params_dict: dict = {}, headers_in: dict = {}, stream_in: bool = False):
         self.wait_half_second()
+        response = Response()
+        response.code = "unknown"
+        response.error_type = "unknown"
+        response.status_code =500
         try:
             response = self.session.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
         except:
-            response = Response()
-            response.code = "expired"
-            response.error_type = "expired"
-            response.status_code = 408
+            pdb.set_trace()
             print(f"GET Request for \n{response.url}\n Failed. {response.status_code}")
                 
         self.set_request_time()    

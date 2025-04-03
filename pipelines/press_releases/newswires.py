@@ -6,13 +6,20 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 from util.requests_util import requests_util
 from util.elastic.crud_elastic import crud_elastic
-from util.elastic.models import news_article_model, news_article_mapping
+from util.elastic.models import (
+    news_article_model, 
+    news_article_mapping,
+    text_embeddings_mapping
+)
 from util.time_utils import posix_to_datestr
 from newswire_params import NewsAPIParams
 from typing import List
 from elasticsearch.helpers import bulk
+from pprint import pprint
 
 load_dotenv(override=True, dotenv_path='newsapi_creds.env')  
+load_dotenv()
+model_name = os.getenv("EMBEDDING_MODEL_NAME")
 key = os.getenv("BENZINGA_API_KEY")
 webhook_dest = os.getenv("WEBHOOK_ENDPT")
 
@@ -23,12 +30,14 @@ headers = {"accept": "application/json"}
 requests = requests_util()
 
 class newswire():
-    def __init__(self, crud: crud_elastic, key: str = key):
+    embedding_model = ""
+    def __init__(self, crud: crud_elastic, embedding_model: str, key: str = key):
         self.key = key
         self.index = 'market_news'
+        self.embedding_model = embedding_model
         self.crud = crud
         # check if index exists, create if it doesn't
-        if not self.crud.client.indices.exists(index="market_news"):
+        if not self.crud.client.indices.exists(index=self.index):
             self.crud.create_index(new_index = self.index,
                               new_mapping = news_article_mapping,
                         )
@@ -83,55 +92,53 @@ class newswire():
             print(f"Error: {e}")
         return ret
     
-
-    # def search_ticker_match(self, 
-    #             index: str, 
-    #             ticker: str,
-    #             ):
-    #     # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
-    #     resp = {}
-    #     try:
-    #         # self.crud.client.indices.refresh(index=self.index)
-    #         resp = self.crud.client.search(index=index, 
-    #                                        ignore_unavailable=True,
-    #                                        query={"match": {'ticker': {'query': ticker}}},
-    #                                        aggs={
-    #                                             "tickerfilt" : {
-    #                                                 "terms": {
-    #                                                     "field": "ticker"
-    #                                                 }
-    #                                                 # "aggs":{
-    #                                                 #         "latest_date": {
-    #                                                 #             "max": {
-    #                                                 #                 "field": "created"
-    #                                                 #             },
-    #                                                 #             "terms": {
-    #                                                 #                 "field": "_id"
-    #                                                 #             }
-    #                                                 #         }
-    #                                                 # }
-                                                    
-    #                                             }
-    #                                        },
-    #                                         sort=[
-    #                                             {
-    #                                                 "created": {
-    #                                                     "order": "desc"
-    #                                                 }
-    #                                             }
-    #                                         ],
-    #                                         size=1
-    #                                        )
-    #         # resp['hits']['hits'][0]['_source']['created']
-    #         pdb.set_trace()
-    #         print(f"Got {resp['hits']['total']['value']} Hits.")
-    #         # pdb.set_trace()
-            
-    #     except Exception as e:
-    #         raise  Exception(f"Error: {e}")
-
-    #     return resp
+    def check_pipelines(self, pipeline_name: str):
+        try:
+            val = self.crud.client.ingest.get_pipeline(id = pipeline_name,
+                                                    error_trace=False)
+        except:
+            return None
+        return val
     
+    def delete_pipeline(self, pipeline_name: str='news_embed_pipeline'):
+        try:
+            val = self.crud.client.ingest.delete_pipeline(id = pipeline_name)
+        except:
+            print(f"Failed to delete pipeline -{pipeline_name}-")
+            return None
+        return val
+    
+    def create_pipeline(self, pipeline_name: str='news_embed_pipeline'):
+        if not self.check_pipelines(pipeline_name=pipeline_name):
+            resp = self.crud.create_ingest_pipeline(pipeline_name=pipeline_name,
+                                         target_fields= ['title','body'],
+                                         model=self.embedding_model,
+                                         verbose=True)
+        # model is just a string. where does elastic get the actual model?
+            
+    def embed_text(self):
+        resp = self.crud.reindex_text_to_embedding_mappings(source_index='news_article_mapping',
+                                                     destination_index='text_embeddings_mapping',
+                                                     pipeline_name='news_embed_pipeline',
+                                                     verbose=True)
+        pdb.set_trace()
+
+    def search(self, 
+               embeddings_field: str,
+               search_string: str,
+               returned_fields: List[str],
+               k: int = 10,
+               num_candidates: int = 100):
+        self.crud.vector_search(index='market_news',
+                                embeddings_field=embeddings_field,
+                                embedding_model=self.embedding_model,
+                                search_string=search_string,
+                                k=k,
+                                num_candidates=num_candidates,
+                                returned_fields=returned_fields,
+                                verbose=True)
+        pdb.set_trace()
+
     def search_ticker(self, 
                 index: str, 
                 ticker: str,
@@ -147,8 +154,13 @@ class newswire():
             if 'gte' in conditional:
                 range_dict = {'gte': query_on_val}
             if 'eq' in conditional:
-                range_dict = {'gte': query_on_val,
+                if len(query_on_val)==1:
+                    range_dict = {'gte': query_on_val,
                             'lte': query_on_val
+                        }
+                elif len(query_on_val)==2:
+                    range_dict = {'gte': query_on_val[0],
+                            'lte': query_on_val[1]
                         }
         try:
             if query_on_key:
@@ -206,4 +218,9 @@ class newswire():
         return resp['hits']['hits'][0]['_source']
     
 if __name__ == "__main__":
-    nw = newswire()
+    nw = newswire(crud=crud_elastic(), 
+                  embedding_model=model_name)
+
+    nw.create_pipeline()
+    # nw.delete_pipeline()
+    pdb.set_trace()

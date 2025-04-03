@@ -48,24 +48,6 @@ class insert_method(Enum):
     index = 'index'
     update = 'update'
 
-news_article_mapping =  {
-                            "properties": {
-                                "id":    { "type" : "keyword"},
-                                "ticker": { "type" : "keyword" }, 
-                                "author":  { "type" : "text"}, 
-                                "created":  { "type" : "date" },
-                                "updated":  { "type" : "date" },
-                                "title":  { "type" : "text" }, 
-                                "teaser":  { "type" : "text" }, 
-                                # "body":  { "type" : "text" }, 
-                                "channels":  { "type" : "text" },    
-                                # "stocks":  { "type" : "object"  }
-                            },
-                            "dynamic_date_formats" : [
-                                "EEE, dd LLL yyyy HH:mm:ss ZZZZZ||epoch_second"  
-                            ],
-                        }
-
 class news_article_model(BaseModel):
     _id: int
     ticker: str
@@ -74,6 +56,43 @@ class news_article_model(BaseModel):
     updated: str
     title: str
     teaser: str
-    # body: str
+    body: str
     channels: str
-    # stocks: str
+
+# first index
+news_article_mapping =  {
+    "properties": {
+        "id":    { "type" : "keyword"},
+        "ticker": { "type" : "keyword" }, 
+        "author":  { "type" : "text"}, 
+        "created":  { "type" : "date" },
+        "updated":  { "type" : "date" },
+        "title":  { "type" : "text" }, 
+        "teaser":  { "type" : "text" }, 
+        "body":  { "type" : "text" }, 
+        "channels":  { "type" : "text" },    
+    },
+    "dynamic_date_formats" : [
+        "EEE, dd LLL yyyy HH:mm:ss ZZZZZ||epoch_second"  
+    ]
+}
+# second index
+text_embeddings_mapping = {
+        "properties": {
+            "body.embedded_value": {
+                "type": "dense_vector"
+            },
+            "body": {
+                "type": "text"
+            },
+            "title.embedded_value": {
+                "type": "dense_vector"
+            },
+            "title": {
+                "type": "text"
+            }
+        }
+    }
+
+
+
