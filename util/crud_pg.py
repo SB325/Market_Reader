@@ -15,7 +15,7 @@ import pandas as pd
 import time
 from typing import Union
 from enum import Enum
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, and_
 
 class operationType(Enum):
     gt = 'gt'
@@ -72,31 +72,40 @@ class crud():
                           sort_column: str = '',
                           sort_order: str = 'desc'):
         with Session(self.engine) as session:
-            if return_cols:
-                if not isinstance(return_cols, list):
-                    return_cols = [return_cols]
-
-            if return_cols:
+            if isinstance(return_cols, list):
                 out_col_obj = [tablename.__table__.columns[col] for col in return_cols]
+            elif return_cols:
+                out_col_obj = [tablename.__table__.columns[return_cols]]
             else:
                 out_col_obj = [tablename.__table__.columns]
-
+            
             unique_columns = False
             if unique_column_values:
                 unique_columns=True
                 unique_column_values = tablename.__table__.columns[unique_column_values]
 
+            conditionlist = []
             if query_val:
-                col_obj = tablename.__table__.columns[query_col]
-                if 'eq' in query_operation:
-                    result = session.query(*out_col_obj).filter(col_obj == query_val)
-                    # stmt = select(tablename).where(column(cols) == query_val)
-                if 'gt' in query_operation:
-                    result = session.query(*out_col_obj).filter(col_obj > query_val)
-                    # stmt = select(tablename).where(column(cols) > query_val)
-                if 'lt' in query_operation:
-                    result = session.query(*out_col_obj).filter(col_obj < query_val)
-                    # stmt = select(tablename).where(column(cols) < query_val)
+                if isinstance(query_val, list):
+                    assert len(query_val)==len(query_col), f"Query value and query columns need to be list of same length."
+                    assert len(query_operation)==len(query_val), f"Query value and query operations need to be list of same length."
+                    for cnt, col in enumerate(query_col):
+                        col_obj = tablename.__table__.columns[col]
+                        if 'eq' in query_operation[cnt]:
+                            conditionlist.append(and_(col_obj==query_val[cnt]))
+                        if 'gt' in query_operation[cnt]:
+                            conditionlist.append(and_(col_obj>query_val[cnt]))
+                        if 'lt' in query_operation[cnt]:
+                            conditionlist.append(and_(col_obj<query_val[cnt]))
+                    result = session.query(*out_col_obj).filter(and_(*conditionlist))  
+                else: 
+                    col_obj = tablename.__table__.columns[query_col]
+                    if 'eq' in query_operation:
+                        result = session.query(*out_col_obj).filter(col_obj == query_val)
+                    if 'gt' in query_operation:
+                        result = session.query(*out_col_obj).filter(col_obj > query_val)
+                    if 'lt' in query_operation:
+                        result = session.query(*out_col_obj).filter(col_obj < query_val)
                 
                 if unique_columns:
                     result = result.distinct(unique_column_values)
@@ -107,8 +116,8 @@ class crud():
                         result = result.order_by(desc(sort_by))
                     else:
                         result = result.order_by(asc(sort_by))
+
                 out = result.all()
-                
 
             else:
                 stmt = select(*out_col_obj)

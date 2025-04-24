@@ -29,10 +29,12 @@ docker
 
 fastapi[standard]
 
-# langchain
-# langchain_community
-# langchain_core
-# langchain-ollama
+langchain
+langchain_community
+langchain_core
+langchain-ollama
+langchainhub
+langgraph
 
 elasticsearch
 sentence-transformers

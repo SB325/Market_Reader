@@ -71,15 +71,17 @@ class Submissions():
                             self.downloaded_list.append(json.loads(file))
                     except:
                         pdb.set_trace()
+            pdb.set_trace()
             t0 = time.time()
             self.downloaded_list = [m for m in self.downloaded_list if 'cik' in m.keys()]
             self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
             self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
+            self.downloaded_list = [m for m in self.downloaded_list if m['cik'] in known_ciks ]
             self.downloaded_list['tickers'] = self.downloaded_list['tickers'].apply(lambda x: json.dumps(x))
             self.downloaded_list['exchanges'] = self.downloaded_list['exchanges'].apply(lambda x: json.dumps(x))
             self.downloaded_list['formerNames'] = self.downloaded_list['formerNames'].apply(lambda x: json.dumps(x))
             self.downloaded_list = self.downloaded_list.to_dict('records')
-            self.downloaded_list = [m for m in self.downloaded_list if m['cik'] in known_ciks ]
+            
             print(f"{(time.time()-t0)/60} minutes elapsed on initial download parsing.")
             success = True
         else:

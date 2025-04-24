@@ -1,5 +1,5 @@
-import sys
-sys.path.append("../../")
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from newswires import newswire
 from util.postgres.db.models.tickers import Symbols as symbols
 from util.crud_pg import crud
@@ -31,7 +31,11 @@ pn = push_notify()
 
 # load tickers
 async def get_tickers() -> list:
-    tickers = await crudpg.query_table(symbols, 'ticker')
+    tickers = await crudpg.query_table(
+                        symbols,
+                        return_cols = ['ticker'],
+                        unique_column_values='ticker',
+                    )
     return tickers
 
 def parse_for_elastic(data: dict):
@@ -93,6 +97,7 @@ def run():
             if not latest_data:
                 fresh_results = results
             else:
+                pdb.set_trace()
                 fresh_results = [result for result in results if latest_data['created']<to_posix(result['created'], "%a, %d %b %Y %H:%M:%S %z")*1000]
             if not fresh_results:
                 print(f"No new news for {ticker}")
@@ -115,8 +120,8 @@ def run():
     
 if __name__ == "__main__":
     print("Running Newswire_database_populater.")
-    schedule.every().day.at("15:29").do(run) 
-
+    schedule.every().day.at("21:00").do(run) 
+    run()
     while True:
         schedule.run_pending()
         time.sleep(1)

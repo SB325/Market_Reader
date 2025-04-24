@@ -16,16 +16,16 @@ from tqdm import tqdm
 import asyncio
 import csv
 import numpy as np
-from keras.utils import to_categorical
 from keras import models, Input
-from keras import layers
+from keras.layers import Dense, Normalization
 import pickle
+import tensorflow as tf
 
 elastic = crud_elastic()
 nw = newswire(elastic)
 pg = crud()
 
-from_pkl = False
+from_pkl = True
 
 pd.set_option('display.max_colwidth', 300)
 
@@ -260,40 +260,69 @@ if __name__ == "__main__":
     else:
         inputdata = dict.fromkeys(['train_x','train_y','test_x','test_y'])
         inputdata['train_x'] = emb.encode(training_set.title.tolist())
-        inputdata['train_y'] = np.array(training_set.day_gain_24.tolist()).astype("float32")
+        inputdata['train_y'] = np.array(training_set.day_gain_24.tolist()).astype("int32")
         inputdata['test_x'] = emb.encode(testing_set.title.tolist())
-        inputdata['test_y'] = np.array(testing_set.day_gain_24.tolist()).astype("float32")
+        inputdata['test_y'] = np.array(testing_set.day_gain_24.tolist()).astype("int32")
         with open('training_data.pkl', "wb") as file:
             pickle.dump(inputdata, file)
 
     # https://stackoverflow.com/questions/37232782/nan-loss-when-training-regression-network
-    model = models.Sequential()
-    # Input - Layer
-    model.add(layers.Dense(1024, 
-                           activation = "relu", 
-                           input_shape=(inputdata['train_x'].shape[1],
-                                        inputdata['train_x'].shape[0])))
-    # Hidden - Layers
-    model.add(layers.Dropout(0.3, noise_shape=None, seed=None))
-    model.add(layers.Dense(32, activation = "relu"))
-    # Output- Layer
-    model.add(layers.Dense(units=3, activation = "sigmoid"))
-    model.summary()
     
+    # Input - Layer
+    inputdata['train_y'] = inputdata['train_y'].astype("int32")
+    inputdata['test_y'] = inputdata['test_y'].astype("int32")
+    
+    training_shape = inputdata['train_x'].shape
+    test_shape = inputdata['train_y'].shape
+    training_samples = training_shape[0]
+    features = training_shape[1]
+    test_samples = test_shape[0]
+
+    batch_size_ = 1000
+    epochs = 100
+    
+    model = models.Sequential()
+
+    # For this data, the each data is the vector of length(features), and number of samples = len(training_samples)
+    # Therefore, shape is (features,) which accounts for a single sample
+    model.add(
+        Input(
+            shape=(features,),
+            batch_size=batch_size_,
+            dtype="float32",
+            sparse=None,
+            ragged=None,
+            batch_shape=None,
+            name="Input Layer",
+            optional=False
+        )
+    )
+    # model.add(layers.LSTM(units=2,
+    #                       recurrent_dropout=0
+    #                       )
+    #             )
+    model.add(Dense(units=1, activation='sigmoid', input_shape=(training_samples,features,)))
+
     model.compile(
-            optimizer = "adam",
-            loss = "binary_crossentropy",
-            metrics = ["accuracy"]
+            optimizer="adam",
+            loss="binary_crossentropy",
+            metrics=["accuracy"]
             )
-
+    
+    """
+    Epoch 100/100
+    31/31 - 0s - 3ms/step - accuracy: 0.0023 - loss: nan - val_accuracy: 0.0024 - val_loss: nan
+    """
+    layer = Normalization(axis=-1)
+    layer.adapt(inputdata['train_x'])   
     results = model.fit(
-            inputdata['train_x'], inputdata['train_y'],
-            epochs= 2,
-            batch_size = 32,
-            validation_data = (inputdata['test_x'], inputdata['test_y'])
+                x=layer(inputdata['train_x']), 
+                y=inputdata['train_y'],
+                batch_size=batch_size_,
+                epochs=epochs,
+                validation_data=(layer(inputdata['test_x']), inputdata['test_y']),
+                verbose=2
             )
-
-    pdb.set_trace()
     
     scores = model.evaluate(inputdata['test_x'], inputdata['test_y'], verbose=0)
     print("Accuracy: %.2f%%" % (scores[1]*100))

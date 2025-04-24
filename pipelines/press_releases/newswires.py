@@ -21,22 +21,21 @@ load_dotenv(override=True, dotenv_path='newsapi_creds.env')
 load_dotenv()
 model_name = os.getenv("EMBEDDING_MODEL_NAME")
 key = os.getenv("BENZINGA_API_KEY")
-webhook_dest = os.getenv("WEBHOOK_ENDPT")
 
 url = "https://api.benzinga.com/api/v2/news"
-webhook_url = "https://api.benzinga.com/api/v1/webhook/"
 headers = {"accept": "application/json"}
 
 requests = requests_util()
 
 class newswire():
     embedding_model = ""
-    def __init__(self, crud: crud_elastic, embedding_model: str, key: str = key):
+    def __init__(self, crud: crud_elastic, embedding_model: str ="", key: str = key):
         self.key = key
         self.index = 'market_news'
         self.embedding_model = embedding_model
         self.crud = crud
         # check if index exists, create if it doesn't
+
         if not self.crud.client.indices.exists(index=self.index):
             self.crud.create_index(new_index = self.index,
                               new_mapping = news_article_mapping,
@@ -50,6 +49,7 @@ class newswire():
             querystring.update(params)
 
             response = requests.get(url, headers_in=headers, params_dict=querystring)
+            pdb.set_trace()
             if not response.ok: #"json" in dir(response):
                 print(f"Response Failed: {querystring}")
         except BaseException as e:
@@ -192,7 +192,7 @@ class newswire():
                                                     "_score"
                                                 ]
                                            )
-            print(f"Got {resp['hits']['total']['value']} Hits.")
+            print(f"Got {resp['hits']['total']['value']} Hits for ticker {ticker}.")
             # pdb.set_trace()
             
         except Exception as e:
@@ -204,10 +204,10 @@ class newswire():
         
         try:
             resp = self.crud.client.search(index=self.index, 
-                                           ignore_unavailable=True,
-                                           query={"match": {'ticker': {'query': ticker}}},
+                                            ignore_unavailable=True,
+                                            query={"match": {"ticker": {"query": ticker}}},
                                             sort=[{"created": {"order": "desc"}}],
-                                            size=1
+                                            size=1  
                                            )
         except Exception as e:
             raise  Exception(f"Error: {e}")

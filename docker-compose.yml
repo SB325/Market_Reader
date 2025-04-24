@@ -40,7 +40,8 @@ services:
       no_cache: true
     restart: on-failure
     volumes:
-      - ./util/elastic/certs:/pt/util/elastic/certs
+      - ./pipelines/press_releases/newswire_client.py:/pr/pipelines/press_releases/newswire_client.py
+      - ./util/elastic/certs:/pr/util/elastic/certs
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

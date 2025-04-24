@@ -45,7 +45,7 @@ class crud_elastic():
             print(f"password {pw}")
             print(f"Hostname: {hostname}")
 
-    def     create_index(self, 
+    def create_index(self, 
                         new_index: str = '',
                         new_mapping: dict = {}
                         ):

@@ -31,6 +31,21 @@ async def clean_df(df: pd.DataFrame):
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
 
+def read_zip_file(zip_path):
+    # contents = []
+    bytestrings = []
+    with zipfile.ZipFile(zip_path) as zip_ref:
+        for info in tqdm(zip_ref.infolist(), desc="Downloading Filing Data:"):
+            # Check if the file is readable (not encrypted)
+            if info.flag_bits & 0x1 == 0:
+                with zip_ref.open(info, 'r') as f:
+                    # You can read the contents of the file here
+                    # contents.append(json.loads(f.read().decode('utf-8')))
+                    bytestrings.append(f.read())
+                    # Process or store contents as needed
+    df = pd.DataFrame(pd.json_normalize([s.decode('utf-8') for s in bytestrings])
+    pdb.set_trace()
+
 class Facts():
     # Submissions:
     # List of all listed filing submissions made by the company.
@@ -59,8 +74,9 @@ class Facts():
          
         # TODO: Still takes too long. Attempt to work with all objects as dataframes and insert
         # all in bulk. 
+
         if zip_file:
-            
+            read_zip_file(zip_file)
             with zipfile.ZipFile(zip_file) as myzip:
                 for name in tqdm(myzip.namelist(), desc="Downloading Filing Data:"):
                     file = myzip.read(name)

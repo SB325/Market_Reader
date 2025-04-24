@@ -164,3 +164,444 @@ ____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_o
 [2025-02-03T10:03:26] WARNING [root.insert_table:134] No meta_data to insert for cik None
 [2025-02-03T10:03:26] WARNING [root.insert_table:151] No meta_data to insert for cik None
 [2025-02-03T10:03:26] WARNING [root.insert_table:165] No meta_data to insert for cik None
+[2025-04-09T09:43:53] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T09:43:53] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T09:45:32] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<get_facts() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:24> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 28, in get_facts
+    vals = await asyncio.gather(facts.download_from_zip('companyfacts.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/facts_df.py", line 69, in download_from_zip
+    f = json.loads(file)
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+KeyboardInterrupt
+[2025-04-09T09:45:32] ERROR [asyncio.default_exception_handler:1758] _GatheringFuture exception was never retrieved
+future: <_GatheringFuture finished exception=CancelledError()>
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+asyncio.exceptions.CancelledError
+[2025-04-09T09:54:38] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T09:54:39] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:02:49] WARNING [root.insert_table:171] No shares outstanding data to insert.
+[2025-04-09T10:02:49] WARNING [root.insert_table:186] No float data to insert.
+[2025-04-09T10:02:49] WARNING [root.insert_table:203] No accounting data to insert.
+[2025-04-09T10:02:53] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt("decoding with 'cp437' codec failed (KeyboardInterrupt: )")>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/encodings/cp437.py", line 14, in decode
+    def decode(self,input,errors='strict'):
+KeyboardInterrupt
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 65, in insert_submissions_from_zip
+    with zipfile.ZipFile(zip_file) as myzip:
+  File "/usr/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/usr/lib/python3.10/zipfile.py", line 1379, in _RealGetContents
+    filename = filename.decode('cp437')
+KeyboardInterrupt: decoding with 'cp437' codec failed (KeyboardInterrupt: )
+[2025-04-09T10:02:58] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:02:58] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:03:57] WARNING [root.insert_table:170] No shares outstanding data to insert.
+[2025-04-09T10:03:57] WARNING [root.insert_table:185] No float data to insert.
+[2025-04-09T10:03:57] WARNING [root.insert_table:202] No accounting data to insert.
+[2025-04-09T10:04:01] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 68, in insert_submissions_from_zip
+    file = myzip.read(name)
+  File "/usr/lib/python3.10/zipfile.py", line 1487, in read
+    return fp.read()
+  File "/usr/lib/python3.10/zipfile.py", line 905, in read
+    def read(self, n=-1):
+KeyboardInterrupt
+[2025-04-09T10:04:04] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:04:05] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:06:08] WARNING [root.insert_table:170] No shares outstanding data to insert.
+[2025-04-09T10:06:08] WARNING [root.insert_table:185] No float data to insert.
+[2025-04-09T10:06:08] WARNING [root.insert_table:202] No accounting data to insert.
+[2025-04-09T10:06:08] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 65, in insert_submissions_from_zip
+    with zipfile.ZipFile(zip_file) as myzip:
+  File "/usr/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/usr/lib/python3.10/zipfile.py", line 1407, in _RealGetContents
+    if self.debug > 2:
+KeyboardInterrupt
+[2025-04-09T10:06:11] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:06:12] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:06:25] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<get_facts() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:24> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 28, in get_facts
+    vals = await asyncio.gather(facts.download_from_zip('companyfacts.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/facts_df.py", line 76, in download_from_zip
+    read_zip_file(zip_file)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/facts_df.py", line 42, in read_zip_file
+    contents.append(json.loads(f.read().decode('utf-8')))
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+KeyboardInterrupt
+[2025-04-09T10:06:25] ERROR [asyncio.default_exception_handler:1758] _GatheringFuture exception was never retrieved
+future: <_GatheringFuture finished exception=CancelledError()>
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+asyncio.exceptions.CancelledError
+[2025-04-09T10:06:43] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:06:44] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:17:30] WARNING [root.insert_table:173] No shares outstanding data to insert.
+[2025-04-09T10:17:30] WARNING [root.insert_table:188] No float data to insert.
+[2025-04-09T10:17:30] WARNING [root.insert_table:205] No accounting data to insert.
+[2025-04-09T10:17:31] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 65, in insert_submissions_from_zip
+    with zipfile.ZipFile(zip_file) as myzip:
+  File "/usr/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/usr/lib/python3.10/zipfile.py", line 1388, in _RealGetContents
+    if x.extract_version > MAX_EXTRACT_VERSION:
+KeyboardInterrupt
+[2025-04-09T10:17:33] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:17:34] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:23:52] WARNING [root.insert_table:173] No shares outstanding data to insert.
+[2025-04-09T10:23:52] WARNING [root.insert_table:188] No float data to insert.
+[2025-04-09T10:23:52] WARNING [root.insert_table:205] No accounting data to insert.
+[2025-04-09T10:23:53] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 65, in insert_submissions_from_zip
+    with zipfile.ZipFile(zip_file) as myzip:
+  File "/usr/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/usr/lib/python3.10/zipfile.py", line 1407, in _RealGetContents
+    if self.debug > 2:
+KeyboardInterrupt
+[2025-04-09T10:23:55] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:23:56] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:25:43] WARNING [root.insert_table:175] No shares outstanding data to insert.
+[2025-04-09T10:25:43] WARNING [root.insert_table:190] No float data to insert.
+[2025-04-09T10:25:43] WARNING [root.insert_table:207] No accounting data to insert.
+[2025-04-09T10:25:46] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 65, in insert_submissions_from_zip
+    with zipfile.ZipFile(zip_file) as myzip:
+  File "/usr/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/usr/lib/python3.10/zipfile.py", line 1381, in _RealGetContents
+    x = ZipInfo(filename)
+  File "/usr/lib/python3.10/zipfile.py", line 353, in __init__
+    null_byte = filename.find(chr(0))
+KeyboardInterrupt
+[2025-04-09T10:25:49] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:25:49] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:26:39] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<get_facts() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:24> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 28, in get_facts
+    vals = await asyncio.gather(facts.download_from_zip('companyfacts.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/facts_df.py", line 85, in download_from_zip
+    f = json.loads(file)
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+KeyboardInterrupt
+[2025-04-09T10:26:39] ERROR [asyncio.default_exception_handler:1758] _GatheringFuture exception was never retrieved
+future: <_GatheringFuture finished exception=CancelledError()>
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+asyncio.exceptions.CancelledError
+[2025-04-09T10:27:01] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:27:02] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
+[2025-04-09T10:31:13] WARNING [root.insert_table:175] No shares outstanding data to insert.
+[2025-04-09T10:31:13] WARNING [root.insert_table:190] No float data to insert.
+[2025-04-09T10:31:13] WARNING [root.insert_table:207] No accounting data to insert.
+[2025-04-09T10:31:15] ERROR [asyncio.default_exception_handler:1758] Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<get_submissions() done, defined at /home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py:37> exception=KeyboardInterrupt()>
+Traceback (most recent call last):
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 64, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 47, in run
+    _cancel_all_tasks(loop)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 63, in _cancel_all_tasks
+    loop.run_until_complete(tasks.gather(*to_cancel, return_exceptions=True))
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/get_filing_histories.py", line 41, in get_submissions
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 636, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 603, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1909, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/sheldon/src/homeserver/apps/Market_Reader/pipelines/fundamentals/../../pipelines/fundamentals/submissions_df.py", line 65, in insert_submissions_from_zip
+    with zipfile.ZipFile(zip_file) as myzip:
+  File "/usr/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/usr/lib/python3.10/zipfile.py", line 1367, in _RealGetContents
+    centdir = struct.unpack(structCentralDir, centdir)
+KeyboardInterrupt
+[2025-04-09T10:31:18] DEBUG [urllib3.connectionpool._new_conn:1003] Starting new HTTPS connection (1): www.sec.gov:443
+[2025-04-09T10:31:18] DEBUG [urllib3.connectionpool._make_request:456] https://www.sec.gov:443 "GET /files/company_tickers.json HTTP/1.1" 200 None
