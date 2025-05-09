@@ -25,7 +25,7 @@ to_pop = ['body', 'id','revision_id','type',
         'updated_at','authors',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 20_000_000
+caplimit = 5_000_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigticknas = []
@@ -154,8 +154,8 @@ async def root(data: webhook_response):
                         html = 1
                         )
             
-    except:
-      
+    except Exception as e:
+        print("An unexpected error occurred:", e)
         return JSONResponse(status_code=204, content="NoContent")
     return response
 
