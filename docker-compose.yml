@@ -15,6 +15,21 @@ services:
      - homeserver
     container_name: dashboard
 
+  react_dashboard:
+    build:
+      dockerfile: Dockerfile_nextJS
+      context: .
+    restart: unless-stopped
+    ports:
+      - ${NEXTJS_UI_PORT}:3000
+    volumes:
+      - ./ui/node:/dashboard
+    profiles:
+      - llm
+    networks:
+     - homeserver
+    container_name: sys_dashboard
+
   # schwab api etl
   technicals_etl:
     build:

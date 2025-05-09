@@ -1,0 +1,12 @@
+FROM node:latest
+
+WORKDIR /dashboard
+
+COPY ui/node/package*.json ./
+
+# npm install next@latest react@latest react-dom@latest typescript @types/react
+RUN npm install
+
+COPY ui/node/ .
+
+CMD ["npm", "run", "dev"]
