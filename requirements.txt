@@ -36,7 +36,7 @@ langchain-ollama
 langchainhub
 langgraph
 
-elasticsearch
+elasticsearch==8.18.0
 sentence-transformers
 peft
 torch
@@ -44,3 +44,4 @@ numpy
 tensorflow
 tf-keras
 nvidia-cudnn-cu11
+python-pushover
