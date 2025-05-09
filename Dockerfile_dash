@@ -3,7 +3,7 @@ FROM python:3.10.12
 USER root
 WORKDIR /dashboard
 
-COPY ui/requirements_dash.txt ui/requirements_dash.txt
+COPY ui/streamlit/requirements_dash.txt ui/requirements_dash.txt
 RUN python -m pip install -r ui/requirements_dash.txt
 
 COPY util/elastic util/elastic/
@@ -14,7 +14,7 @@ COPY util/time_utils.py util/
 
 COPY *.env .
 
-COPY ui/ ui/
+COPY ui/streamlit/ ui/
 ENV INDOCKER=True
 
 WORKDIR /dashboard/ui

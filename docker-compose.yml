@@ -8,7 +8,7 @@ services:
     ports:
       - 8502:8502
     volumes:
-      - ./ui:/dashboard/ui
+      - ./ui/streamlit:/dashboard/ui
     profiles:
       - llm
     networks:

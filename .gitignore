@@ -10,3 +10,5 @@ log/*
 *.pyc
 *.pkl
 *creds.env
+.node/
+**/node_modules/
