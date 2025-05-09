@@ -11,7 +11,7 @@ from util.elastic.models import (
     news_article_mapping,
     text_embeddings_mapping
 )
-from util.time_utils import posix_to_datestr
+from util.time_utils import posix_to_datestr, to_posix
 from newswire_params import NewsAPIParams
 from typing import List
 from elasticsearch.helpers import bulk
@@ -49,7 +49,6 @@ class newswire():
             querystring.update(params)
 
             response = requests.get(url, headers_in=headers, params_dict=querystring)
-            pdb.set_trace()
             if not response.ok: #"json" in dir(response):
                 print(f"Response Failed: {querystring}")
         except BaseException as e:
@@ -121,7 +120,6 @@ class newswire():
                                                      destination_index='text_embeddings_mapping',
                                                      pipeline_name='news_embed_pipeline',
                                                      verbose=True)
-        pdb.set_trace()
 
     def search(self, 
                embeddings_field: str,
@@ -137,14 +135,14 @@ class newswire():
                                 num_candidates=num_candidates,
                                 returned_fields=returned_fields,
                                 verbose=True)
-        pdb.set_trace()
 
     def search_ticker(self, 
                 index: str, 
                 ticker: str,
                 conditional: str = 'lte', # or 'gte' or 'eq'
                 query_on_key: str = '',
-                query_on_val: str = ''
+                query_on_val: str = '',
+                verbose: bool = False
                 ):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html
         resp = {}
@@ -192,8 +190,8 @@ class newswire():
                                                     "_score"
                                                 ]
                                            )
-            print(f"Got {resp['hits']['total']['value']} Hits for ticker {ticker}.")
-            # pdb.set_trace()
+            if verbose:
+                print(f"Got {resp['hits']['total']['value']} Hits for ticker {ticker}.")
             
         except Exception as e:
             raise  Exception(f"Error: {e}")
@@ -220,7 +218,19 @@ class newswire():
 if __name__ == "__main__":
     nw = newswire(crud=crud_elastic(), 
                   embedding_model=model_name)
-
-    nw.create_pipeline()
-    # nw.delete_pipeline()
-    pdb.set_trace()
+    
+    desired_first_time = to_posix(
+                    "03/27/2025 02:00 AM", dateformat_str = "%m/%d/%Y %I:%M %p"
+                    )*1000
+    desired_last_time = to_posix(
+                    "03/27/2025 09:00 PM", dateformat_str = "%m/%d/%Y %I:%M %p"
+                    )*1000
+    response = nw.search_ticker(index=nw.index, 
+                                        ticker='CNTM',
+                                        # conditional='eq',
+                                        # query_on_key = 'created',
+                                        # query_on_val = [desired_first_time,desired_last_time]
+                                        )
+    # # nw.create_pipeline()
+    # # nw.delete_pipeline()
+    # pdb.set_trace()

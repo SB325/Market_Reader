@@ -97,11 +97,10 @@ def run():
             if not latest_data:
                 fresh_results = results
             else:
-                pdb.set_trace()
                 fresh_results = [result for result in results if latest_data['created']<to_posix(result['created'], "%a, %d %b %Y %H:%M:%S %z")*1000]
+
             if not fresh_results:
-                print(f"No new news for {ticker}")
-                done = True
+                break
             else:
                 parse_for_elastic(fresh_results)
                 convert_date_to_posix(fresh_results, datefmt)

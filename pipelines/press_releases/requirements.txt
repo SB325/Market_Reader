@@ -31,5 +31,5 @@ fastapi[standard]
 # langchain_core
 # langchain-ollama
 
-elasticsearch
+elasticsearch==8.18.0
 python-pushover

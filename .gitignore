@@ -12,3 +12,4 @@ log/*
 *creds.env
 **/.next/
 **/node_modules/
+__pycache__/
