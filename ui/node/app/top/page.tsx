@@ -1,3 +1,3 @@
 export default function Page() {
-  return <h1>Top Level</h1>
+  return <h1>Dashboard</h1>
 }

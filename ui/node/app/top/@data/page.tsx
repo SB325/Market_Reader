@@ -1,3 +1,3 @@
 export default function Page() {
-  return <h1 className="underline">Data</h1>
+  return <h1>Data Holdings</h1>
 }
