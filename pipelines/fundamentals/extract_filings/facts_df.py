@@ -7,6 +7,7 @@ from util.postgres.db.models.tickers import StockFloat as FloatTable
 from util.postgres.db.models.tickers import Accounting as AccountingTable
 
 import pandas as pd
+import numpy as np
 import os
 import json
 import pdb
@@ -14,12 +15,29 @@ import zipfile
 from tqdm import tqdm
 import time
 import math
-from util.postgres.db.create_schemas import create_schemas
+import pickle
+from dotenv import load_dotenv
+load_dotenv()
+# from util.postgres.db.create_schemas import create_schemas
+# create_schemas()
 
-create_schemas()
+from pyspark.sql import SparkSession
+
+spark_ip = os.environ.get("SPARK_IP")
+
+spark = SparkSession.builder \
+    .appName("MyApp") \
+    .master(f"spark://{spark_ip}:7077") \
+    .config("spark.executor.memory", "2g") \
+    .getOrCreate()
+
 requests = requests_util()
 
 current_file = os.path.basename(__file__)
+
+def save_data(obj):
+    with open('my_dict.pickle', 'wb') as file:
+        pickle.dump(obj, file)
 
 async def read_cik(self, cik: str = ''):
     if cik:
@@ -32,19 +50,24 @@ async def clean_df(df: pd.DataFrame):
     df.replace('/','', regex=True, inplace=True)
 
 def read_zip_file(zip_path):
-    # contents = []
-    bytestrings = []
-    with zipfile.ZipFile(zip_path) as zip_ref:
-        for info in tqdm(zip_ref.infolist(), desc="Downloading Filing Data:"):
-            # Check if the file is readable (not encrypted)
-            if info.flag_bits & 0x1 == 0:
-                with zip_ref.open(info, 'r') as f:
-                    # You can read the contents of the file here
-                    # contents.append(json.loads(f.read().decode('utf-8')))
-                    bytestrings.append(f.read())
-                    # Process or store contents as needed
-    df = pd.DataFrame(pd.json_normalize([s.decode('utf-8') for s in bytestrings])
-    pdb.set_trace()
+    filename = 'companyfacts.pkl' 
+    if filename in os.listdir('pickles'):
+        with open('pickles/' + filename, 'rb') as pickle_file:
+            fact_obj = pickle.load(pickle_file)
+    else:
+        fact_obj = []
+        with zipfile.ZipFile(zip_path) as zip_ref:
+            for info in tqdm(zip_ref.infolist(), desc="Downloading Filing Data:"):
+                # Check if the file is readable (not encrypted)
+                if info.flag_bits & 0x1 == 0:
+                    with zip_ref.open(info, 'r') as f:
+                        # You can read the contents of the file here
+                        fact_obj.append(json.loads(f.read().decode('utf-8')))
+
+        with open('pickles/companyfacts.pkl', 'wb') as file:
+            pickle.dump(fact_obj, file)
+    
+    return fact_obj
 
 class Facts():
     # Submissions:
@@ -69,60 +92,49 @@ class Facts():
         success = False
         known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
-            print('no tickers inserted.')
+            print('no ticker symbols in database. Run get_ticker_list.py')
             return success
          
         # TODO: Still takes too long. Attempt to work with all objects as dataframes and insert
         # all in bulk. 
-
         if zip_file:
-            read_zip_file(zip_file)
-            with zipfile.ZipFile(zip_file) as myzip:
-                for name in tqdm(myzip.namelist(), desc="Downloading Filing Data:"):
-                    file = myzip.read(name)
-                    try:
-                        if len(file)>100:
-                            f = json.loads(file)
-                            if 'cik' in f.keys():
-                                if known_ciks.count(str(f['cik']).zfill(10))==0: 
-                                    continue
-                            else:
-                                continue
-                            self.download.append(f)
-                    except (Exception) as err:
-                        pdb.set_trace()
-                        print(f"{err}")
+            try: 
+                self.download = read_zip_file(zip_file)
+            except (Exception) as err:
+                print(f"{err}")
 
             success = True
         else:
             print('No zip file presented.')
         return success
 
-    async def parse_response(self):
+    async def parse_response(self, content_merged):
+
         success = False
-
         t0 = time.time()
-
         self.downloaded_list = pd.DataFrame.from_dict(self.download)
         self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
+        self.downloaded_list = pd.merge(self.downloaded_list, content_merged, on='cik', how='inner')
+        
         cik = self.downloaded_list['cik'].tolist()
         self.downloaded_list = self.downloaded_list.drop(['entityName'], axis=1)
 
         facts = self.downloaded_list['facts'].to_frame()
         facts.insert(1, "cik", cik, True)
 
-        dei = facts['facts'].apply(lambda x: x['dei'] if 'dei' in x.keys() else {})
+        dei = facts.facts.apply(lambda x: x.get('dei', None) if isinstance(x, dict) else {}).dropna()
 
-        key = 'EntityCommonStockSharesOutstanding'
-        shares = dei.apply(lambda x: x[key]['units']['shares'] if key in x.keys() else {})
-
+        sharesoutstanding = dei.apply(lambda x: x.get('EntityCommonStockSharesOutstanding', None) if isinstance(x, dict) else {}).dropna()
+        units = sharesoutstanding.apply(lambda x: x.get('units', None) if isinstance(x, dict) else {}).dropna()
+        shares = units.apply(lambda x: x.get('shares', None) if isinstance(x, dict) else {}).dropna()
+        
         for cnt, share in enumerate(shares):
-            if not share:
-                continue
             [s.update({'cik': cik[cnt]}) for s in share]
             self.shares.extend(share)
+        
         [s.update({'frame': ''}) for s in self.shares if 'frame' not in s.keys()]
 
+        
         dei_float = dei.apply(lambda x: x['EntityPublicFloat']['units'] if 'EntityPublicFloat' in x.keys() else {})
         
         for cnt,m in enumerate(dei_float):
@@ -133,7 +145,7 @@ class Facts():
         [f.update({'frame': ''}) for f in self.float if 'frame' not in f.keys()]
 
         # Accounting
-        gaap = facts['facts'].apply(lambda x: x['us-gaap'] if 'us-gaap' in x.keys() else None)
+        gaap = facts['facts'].apply(lambda x: x.get('us-gaap', None) if isinstance(x, dict) else {}).dropna()
 
         # gaap = [ m['us-gaap'] for m in facts if 'us-gaap' in m.keys()]
         accounting = pd.DataFrame(gaap)
@@ -170,19 +182,26 @@ class Facts():
     async def insert_table(self) -> bool:
         
         success = False
-
+        
         if not self.shares:
             log.warning(f"No shares outstanding data to insert.")
         else:
             t0 = time.time()
             df = pd.DataFrame(self.shares)
-            df = df[['cik','end','val','accn','fy','fp','form','filed','frame']]
+            elements = ['cik','end','val','accn','fy','fp','form','filed','frame']
+            df = df[elements]
             df['val'] = df['val'].fillna(0)
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
             await clean_df(df)
-            await self.crud_util.insert_rows(SharesOutstanding, df)
+            
+            so_dict = df.to_dict(orient='records')
+            # so_dict = [val for val in so_dict if val['cik'] not in ciks]
+            # await self.crud_util.insert_rows(SharesOutstanding, df)
+
+            await self.crud_util.insert_rows_orm(SharesOutstanding, elements, so_dict)
+            pdb.set_trace()
             print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.shares = []
 
@@ -191,17 +210,19 @@ class Facts():
         else:
             t0 = time.time()
             df = pd.DataFrame(self.float)
-
+            
             df = df[['cik','end','val','accn','fy','fp','form','filed','frame','currency']]
+            df['val'] = df['val'][df['val']<=np.iinfo(np.int64).max]
             df['val'] = df['val'].fillna(0)
-            df['val'] = df['val'].astype(int)
+            df['val'] = df['val'].astype('int64')
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
             await clean_df(df)
-            await self.crud_util.insert_rows(FloatTable, df)   
+            f_dict = df.to_dict(orient='records')
+            pdb.set_trace()
+            await self.crud_util.insert_rows_orm(FloatTable, f_dict)   
             print(f"{(time.time()-t0)/60} minutes elapsed on float data insertion.")
             self.float = []
-
         
         if not self.accounting_data:
             log.warning(f"No accounting data to insert.")
@@ -210,13 +231,15 @@ class Facts():
             df = pd.DataFrame(self.accounting_data)
 
             df = df[['cik','start','end','val','accn','fy','fp','form','filed','type','frame']]
+            df['val'] = df['val'][df['val']<=np.iinfo(np.int64).max]
             df['val'] = df['val'].fillna(0)
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
             await clean_df(df)
-
-            await self.crud_util.insert_rows(AccountingTable, df)
+            a_dict = df.to_dict(orient='records')
+            pdb.set_trace()
+            await self.crud_util.insert_rows_orm(AccountingTable, a_dict)
             print(f"{(time.time()-t0)/60} minutes elapsed on accounting data insertion.")
             self.accounting_data = []
 

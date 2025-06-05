@@ -30,20 +30,20 @@ services:
      - homeserver
     container_name: sys_dashboard
 
-  # schwab api etl
-  technicals_etl:
-    build:
-      dockerfile: Dockerfile_tech
-      context: .
-    restart: on-failure
-    networks:
-     - homeserver
-    mem_limit: ${MEM_LIMIT}
-    depends_on:
-      - postgres
-    profiles:
-      - llm
-    container_name: tech
+  # # schwab api etl
+  # technicals_etl:
+  #   build:
+  #     dockerfile: Dockerfile_tech
+  #     context: .
+  #   restart: on-failure
+  #   networks:
+  #    - homeserver
+  #   mem_limit: ${MEM_LIMIT}
+  #   depends_on:
+  #     - postgres
+  #   profiles:
+  #     - llm
+  #   container_name: tech
 
   # news downloads and db inserts
   press_release_etl:

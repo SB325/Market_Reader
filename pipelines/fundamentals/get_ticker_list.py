@@ -1,11 +1,11 @@
 '''
 Requests list of company names, their ticker symbols and their SEC Filing CIK 
 '''
-import sys
-sys.path.append('../../')
-from dotenv import load_dotenv
-load_dotenv('../../.env')   
-load_dotenv('../../db_creds.env')   
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+# from dotenv import load_dotenv
+# load_dotenv('../../.env')   
+# load_dotenv('../../db_creds.env')   
 
 import asyncio
 from util.crud_pg import crud as crud
@@ -49,7 +49,6 @@ async def save_ticker_data(data: dict, to_file: bool = True):
     return msg
 
 if __name__ == "__main__":
-    pdb.set_trace()
     response = requests.get(url=url, headers=header)
     content = list(response.json().values())
     for con in content:

@@ -30,7 +30,8 @@ class operationType(Enum):
 class crud():
     engine = insert_engine()
 
-    async def insert_rows(self, table, data: pd.DataFrame, add_index: bool = True) -> bool:
+    # async def insert_rows(self, table, data: pd.DataFrame, add_index: bool = True) -> bool:
+    async def insert_rows(self, table, data: dict, add_index: bool = True) -> bool:
         status = False
         try:
             tablename = table.__tablename__
@@ -41,7 +42,7 @@ class crud():
 
             data.to_csv(buffer, sep=sep, index=add_index, header=False)
             buffer.seek(0)
-
+            
             conn =  self.engine.raw_connection()
             cursor = conn.cursor()
             try:
@@ -174,9 +175,9 @@ class crud():
                 status = True
         else:
             with self.engine.connect() as conn:
-                conn.execute(insert(tablename).on_conflict_do_nothing(
-                            index_elements=index_elements
-                            ), data)
+                conn.execute(insert(tablename),
+                    data,
+                    )
                 conn.commit()
                 status = True
         return status

@@ -15,9 +15,9 @@ import zipfile
 from tqdm import tqdm
 import time
 import json
-from util.postgres.db.create_schemas import create_schemas
+# from util.postgres.db.create_schemas import create_schemas
+# create_schemas()
 
-create_schemas()
 requests = requests_util()
 
 current_file = os.path.basename(__file__)
@@ -88,7 +88,9 @@ class Submissions():
             print('No zip file presented.')
         return success
 
-    async def parse_response(self):
+    async def parse_response(self, content_merged):
+        self.downloaded_list = pd.merge(self.downloaded_list, content_merged, on='cik', how='inner')
+
         success = False
         # Set parsing rules and value checks, returning table of interest.
         for dct in tqdm(self.downloaded_list, desc='Extracting Metadata'):

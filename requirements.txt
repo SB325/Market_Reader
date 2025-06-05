@@ -21,7 +21,7 @@ tzdata==2024.1
 urllib3==1.26.13
 Werkzeug==2.3.5
 marshmallow-sqlalchemy
-psycopg2-binary==2.9.5
+psycopg2-binary
 pandas==2.2.3
 beautifulsoup4==4.12.3
 html5lib==1.1
@@ -29,12 +29,12 @@ docker
 
 fastapi[standard]
 
-langchain
-langchain_community
-langchain_core
-langchain-ollama
-langchainhub
-langgraph
+#langchain
+#langchain_community
+#langchain_core
+#langchain-ollama
+#langchainhub
+#langgraph
 
 elasticsearch==8.18.0
 sentence-transformers
@@ -44,4 +44,7 @@ numpy
 tensorflow
 tf-keras
 nvidia-cudnn-cu11
-python-pushover
+
+pyspark
+PyArrow
+grpcio-status

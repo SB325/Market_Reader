@@ -4,6 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
 from util.postgres.db.models.tickers import Base
 from util.postgres.db.conn import insert_engine
 from sqlalchemy.schema import CreateSchema
+import pdb
 
 import os
 db_schema = os.environ.get("DATABASE_SCHEMA")
