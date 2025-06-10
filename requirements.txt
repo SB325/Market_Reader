@@ -48,3 +48,4 @@ nvidia-cudnn-cu11
 pyspark
 PyArrow
 grpcio-status
+lxml

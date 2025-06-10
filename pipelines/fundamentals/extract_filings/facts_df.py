@@ -21,23 +21,19 @@ load_dotenv()
 # from util.postgres.db.create_schemas import create_schemas
 # create_schemas()
 
-from pyspark.sql import SparkSession
+# from pyspark.sql import SparkSession
 
-spark_ip = os.environ.get("SPARK_IP")
+# spark_ip = os.environ.get("SPARK_IP")
 
-spark = SparkSession.builder \
-    .appName("MyApp") \
-    .master(f"spark://{spark_ip}:7077") \
-    .config("spark.executor.memory", "2g") \
-    .getOrCreate()
+# spark = SparkSession.builder \
+#     .appName("MyApp") \
+#     .master(f"spark://{spark_ip}:7077") \
+#     .config("spark.executor.memory", "2g") \
+#     .getOrCreate()
 
 requests = requests_util()
 
 current_file = os.path.basename(__file__)
-
-def save_data(obj):
-    with open('my_dict.pickle', 'wb') as file:
-        pickle.dump(obj, file)
 
 async def read_cik(self, cik: str = ''):
     if cik:
@@ -99,7 +95,7 @@ class Facts():
         # all in bulk. 
         if zip_file:
             try: 
-                self.download = read_zip_file(zip_file)
+                self.downloaded_list = read_zip_file(zip_file)
             except (Exception) as err:
                 print(f"{err}")
 
@@ -112,7 +108,7 @@ class Facts():
 
         success = False
         t0 = time.time()
-        self.downloaded_list = pd.DataFrame.from_dict(self.download)
+        self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
         self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
         self.downloaded_list = pd.merge(self.downloaded_list, content_merged, on='cik', how='inner')
         
@@ -174,7 +170,6 @@ class Facts():
         
         print(f"{(time.time()-t0)/60} minutes elapsed on initial download parsing.")
         
-        self.download = []
         self.downloaded_list = []
         success = True
         return success
@@ -189,6 +184,7 @@ class Facts():
             t0 = time.time()
             df = pd.DataFrame(self.shares)
             elements = ['cik','end','val','accn','fy','fp','form','filed','frame']
+            
             df = df[elements]
             df['val'] = df['val'].fillna(0)
             df['val'] = df['val'].astype(int)
@@ -199,9 +195,9 @@ class Facts():
             so_dict = df.to_dict(orient='records')
             # so_dict = [val for val in so_dict if val['cik'] not in ciks]
             # await self.crud_util.insert_rows(SharesOutstanding, df)
-
-            await self.crud_util.insert_rows_orm(SharesOutstanding, elements, so_dict)
-            pdb.set_trace()
+            unique_elements = ["cik", "accn", "fy", "form"]
+            await self.crud_util.insert_rows_orm(SharesOutstanding, unique_elements, so_dict[:3])
+            
             print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.shares = []
 
@@ -211,7 +207,8 @@ class Facts():
             t0 = time.time()
             df = pd.DataFrame(self.float)
             
-            df = df[['cik','end','val','accn','fy','fp','form','filed','frame','currency']]
+            elements = ['cik','end','val','accn','fy','fp','form','filed','frame','currency']
+            df = df[elements]
             df['val'] = df['val'][df['val']<=np.iinfo(np.int64).max]
             df['val'] = df['val'].fillna(0)
             df['val'] = df['val'].astype('int64')
@@ -219,8 +216,9 @@ class Facts():
             df['fy'] = df['fy'].astype(int)
             await clean_df(df)
             f_dict = df.to_dict(orient='records')
-            pdb.set_trace()
-            await self.crud_util.insert_rows_orm(FloatTable, f_dict)   
+            
+            unique_elements = ["cik", "accn", "fy", "form"]
+            await self.crud_util.insert_rows_orm(FloatTable, unique_elements, f_dict)   
             print(f"{(time.time()-t0)/60} minutes elapsed on float data insertion.")
             self.float = []
         
@@ -230,7 +228,8 @@ class Facts():
             t0 = time.time()
             df = pd.DataFrame(self.accounting_data)
 
-            df = df[['cik','start','end','val','accn','fy','fp','form','filed','type','frame']]
+            elements = ['cik','start','end','val','accn','fy','fp','form','filed','type','frame']
+            df = df[elements]
             df['val'] = df['val'][df['val']<=np.iinfo(np.int64).max]
             df['val'] = df['val'].fillna(0)
             df['val'] = df['val'].astype(int)
@@ -238,8 +237,9 @@ class Facts():
             df['fy'] = df['fy'].astype(int)
             await clean_df(df)
             a_dict = df.to_dict(orient='records')
-            pdb.set_trace()
-            await self.crud_util.insert_rows_orm(AccountingTable, a_dict)
+            
+            unique_elements = ["cik", "start", "end", "fy"]
+            await self.crud_util.insert_rows_orm(AccountingTable, unique_elements, a_dict)
             print(f"{(time.time()-t0)/60} minutes elapsed on accounting data insertion.")
             self.accounting_data = []
 

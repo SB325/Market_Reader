@@ -35,26 +35,33 @@ async def get_facts(content_merged):
                                             os.path.dirname(__file__),
                                             '../',
                                             'companyfacts.zip')
-                                        ), \
-                                facts.parse_response(content_merged), \
+                                        ), 
+                                facts.parse_response(content_merged), 
                                 facts.insert_table())
 
     t1 = time.time()
     del facts
     msg = f"Facts time: {(t1-t0)/60} minutes."
+    print(msg)
     return msg, vals
 
 async def get_submissions(content_merged):
     msg = "Submissions failed."
     submissions = Submissions(crud_util)
     t0 = time.time()
-    vals = await asyncio.gather(submissions.insert_submissions_from_zip('submissions.zip'), \
+    vals = await asyncio.gather(submissions.insert_submissions_from_zip(
+                                        os.path.join(
+                                            os.path.dirname(__file__),
+                                            '../',
+                                            'submissions.zip')
+                                        ),
                                 submissions.parse_response(content_merged), \
                                 submissions.insert_table())
     
     t1 = time.time()
     del submissions
     msg = f"Submissions time: {(t1-t0)/60} minutes."
+    print(msg)
     return msg, vals
 
 async def main():
@@ -76,7 +83,10 @@ async def main():
     content_merged = pd.DataFrame.from_dict(content_merged).rename(columns={'cik_str': 'cik'})
 
     # first_task = await save_ticker_data(content, False)
-    await asyncio.gather(get_facts(content_merged), get_submissions(content_merged))
+    await asyncio.gather(get_facts(content_merged))
+    # get_submissions(content_merged))
+    # ,
+    #                     
 
 if __name__ == "__main__":
     t0 = time.time()

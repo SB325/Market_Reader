@@ -71,7 +71,8 @@ class crud():
                           query_operation: operationType = 'eq', 
                           unique_column_values: str = None,
                           sort_column: str = '',
-                          sort_order: str = 'desc'):
+                          sort_order: str = 'desc',
+                          limit: int = None):
         with Session(self.engine) as session:
             if isinstance(return_cols, list):
                 out_col_obj = [tablename.__table__.columns[col] for col in return_cols]
@@ -118,6 +119,9 @@ class crud():
                     else:
                         result = result.order_by(asc(sort_by))
 
+                if limit:
+                    result = result.limit(limit)
+
                 out = result.all()
 
             else:
@@ -125,6 +129,9 @@ class crud():
 
                 if unique_columns:
                     stmt = stmt.distinct()
+
+                if limit:
+                    stmt = stmt.limit(limit)
 
                 out = session.execute(stmt).all()
 
@@ -175,9 +182,9 @@ class crud():
                 status = True
         else:
             with self.engine.connect() as conn:
-                conn.execute(insert(tablename),
-                    data,
-                    )
+                conn.execute(insert(tablename).on_conflict_do_nothing(
+                            index_elements=index_elements
+                    ).values(data))
                 conn.commit()
                 status = True
         return status

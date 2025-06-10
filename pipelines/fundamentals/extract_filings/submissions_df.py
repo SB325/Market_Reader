@@ -15,6 +15,7 @@ import zipfile
 from tqdm import tqdm
 import time
 import json
+import pickle
 # from util.postgres.db.create_schemas import create_schemas
 # create_schemas()
 
@@ -26,6 +27,25 @@ async def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
     return cik
+
+def read_zip_file(zip_path):
+    filename = 'submissions.pkl' 
+    if filename in os.listdir('pickles'):
+        with open('pickles/' + filename, 'rb') as pickle_file:
+            subm_obj = pickle.load(pickle_file)
+    else:
+        subm_obj = []
+        with zipfile.ZipFile(zip_path) as zip_ref:
+            for info in tqdm(zip_ref.infolist(), desc="Downloading Submissions Data:"):
+                if info.flag_bits & 0x1 == 0:
+                    if not 'placeholder.txt' in info.filename:
+                        with zip_ref.open(info, 'r') as f:
+                            # You can read the contents of the file here
+                            subm_obj.append(json.loads(f.read().decode('utf-8')))
+        with open('pickles/submissions.pkl', 'wb') as file:
+            pickle.dump(subm_obj, file)
+        
+    return subm_obj
 
 async def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
@@ -61,37 +81,28 @@ class Submissions():
         # TODO: Still takes too long. Attempt to work with all objects as dataframes and insert
         # all in bulk. 
         if zip_file:
-            self.downloaded_list = []
-            with zipfile.ZipFile(zip_file) as myzip:
-                # try:
-                for name in tqdm(myzip.namelist(), desc="Capturing Filing MetaData:"):
-                    file = myzip.read(name)
-                    try:
-                        if len(file)>100:
-                            self.downloaded_list.append(json.loads(file))
-                    except:
-                        pdb.set_trace()
-            pdb.set_trace()
-            t0 = time.time()
-            self.downloaded_list = [m for m in self.downloaded_list if 'cik' in m.keys()]
-            self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
-            self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
-            self.downloaded_list = [m for m in self.downloaded_list if m['cik'] in known_ciks ]
-            self.downloaded_list['tickers'] = self.downloaded_list['tickers'].apply(lambda x: json.dumps(x))
-            self.downloaded_list['exchanges'] = self.downloaded_list['exchanges'].apply(lambda x: json.dumps(x))
-            self.downloaded_list['formerNames'] = self.downloaded_list['formerNames'].apply(lambda x: json.dumps(x))
-            self.downloaded_list = self.downloaded_list.to_dict('records')
-            
-            print(f"{(time.time()-t0)/60} minutes elapsed on initial download parsing.")
-            success = True
+            try: 
+                self.downloaded_list = read_zip_file(zip_file)
+            except (Exception) as err:
+                print(f"{err}")
         else:
             print('No zip file presented.')
         return success
 
     async def parse_response(self, content_merged):
+
+        t0 = time.time()
+        self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
+        self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
         self.downloaded_list = pd.merge(self.downloaded_list, content_merged, on='cik', how='inner')
 
-        success = False
+        self.downloaded_list['ticker'] = self.downloaded_list['ticker'].apply(lambda x: json.dumps(x))
+        self.downloaded_list['exchanges'] = self.downloaded_list['exchanges'].apply(lambda x: json.dumps(x))
+        self.downloaded_list['formerNames'] = self.downloaded_list['formerNames'].apply(lambda x: json.dumps(x))
+        self.downloaded_list = self.downloaded_list.to_dict('records')
+        
+        print(f"{(time.time()-t0)/60} minutes elapsed on initial download parsing.")
+
         # Set parsing rules and value checks, returning table of interest.
         for dct in tqdm(self.downloaded_list, desc='Extracting Metadata'):
             if 'filings' in dct.keys():
@@ -126,11 +137,17 @@ class Submissions():
             t0 = time.time()
             df = pd.DataFrame(self.filing_list)
 
-            df = df[['cik', 'accessionNumber', 'filingDate', 'reportDate', 'acceptanceDateTime', \
-                'act', 'form', 'fileNumber', 'filmNumber', 'items', 'core_type', 'size', \
-                'isXBRL', 'isInlineXBRL', 'primaryDocument', 'primaryDocDescription']]
+            elements = ["cik", "accessionNumber", "filingDate", "reportDate", 
+                    "acceptanceDateTime", "act", "form", "fileNumber", "filmNumber", 
+                    "items", "core_type", "size", "isXBRL", "isInlineXBRL", 
+                    "primaryDocument", "primaryDocDescription"]
+            df = df[elements]
+
             await clean_df(df)
-            await self.crud_util.insert_rows(filings, df)
+
+            filings_dict = df.to_dict(orient='records')
+            unique_elements = ["cik", "accessionNumber"]
+            await self.crud_util.insert_rows_orm(filings, unique_elements, filings_dict)
             print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.filing_list = []
             
@@ -141,13 +158,17 @@ class Submissions():
             t0 = time.time()
             df = pd.DataFrame(self.meta_data)
 
-            df = df[['cik', 'name', 'tickers', 'exchanges', 'description', 'website', \
+            elements = ['cik', 'name', 'tickers', 'exchanges', 'description', 'website', \
                      'investorWebsite', 'category', 'fiscalYearEnd', 'stateOfIncorporation', \
                         'stateOfIncorporationDescription', 'ein', 'entityType', \
                             'sicDescription', 'ownerOrg', 'insiderTransactionForOwnerExists', \
-                                'insiderTransactionForIssuerExists', 'phone', 'flags', 'formerNames']]
+                                'insiderTransactionForIssuerExists', 'phone', 'flags', 'formerNames']
+            df = df[elements]
             await clean_df(df)
-            await self.crud_util.insert_rows(cmeta, df)   
+
+            unique_elements = ["cik", "ein"]
+            cmeta_dict = df.to_dict(orient='records')
+            await self.crud_util.insert_rows_orm(cmeta, unique_elements, cmeta_dict)   
             print(f"{(time.time()-t0)/60} minutes elapsed on metadata insertion.")
             self.meta_data = []
 
@@ -158,10 +179,14 @@ class Submissions():
             t0 = time.time()
             df = pd.DataFrame(self.addresses_mailing)
 
-            df = df[['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
-                    'stateOrCountryDescription']]
+            elements = ['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
+                    'stateOrCountryDescription']
+            df = df[elements]
             await clean_df(df)
-            await self.crud_util.insert_rows(cmailing, df) 
+
+            unique_elements = ["cik"]
+            cmail_dict = df.to_dict(orient='records')
+            await self.crud_util.insert_rows_orm(cmailing, unique_elements, cmail_dict) 
             print(f"{(time.time()-t0)/60} minutes elapsed on mailing addr insertion.")
             self. addresses_mailing = []
 
@@ -172,10 +197,14 @@ class Submissions():
             t0 = time.time()
             df = pd.DataFrame(self.addresses_business)
             
-            df = df[['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
-                    'stateOrCountryDescription']]
+            elements = ['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
+                    'stateOrCountryDescription']
+            df = df[elements]
             await clean_df(df)
-            await self.crud_util.insert_rows(cbusiness, df)
+
+            unique_elements = ["cik"]
+            cbusiness_dict = df.to_dict(orient='records')
+            await self.crud_util.insert_rows_orm(cbusiness, unique_elements, cbusiness_dict)
             print(f"{(time.time()-t0)/60} minutes elapsed on business addr insertion.")
             self.addresses_business = []
             

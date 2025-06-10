@@ -19,13 +19,13 @@ send_push_notifications = True
 
 app: FastAPI = FastAPI(root_path="/bzwebhook")
 pn = push_notify()
-tf = TitleFilter(0.5)  # EPS/Revenue title pairs and gain threshold betweeen them
+tf = TitleFilter(1.0)  # EPS/Revenue title pairs and gain threshold betweeen them
 
 to_pop = ['body', 'id','revision_id','type',
         'updated_at','authors',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 5_000_000_000
+caplimit = 50_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigticknas = []
