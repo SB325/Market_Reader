@@ -18,12 +18,12 @@ header = header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
 def get_content(soup):
     nav_strings = []
     element = soup.b.find_all_next(string=True)
-
     scrape = [val for val in 
-        [word.replace('\n','').replace('\xa0',' ') for word in element] 
-        if val]
-    scrape = [val for val in scrape if not val.isspace()]
-
+        [word.replace('\xa0',' ')
+            .replace('\u200b',' ')
+            for word in element] 
+            if not val.isspace()]
+    
     return scrape
 
 def download_filing(link: str):
@@ -54,6 +54,7 @@ async def load_n_filings(nfilings: int, form: str = 'FORM 8-K'):
         limit=nfilings
     )
 
+    filings = []
     links = []
     for meta in filing_meta:
         cik = meta[0]
@@ -63,12 +64,9 @@ async def load_n_filings(nfilings: int, form: str = 'FORM 8-K'):
         links.append(assemble_filings_link(
                         cik, 
                         accessionNumber, 
-                        primaryDocument)
-                    )
+                        primaryDocument))
     
-    filings = []
-    for link in tqdm(links):
-        filings.append(download_filing(link))
+        filings.append(download_filing(links[-1]))
 
     return filings, links
 
