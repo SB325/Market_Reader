@@ -71,5 +71,5 @@ async def load_n_filings(nfilings: int, form: str = 'FORM 8-K'):
     return filings, links
 
 if __name__ == "__main__":
-    filings_list, links = asyncio.run(load_n_filings(5,'FORM S-4') )
+    filings_list, links = asyncio.run(load_n_filings(5,'DEFC14A') )
     pdb.set_trace()

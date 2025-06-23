@@ -30,7 +30,7 @@ docker
 fastapi[standard]
 
 #langchain
-#langchain_community
+langchain_community
 #langchain_core
 #langchain-ollama
 #langchainhub
@@ -49,3 +49,6 @@ pyspark
 PyArrow
 grpcio-status
 lxml
+gliner
+glirel==0.1.4
+loguru
