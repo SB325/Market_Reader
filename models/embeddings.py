@@ -33,8 +33,12 @@ class embeddings():
             self.model = SentenceTransformer(model_name)                                                                          
             self.model.save(full_model_path)
 
-    def encode(self, text: str):
-        return self.model.encode(text, device='cuda', normalize_embeddings=True)
+    def encode(self, text: str, show_progress_bar: bool = False):
+        return self.model.encode(text, 
+                device='cuda', 
+                normalize_embeddings=True, 
+                show_progress_bar=show_progress_bar
+                )
     
     def similarity2(self, text_1: str, text_2: str):
         embedding1 = self.encode(text_1)
@@ -49,31 +53,30 @@ class embeddings():
         embed = self.encode(text_list)
         return self.model.similarity(embed, embed)
     
-emb = embeddings()
-def group_similar_documents(sentences: list, thresh: float):
-    # Takes list of sentences (documents) and groups them by similarity, 
-    # returning data object with similar docs grouped by group_id's.
-    
-    # sentences = {cnt:val for cnt, val in enumerate(sentences)}
-    # sentences_pd = pd.Series(sentences)
-    simil = torch.tril(emb.similarity(sentences, threshold=thresh),diagonal=-1)
+    def group_similar_documents(self, sentences: list, thresh: float):
+        # Takes list of sentences (documents) and groups them by similarity, 
+        # returning data object with similar docs grouped by group_id's.
+        
+        # sentences = {cnt:val for cnt, val in enumerate(sentences)}
+        # sentences_pd = pd.Series(sentences)
+        simil = torch.tril(self.similarity(sentences, threshold=thresh),diagonal=-1)
 
-    bool_np = np.array([val for val in simil>thresh])
-    matches = pd.DataFrame(np.argwhere(bool_np))
+        bool_np = np.array([val for val in simil>thresh])
+        matches = pd.DataFrame(np.argwhere(bool_np))
 
-    graph = nx.from_pandas_edgelist(matches, 0, 1)
-    groups = list(nx.connected_components(graph))
-    corpus_df = pd.DataFrame(sentences, columns = ['title'])
-    corpus_df['group_id'] = None
+        graph = nx.from_pandas_edgelist(matches, 0, 1)
+        groups = list(nx.connected_components(graph))
+        corpus_df = pd.DataFrame(sentences, columns = ['title'])
+        corpus_df['group_id'] = None
 
-    for cnt, group in enumerate(groups):
-        corpus_df.loc[list(group), 'group_id'] = cnt
-    
-    doc_stats = {'corpus': corpus_df,
-                'matrix': simil,
-                'ngroups': len(groups)
-            }
-    return doc_stats
+        for cnt, group in enumerate(groups):
+            corpus_df.loc[list(group), 'group_id'] = cnt
+        
+        doc_stats = {'corpus': corpus_df,
+                    'matrix': simil,
+                    'ngroups': len(groups)
+                }
+        return doc_stats
 
 def return_documents_in_group(df, group_id: int):
     retval = df[df['group_id']==group_id]
@@ -89,6 +92,7 @@ if __name__ == "__main__":
                 "Fast sedans can be found on the highway."
                  ]
     
-    groups = group_similar_documents(sentences, 0.5)
+    emb = embeddings()
+    groups = emb.group_similar_documents(sentences, 0.5)
     pdb.set_trace()
     print(groups)

@@ -37,8 +37,8 @@ langchain_community
 #langgraph
 
 elasticsearch==8.18.0
-sentence-transformers
-peft
+sentence_transformers
+peft==0.10.0
 torch
 numpy
 tensorflow
@@ -49,6 +49,5 @@ pyspark
 PyArrow
 grpcio-status
 lxml
-gliner
 glirel==0.1.4
 loguru
