@@ -3,86 +3,47 @@
 # from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 # from langchain_core.runnables import RunnablePassthrough
 from gliner import GLiNER
-from glirel import GLiREL
-# from huggingface_hub import login
-# login(token="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")
+# from glirel import GLiREL
+from huggingface_hub import login
+login(token="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")
 import shutil
 import spacy
 import pdb
 import os
 from embeddings import embeddings
+import uuid
 
 class ner():
-    def __init__(self, ner_model_name: str = None, re_model_name: str = None, ent_labels: str = None, rel_labels: str = None):
+    def __init__(self, ner_model_name: str = None, ent_labels: str = None):
         self.entity_labels = ent_labels
-        self.rel_labels = rel_labels
 
-        # ner_model_prefix = ner_model_name.split('/')[1]
-        # re_model_prefix = re_model_name.split('/')[1]
-
-        # dircontents = os.listdir(os.path.dirname(__file__))
-        # if (ner_model_prefix in dircontents) and \
-        #         (re_model_prefix in dircontents) and \
-        #             ("en_core_web_sm" in dircontents):
-        #     self.load_model(ner_model_prefix, re_model_prefix)
-        # else:
         self.ner_model = GLiNER.from_pretrained(ner_model_name)
-        self.re_model = GLiREL.from_pretrained(re_model_name) 
         self.nlp = spacy.load("en_core_web_sm")
-        # self.save_model(ner_model_name.split('/')[1], re_model_name.split('/')[1])
-
-    # def save_model(self, ner_filename: str = '', re_filename: str = ''):
-    #     self.ner_model.save_pretrained(os.path.dirname(__file__) + '/' + ner_filename)
-    #     self.re_model.save_pretrained(os.path.dirname(__file__) + '/' + re_filename)
-    #     self.nlp.to_disk(os.path.dirname(__file__) + '/' + "en_core_web_sm")
-    #     print("Saved Models to disk.")
-
-    # def load_model(self, ner_filename: str = '', re_filename: str = ''):
-    #     self.ner_model = GLiNER.from_pretrained(os.path.dirname(__file__) + '/' + ner_filename)
-    #     self.re_model = GLiREL.from_pretrained(os.path.dirname(__file__) + '/' + re_filename)
-    #     self.nlp = spacy.blank("en").from_disk(os.path.dirname(__file__) + '/' + 'en_core_web_sm')
-    #     print("Loaded Models from disk.")
 
     def inference(self, text: list, use_gpu: bool = True):
 
+        decimated_text = []
         entity_list = []
-        sorted_data_desc = []
-        tokens = []
-        non_entity_tokens = []
-        for txt in text:
-            entities = self.ner_model.predict_entities(txt, self.entity_labels)
-            txt = ''.join([val for val in txt if "'" not in val])
-            txt = ''.join([val for val in txt if "," not in val])
-            txt = ''.join([val for val in txt if ";" not in val])
-            txt = ''.join([val for val in txt if "." not in val])
-            pdb.set_trace()
-            doc = self.nlp(txt)
-            tokens.append([token.text for token in doc])
+        for cnt, txt in enumerate(text):
+            decimated_text.append({cnt: txt})
+            # entities = []
+            # for dec in decimated_text[-1][cnt]:
+            entity_list.append({cnt: self.ner_model.predict_entities(txt, self.entity_labels)})
 
-            entity_list.append([list(val.values()) for val in entities])
+        for cnt, val in enumerate(entity_list):
+            for ent in val[cnt]:
+                ent.update({'id': str(uuid.uuid4())})
 
-            if entity_list[-1]:
-                relations = self.re_model.predict_relations(tokens[-1], self.rel_labels, threshold=0.0, ner=entity_list[-1], top_k=1)
-            else:
-                sorted_data_desc.append([])
-                non_entity_tokens.append([])
-                continue
-            [val.update({'head_text': txt[val['head_pos'][0]: val['head_pos'][1]].strip(),'tail_text': txt[val['tail_pos'][0]: val['tail_pos'][1]].strip()}) for val in relations]
-            sorted_data_desc.append(sorted(relations, key=lambda x: x['score'], reverse=True))
-            
-            entity_set = [val[2] for val in entity_list[-1]]
-
-            non_entity_tokens.append(' '.join([val for val in tokens[-1] if val not in entity_set]))
-        # pdb.set_trace()
-        return entity_list, sorted_data_desc, tokens, non_entity_tokens
+        return entity_list, decimated_text
 
 if __name__ == "__main__":
     # https://huggingface.co/models?sort=trending&search=gliner
     ner_model_name = "urchade/gliner_multi-v2.1"
-    re_model_name = "jackboyla/glirel-large-v0"
-    re_model_name = "jackboyla/glirel_beta"
 
-    ent_labels = [val.upper() for val in ['company', 'country', 'spoke about', 'spoken about', 'property', 'person', 'organization', 'in conflict with', 'allies']]
+    ent_labels = [val.upper() for val in ['company', 'country', 'spoke about', 'spoken about', 
+                                            'property', 'person', 'group', 'people', 'organization', 
+                                                'in conflict with', 'allies', 'state', 'status',
+                                                    'immigration status', 'litigation']]
 
     rel_labels = [
     'assisted with', 
@@ -92,47 +53,65 @@ if __name__ == "__main__":
     'parent of', 
     'located in or next to body of water',  
     'married to',  
+    'lived with',
+    'living with',
     'child of',  
     'founder of',  
     'founded by',
+    'inside of',
+    'within',
     ]
 
-    cm = ner(ner_model_name, re_model_name, ent_labels, rel_labels)
+    cm = ner(ner_model_name, ent_labels)
 
-    text = ["Once upon a time there were three Bears, who lived together in a house of their own, in a wood.",
-            "One of them was a Little Wee Bear, and one was a Middle-sized Bear, and the other was a Great Big Bear.",
-            "They had each a bowl for their porridge; a little bowl for the Little Wee Bear; \
-                and a middle-sized bowl for the Middle-sized Bear; and a great bowl for the Great Big Bear.",
-            "And they had each a chair to sit in; a little chair for the Little Wee Bear; \
-                and a middle-sized chair for the Middle-sized Bear; and a great chair for the Great Big Bear.",
-            "And they had each a bed to sleep in; a little bed for the Little Wee Bear; \
-                and a middle-sized bed for the Middle-sized Bear; and a great bed for the Great Big Bear.",
-            ]
+    # text = ["Once upon a time there were three Bears, who lived together in a house of their own, in a wood.",
+    #         "One of them was a Little Wee Bear, and one was a Middle-sized Bear, and the other was a Great Big Bear.",
+    #         "They had each a bowl for their porridge; a little bowl for the Little Wee Bear; and a middle-sized bowl for the Middle-sized Bear; and a great bowl for the Great Big Bear.",
+    #         "And they had each a chair to sit in; a little chair for the Little Wee Bear; and a middle-sized chair for the Middle-sized Bear; and a great chair for the Great Big Bear.",
+    #         "And they had each a bed to sleep in; a little bed for the Little Wee Bear; and a middle-sized bed for the Middle-sized Bear; and a great bed for the Great Big Bear.",
+    #         ]
 
-    pdb.set_trace()
-    entities, relationships, tokens, non_entity_tokens = cm.inference(text=text)
-    pdb.set_trace()
+    text = ["The Company has also implemented changes to iOS, iPadOS, the App Store and Safari in the EU as it seeks to comply with the DMA.",
+            "including new business terms and alternative fee structures for iOS and iPadOS apps, alternative methods of distribution for iOS and iPadOS apps,",
+            "alternative payment processing for apps across the Company's operating systems, and additional tools and application programming interfaces (“APIs”) for developers.",
+            "The Company has also continued to make changes to its compliance plan in response to feedback and engagement with the Commission.,"
+            "Although the Company's compliance plan is intended to address the DMA's obligations, it has been challenged by the Commission and may be challenged further by private litigants.",
+            "The DMA provides for significant fines and penalties for noncompliance, and other jurisdictions may seek to require the Company to make changes to its business.",
+            "While the changes introduced by the Company in the EU are intended to reduce new privacy and security risks that the DMA poses to EU users, many risks will remain.",
+    ]
+            
+    entities, decimated_text = cm.inference(text=text)
 
-    print("\nRelationships Descending Order by Score:")
     emb = embeddings()
-    for cnt, item in enumerate(relationships):
-        if non_entity_tokens[cnt]:
-            forward_item = [val for val in item if val['head_pos'][0] < val['tail_pos'][0]]
-            for fi in forward_item:
-                for ent in entities:
-                    head_category = {val[3]: val[0:2] for val in ent if fi['head_text'] in val[3]}
-                    tail_category = {val[3]: val[0:2] for val in ent if fi['tail_text'] in val[3]}
-                pdb.set_trace()
-                non_entities = non_entity_tokens[cnt][[*head_category][1] : [*tail_category][1]]
-                semantic_label = [emb.similarity2(non_entity_tokens[cnt], val) for val in rel_labels]
+    nodes = []
+    relationships = []
+    thresh = 0.5
+    for cnt, node_body in enumerate(entities):
+        if len(node_body[cnt]) < 2:
+            continue
 
-                relation = rel_labels[semantic_label.index(max(semantic_label))]
-                print(f"{fi['head_text']} {[*head_category][0]} --> {relation} --> {fi['tail_text']}  {[*tail_category][0]} | score: {fi['score']} | {non_entity_tokens}")
+        nodes.extend(node_body[cnt])
+        
+        for cnt0, node in enumerate(node_body[cnt][:-1]):
+            snippet = text[cnt][node['end']+1 : node_body[cnt][cnt0+1]['start']-1]
+            semantic_label = [emb.similarity2(snippet, val) for val in rel_labels]
+            relation = (rel_labels[semantic_label.index(max(semantic_label))], float(max(semantic_label)))
+            if relation[1] < thresh:
+                continue
+            relationships.append({
+                'origin_data_index': cnt,
+                'text': snippet,
+                'head_id': node['id'],
+                'tail_id': node_body[cnt][cnt0+1]['id'],
+                'relation_label': relation,
+            })
 
-    print(f"Entities:\n{entities}")
-    print(f"Non Entity Tokens:\n{non_entity_tokens}")
-    zipped = list(zip(semantic_label, rel_labels))
-    print(f"Similarity Scores:")
-    [print(z) for z in zipped]
+    print("Printing Subject-Predicate-Object Tripilets:")
+    for triple in relationships:
+        head = triple['head_id']
+        tail = triple['tail_id']
+        head_node = [val for val in nodes if val['id'] == head][0]
+        tail_node = [val for val in nodes if val['id'] == tail][0]
+        print(f"[{head_node['text']} | {head_node['label']}] - {triple['relation_label']} | {triple['text']} - [{tail_node['text']} | {tail_node['label']}]")
 
     pdb.set_trace()

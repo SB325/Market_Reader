@@ -50,4 +50,6 @@ PyArrow
 grpcio-status
 lxml
 glirel==0.1.4
+spacy
+gliner
 loguru
