@@ -68,18 +68,18 @@ services:
       - es02
     container_name: pr
 
-  # real time news updates
-  webhook:
-    build: 
-      context: "./util/webhook_server/"
-      no_cache: true
-    restart: unless-stopped
-    volumes:
-      - ./util/webhook_server:/webhook
-    ports:
-      - 8001:8001
-    networks:
-     - homeserver
-    profiles:
-      - llm
-    container_name: benzinga_webhook
+  # # real time news updates [defunct]
+  # webhook:
+  #   build: 
+  #     context: "./util/webhook_server/"
+  #     no_cache: true
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./util/webhook_server:/webhook
+  #   ports:
+  #     - 8001:8001
+  #   networks:
+  #    - homeserver
+  #   profiles:
+  #     - llm
+  #   container_name: benzinga_webhook
