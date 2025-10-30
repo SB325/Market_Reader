@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
 
 from util.postgres.db.models.tickers import Base
+from util.postgres.db.models.fundamentals import FundamentalsBase
 from util.postgres.db.conn import insert_engine
 from sqlalchemy.schema import CreateSchema
 import pdb
@@ -22,6 +23,7 @@ def create_schemas():
 
     with engine.connect() as conn:
         Base.metadata.create_all(engine)
+        FundamentalsBase.metadata.create_all(engine)
         conn.commit()
         conn.close()
     engine.dispose()

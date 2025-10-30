@@ -60,6 +60,8 @@ if __name__ == "__main__":
     'founded by',
     'inside of',
     'within',
+    'complied with',
+    'set requirements for',
     ]
 
     cm = ner(ner_model_name, ent_labels)

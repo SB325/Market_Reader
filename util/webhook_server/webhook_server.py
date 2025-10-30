@@ -25,7 +25,7 @@ to_pop = ['body', 'id','revision_id','type',
         'updated_at','authors',
         'tags','channels', 'url', 'created_at']
 
-caplimit = 50_000_000
+caplimit = 250_000_000_000
 with open('nasdaq_screener.csv', 'r') as file:
     reader = csv.DictReader(file)
     bigticknas = []
@@ -88,7 +88,6 @@ def has_recent_tickers(current_time, ticker_list, latency_m = 10):
     for tick in ticker_list:
         recent_tickers['records'].update({tick: current_time})
     return False, len(recent_tickers['records'])
-
 
 @app.post("/")
 async def root(data: webhook_response):
