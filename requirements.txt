@@ -53,3 +53,5 @@ glirel==0.1.4
 spacy
 gliner
 loguru
+
+pymilvus==2.6.3

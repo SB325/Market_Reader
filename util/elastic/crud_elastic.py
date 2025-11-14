@@ -20,7 +20,7 @@ cert = f"{dir_path}/certs/ca/ca.pem"
 
 hostname = '127.0.0.1'
 if os.getenv('INDOCKER'):
-    hostname = 'es01' 
+    hostname = 'elastic' 
 
 class crud_elastic():
     def __init__(self, 

@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.getcwd())) #, '../../'))
 from util.logger import log
 from util.requests_util import requests_util
 from util.crud_pg import crud as crud
-from util.crud_elastic import crud_elastic as crud_elastic
+from util.elastic.crud_elastic import crud_elastic as crud_elastic
 from util.postgres.db.models.tickers import Filings as company_filings
 from util.postgres.db.models.fundamentals import FundamentalsArtifacts as fundamentals_artifacts
 import re
@@ -21,6 +21,7 @@ import pandas as pd
 # from vectorize.vectorize import add_data_to_vector_db
 
 crud_util = crud()
+elastic = crud_elastic()
 requests = requests_util(rate_limit = 1.5)
 
 uri_base = 'https://www.sec.gov/Archives/edgar/data/'
@@ -37,19 +38,22 @@ def get_data(data):
 
 async def query_files():
     columns_to_query = ['cik','accessionNumber','primaryDocument', 'primaryDocDescription', 'reportDate', 'acceptanceDateTime']
-    query_match = ['10-K']
+    # query_match = ['10-K']
     # condition = {'query_col': "primaryDocDescription", 'query_match': ['6-K', '8-K', '10-K']}
     # https://www.sec.gov/Archives/edgar/data/1675149/000095017025100979/aa-20250630.htm
-    condition = {}
-    response = await crud_util.query_table(company_filings, columns_to_query, condition)
+
+    response_db = await crud_util.query_table(
+                        tablename=company_filings, 
+    4                   return_cols=columns_to_query, 
+                        )
     # '0001318605' - tesla
     # '0000354950' - home depot
-    response_slim = [resp for resp in response if (resp[3] in query_match and '0000354950' in resp[0])]
-    if response_slim:
-        if isinstance(response_slim, list):
+    # response_slim = [resp for resp in response if (resp[3] in query_match and '0000354950' in resp[0])]
+    if response_db:
+        if isinstance(response_db, list):
             filing_content_list = []
             cnt = 0
-            for link in tqdm(response_slim[cnt:], desc="Downloading Filing Document:"):
+            for link in tqdm(response_db[cnt:], desc="Downloading Filing Document:"):
                 cik = link[0]
                 primaryDocDescription = link[3]
                 reportDate = link[4]
@@ -92,7 +96,7 @@ async def query_files():
                 response = await crud_util.insert_rows_orm(
                                 fundamentals_artifacts, 
                                 index_elements=['accessionNumber', 'filename'],
-                                data=htm_dict, 
+                                data=df, 
                                 )
                 
                 for htm in htm_list:
@@ -111,26 +115,12 @@ async def query_files():
                                             'accessionNumber': accessionNumber,
                                             'uri': uri_full,
                                             'primaryDocDescription': primaryDocDescription, 
-                                            'filename': resp.content
+                                            'filename': htm,
+                                            'content': resp.content
                                             }
                                         }
-                # filing_content_list.append(content_element)
-                # cnt = cnt + 1
+                filing_content_list.append(content_element)
                 
-                # Download artifacts:
-                #  - only .htm files
-                #  - parse tables with pandas.read_html(resp.content)
-                #  - parse text with soup.get_text()
-                # soup = BeautifulSoup(resp.content, 'html.parser')
-                # resp_vec = requests.post(url_in="http://172.23.0.2:8000/add_str_as_vector", 
-                #                         headers_in=header_vec, 
-                #                         json_in=[content_element],
-                #                         )
-                # pdb.set_trace()
-                # add_data_to_vector_db([content_element])
-            
-            # add_data_to_vector_db(filing_content_list)
-            # put contents of filing_content_list in minio
             pdb.set_trace()
 
 if __name__ == "__main__":
