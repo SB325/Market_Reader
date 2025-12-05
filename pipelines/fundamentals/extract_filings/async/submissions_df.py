@@ -23,7 +23,7 @@ requests = requests_util()
 
 current_file = os.path.basename(__file__)
 
-def read_cik(self, cik: str = ''):
+async def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
     return cik
@@ -47,7 +47,7 @@ def read_zip_file(zip_path):
         
     return subm_obj
 
-def clean_df(df: pd.DataFrame):
+async def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
@@ -71,7 +71,6 @@ class Submissions():
         self.filing_list: list = []
         self.cik: str = None
         self.crud_util = crud_obj
-        print("Initiating submissions_df...")
 
     async def insert_submissions_from_zip(self, zip_file: str = ''):
         success = False
@@ -90,7 +89,7 @@ class Submissions():
             print('No zip file presented.')
         return success
 
-    def parse_response(self, content_merged):
+    async def parse_response(self, content_merged):
 
         t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
@@ -125,7 +124,6 @@ class Submissions():
                 for row in filingsd['data']:
                     self.filing_list.append(dict(zip(filingsd['columns'], row)))
 
-        self.downloaded_list = {}
         success = True
         return success
 
@@ -145,7 +143,7 @@ class Submissions():
                     "primaryDocument", "primaryDocDescription"]
             df = df[elements]
 
-            clean_df(df)
+            await clean_df(df)
 
             filings_dict = df.to_dict(orient='records')
             unique_elements = ["cik", "accessionNumber"]
@@ -166,7 +164,7 @@ class Submissions():
                             'sicDescription', 'ownerOrg', 'insiderTransactionForOwnerExists', \
                                 'insiderTransactionForIssuerExists', 'phone', 'flags', 'formerNames']
             df = df[elements]
-            clean_df(df)
+            await clean_df(df)
 
             unique_elements = ["cik", "ein"]
             cmeta_dict = df.to_dict(orient='records')
@@ -184,7 +182,7 @@ class Submissions():
             elements = ['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
                     'stateOrCountryDescription']
             df = df[elements]
-            clean_df(df)
+            await clean_df(df)
 
             unique_elements = ["cik"]
             cmail_dict = df.to_dict(orient='records')
@@ -202,7 +200,7 @@ class Submissions():
             elements = ['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
                     'stateOrCountryDescription']
             df = df[elements]
-            clean_df(df)
+            await clean_df(df)
 
             unique_elements = ["cik"]
             cbusiness_dict = df.to_dict(orient='records')
@@ -210,7 +208,7 @@ class Submissions():
             print(f"{(time.time()-t0)/60} minutes elapsed on business addr insertion.")
             self.addresses_business = []
             
-        # self.downloaded_list = []
+        self.downloaded_list = []
         self.filing_list
         success = True
         return success

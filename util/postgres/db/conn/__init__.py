@@ -8,16 +8,27 @@ from flask_sqlalchemy import SQLAlchemy
 # import logger as log
 from dotenv import load_dotenv
 import pdb
-
 load_dotenv()
 
 app = Flask(__name__)
 db = None
 env = os.environ.get("ENV")
 
+def get_db_ip():
+    import subprocess
+
+    # Run a command and capture its stdout and stderr
+    ip = subprocess.run(
+        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' postgres_container",  # Command and its arguments as a list
+        capture_output=True,  # Capture stdout and stderr
+        text=True,           # Decode output as text (UTF-8 by default)
+        shell=True           # Raise CalledProcessError if the command returns a non-zero exit code
+    ).stdout.replace('\n', '')
+    return ip
+
 user = os.getenv("DATABASE_USER")
 password = os.getenv("DATABASE_PASSWORD")
-hostname = os.getenv("DB_HOSTNAME")
+hostname = get_db_ip()
 if os.getenv('INDOCKER'):
     hostname = 'postgres_container'
 

@@ -21,6 +21,7 @@ import pandas as pd
 # from vectorize.vectorize import add_data_to_vector_db
 
 crud_util = crud()
+pdb.set_trace()
 elastic = crud_elastic()
 requests = requests_util(rate_limit = 1.5)
 
@@ -44,11 +45,12 @@ async def query_files():
 
     response_db = await crud_util.query_table(
                         tablename=company_filings, 
-    4                   return_cols=columns_to_query, 
+                        return_cols=columns_to_query, 
                         )
     # '0001318605' - tesla
     # '0000354950' - home depot
     # response_slim = [resp for resp in response if (resp[3] in query_match and '0000354950' in resp[0])]
+    pdb.set_trace()
     if response_db:
         if isinstance(response_db, list):
             filing_content_list = []
@@ -104,7 +106,7 @@ async def query_files():
                     resp = requests.get(url_in=uri_full, headers_in=header)
 
                     # put resp.content into elasticdb, whether table or not
-                    if not resp.content()
+                    if not resp.content():
                         continue
                     content_element = {
                                         'id': cnt,

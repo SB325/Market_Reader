@@ -36,12 +36,12 @@ requests = requests_util()
 
 current_file = os.path.basename(__file__)
 
-def read_cik(self, cik: str = ''):
+async def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
     return cik
 
-def clean_df(df: pd.DataFrame):
+async def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
@@ -84,7 +84,6 @@ class Facts():
         self.filing_list: list = []
         self.cik: str = None
         self.crud_util = crud_obj
-        print("Initiating facts_df...")
 
     async def download_from_zip(self, zip_file: str = ''):
         success = False
@@ -106,7 +105,8 @@ class Facts():
             print('No zip file presented.')
         return success
 
-    def parse_response(self, content_merged):
+    async def parse_response(self, content_merged):
+
         success = False
         t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
@@ -119,7 +119,7 @@ class Facts():
         facts = self.downloaded_list['facts'].to_frame()
 
         # clear downloaded list from memory
-        
+        pdb.set_trace()
         self.downloaded_list.iloc[0:0]
 
         facts.insert(1, "cik", cik, True)
@@ -147,21 +147,21 @@ class Facts():
         [f.update({'frame': ''}) for f in self.float if 'frame' not in f.keys()]
 
         # clear dei_float from memory
-        
+        pdb.set_trace()
         dei_float = []
 
         # Accounting
         gaap = facts['facts'].apply(lambda x: x.get('us-gaap', None) if isinstance(x, dict) else {}).dropna()
 
         # clear dei and facts from memory
-        
+        pdb.set_trace()
         dei.iloc[0:0]
-        
+        pdb.set_trace()
         facts.iloc[0:0]
 
         # gaap = [ m['us-gaap'] for m in facts if 'us-gaap' in m.keys()]
         accounting = pd.DataFrame(gaap)
-        
+        pdb.set_trace()
         gaap.iloc[0:0]
 
         for cnt, units in enumerate(tqdm(accounting['facts'], desc = 'Accounting...')):
@@ -186,7 +186,7 @@ class Facts():
                 except:
                     pdb.set_trace()
         
-        print(f"{(time.time()-t0)} seconds elapsed on initial download parsing.")
+        print(f"{(time.time()-t0)/60} minutes elapsed on initial download parsing.")
         
         success = True
         return success
@@ -207,15 +207,15 @@ class Facts():
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
-            clean_df(df)
+            await clean_df(df)
             
             so_dict = df.to_dict(orient='records')
             # so_dict = [val for val in so_dict if val['cik'] not in ciks]
-            # self.crud_util.insert_rows(SharesOutstanding, df)
+            # await self.crud_util.insert_rows(SharesOutstanding, df)
             unique_elements = ["cik", "accn", "fy", "form"]
             await self.crud_util.insert_rows_orm(SharesOutstanding, unique_elements, so_dict[:3])
             
-            print(f"{(time.time()-t0)} seconds elapsed on filings insertion.")
+            print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.shares = []
 
         if not self.float:
@@ -231,12 +231,12 @@ class Facts():
             df['val'] = df['val'].astype('int64')
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
-            clean_df(df)
+            await clean_df(df)
             f_dict = df.to_dict(orient='records')
             
             unique_elements = ["cik", "accn", "fy", "form"]
             await self.crud_util.insert_rows_orm(FloatTable, unique_elements, f_dict)   
-            print(f"{(time.time()-t0)} seconds elapsed on float data insertion.")
+            print(f"{(time.time()-t0)/60} minutes elapsed on float data insertion.")
             self.float = []
         
         if not self.accounting_data:
@@ -252,12 +252,12 @@ class Facts():
             df['val'] = df['val'].astype(int)
             df['fy'] = df['fy'].fillna(0)
             df['fy'] = df['fy'].astype(int)
-            clean_df(df)
+            await clean_df(df)
             a_dict = df.to_dict(orient='records')
             
             unique_elements = ["cik", "start", "end", "fy"]
             await self.crud_util.insert_rows_orm(AccountingTable, unique_elements, a_dict)
-            print(f"{(time.time()-t0)} seconds elapsed on accounting data insertion.")
+            print(f"{(time.time()-t0)/60} minutes elapsed on accounting data insertion.")
             self.accounting_data = []
 
         success = True
