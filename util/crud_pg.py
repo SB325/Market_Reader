@@ -43,7 +43,7 @@ class crud():
             data.to_csv(buffer, sep=sep, index=add_index, header=False)
             buffer.seek(0)
             
-            conn =  self.engine.raw_connection()
+            conn = self.engine.raw_connection()
             cursor = conn.cursor()
             try:
                 cursor.copy_from(buffer, tablename, sep=sep, null="")
@@ -173,19 +173,20 @@ class crud():
     async def insert_rows_orm(self, tablename, index_elements: list, data: Union[list, pd.DataFrame]) -> bool:
         status = False
 
-        if isinstance(data, pd.DataFrame):
-            with self.engine.connect() as conn:
-                conn.execute(insert(tablename).on_conflict_do_nothing(
-                            index_elements=index_elements
-                            ).values(data))
-                conn.commit()
-                status = True
-        else:
-            with self.engine.connect() as conn:
-                conn.execute(insert(tablename).on_conflict_do_nothing(
-                            index_elements=index_elements
-                    ).values(data))
-                conn.commit()
-                status = True
+        # if isinstance(data, pd.DataFrame):
+        #     with self.engine.connect() as conn:
+        #         conn.execute(insert(tablename).on_conflict_do_nothing(
+        #                     index_elements=index_elements
+        #                     ).values(data))
+        #         conn.commit()
+        #         status = True
+        # else:
+        with self.engine.connect() as conn:
+            conn.execute(insert(tablename).on_conflict_do_nothing(
+                        index_elements=index_elements
+                ).values(data))
+            conn.commit()
+            status = True
+
         return status
     

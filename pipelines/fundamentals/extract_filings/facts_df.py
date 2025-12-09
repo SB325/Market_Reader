@@ -46,25 +46,21 @@ def clean_df(df: pd.DataFrame):
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
 
-def read_zip_file(zip_path):
-    filename = 'companyfacts.pkl' 
-    if filename in os.listdir('pickles'):
-        with open('pickles/' + filename, 'rb') as pickle_file:
-            fact_obj = pickle.load(pickle_file)
-    else:
-        fact_obj = []
-        with zipfile.ZipFile(zip_path) as zip_ref:
-            for info in tqdm(zip_ref.infolist(), desc="Downloading Filing Data:"):
-                # Check if the file is readable (not encrypted)
-                if info.flag_bits & 0x1 == 0:
-                    with zip_ref.open(info, 'r') as f:
-                        # You can read the contents of the file here
-                        fact_obj.append(json.loads(f.read().decode('utf-8')))
+def nfilings_in_zip(zip_path):
+    return len(zipfile.ZipFile(zip_path).infolist())
 
-        with open('pickles/companyfacts.pkl', 'wb') as file:
-            pickle.dump(fact_obj, file)
-    
-    return fact_obj
+def read_zip_file(zip_path, nfilings, chunk_size):
+    with zipfile.ZipFile(zip_path) as zip_ref:
+        for i in range(0, nfilings, chunk_size):
+            fact_obj = []
+            info_chunk = zip_ref.infolist()[i:i + chunk_size]
+            for info in info_chunk:
+                if info.flag_bits & 0x1 == 0:
+                    if not 'placeholder.txt' in info.filename:
+                        with zip_ref.open(info, 'r') as f:
+                            # You can read the contents of the file here
+                            fact_obj.append(json.loads(f.read().decode('utf-8')))
+            yield fact_obj
 
 class Facts():
     # Submissions:
@@ -86,7 +82,7 @@ class Facts():
         self.crud_util = crud_obj
         print("Initiating facts_df...")
 
-    async def download_from_zip(self, zip_file: str = ''):
+    async def download_from_zip(self, content_merged, zip_file: str = ''):
         success = False
         known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
@@ -97,7 +93,19 @@ class Facts():
         # all in bulk. 
         if zip_file:
             try: 
-                self.downloaded_list = read_zip_file(zip_file)
+                chunk_size = 100
+                nfilings = nfilings_in_zip(zip_file)
+                filing = read_zip_file(zip_file, nfilings, chunk_size)
+                pbar = tqdm(enumerate(filing), 
+                            total=math.ceil(nfilings/chunk_size), 
+                            desc="Performing Extract+Load of SEC Filings")
+                for cnt, self.downloaded_list in pbar:
+                    # if cnt<104:
+                    #     continue
+                    self.parse_response(content_merged, cnt)
+                    await self.insert_table(cnt)
+                    pbar.set_description(f"Processing Submissions: {100*chunk_size*(cnt+1)/(nfilings):.2f}%")
+
             except (Exception) as err:
                 print(f"{err}")
 
@@ -106,7 +114,7 @@ class Facts():
             print('No zip file presented.')
         return success
 
-    def parse_response(self, content_merged):
+    def parse_response(self, content_merged, pbar):
         success = False
         t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
@@ -118,10 +126,6 @@ class Facts():
 
         facts = self.downloaded_list['facts'].to_frame()
 
-        # clear downloaded list from memory
-        
-        self.downloaded_list.iloc[0:0]
-
         facts.insert(1, "cik", cik, True)
 
         dei = facts.facts.apply(lambda x: x.get('dei', None) if isinstance(x, dict) else {}).dropna()
@@ -129,7 +133,7 @@ class Facts():
         sharesoutstanding = dei.apply(lambda x: x.get('EntityCommonStockSharesOutstanding', None) if isinstance(x, dict) else {}).dropna()
         units = sharesoutstanding.apply(lambda x: x.get('units', None) if isinstance(x, dict) else {}).dropna()
         shares = units.apply(lambda x: x.get('shares', None) if isinstance(x, dict) else {}).dropna()
-        
+
         for cnt, share in enumerate(shares):
             [s.update({'cik': cik[cnt]}) for s in share]
             self.shares.extend(share)
@@ -138,7 +142,7 @@ class Facts():
 
         
         dei_float = dei.apply(lambda x: x['EntityPublicFloat']['units'] if 'EntityPublicFloat' in x.keys() else {})
-        
+
         for cnt,m in enumerate(dei_float):
             if m:
                 currency = [q for q in m.keys()][0]
@@ -146,25 +150,13 @@ class Facts():
                 self.float.extend(m[currency])
         [f.update({'frame': ''}) for f in self.float if 'frame' not in f.keys()]
 
-        # clear dei_float from memory
-        
-        dei_float = []
-
         # Accounting
         gaap = facts['facts'].apply(lambda x: x.get('us-gaap', None) if isinstance(x, dict) else {}).dropna()
 
-        # clear dei and facts from memory
-        
-        dei.iloc[0:0]
-        
-        facts.iloc[0:0]
-
         # gaap = [ m['us-gaap'] for m in facts if 'us-gaap' in m.keys()]
         accounting = pd.DataFrame(gaap)
-        
-        gaap.iloc[0:0]
 
-        for cnt, units in enumerate(tqdm(accounting['facts'], desc = 'Accounting...')):
+        for cnt, units in enumerate(accounting['facts']):
             if not units:
                 continue
             types = units.keys()
@@ -175,26 +167,37 @@ class Facts():
                     if not isinstance(typ_dict, dict):
                         if math.isnan(typ_dict):
                             continue
-                    unts = typ_dict['units']
-                    if 'USD' in unts.keys():
-                        data = unts['USD']  # missing start key
-                        # [dat.update({'start': ''}) for dat in data]
-                    elif 'shares' in unts.keys():
-                        data = unts['shares']
+                    unts = typ_dict['units']  
+                    data = []    
+                    # if any(['USD' in key for key in unts.keys()]):
+                    #     key = [key for key in unts.keys() if 'USD' in key][0]
+                    #     data = unts[key]  # missing start key
+                    #     # [dat.update({'start': ''}) for dat in data]  #TODO: if start has value enter that into 
+                    # elif any(['EUR' in key for key in unts.keys()]):
+                    #     key = [key for key in unts.keys() if 'EUR' in key][0]
+                    #     data = unts[key]  # missing start key
+                    #     # [dat.update({'start': ''}) for dat in data]
+                    # elif 'shares' in unts.keys():
+                    #     data = unts['shares']
+                    # else:
+                    #     pdb.set_trace()
+                    
+                    key = [key for key in unts.keys()]
+                    if len(key)>1:
+                        [data.extend(unts[k]) for k in key]
+                    else:
+                        data = unts[key[0]]
                     [acct.update(addon) for acct in data]
+                    # pdb.set_trace()
                     self.accounting_data.extend(data)  # list of dicts
                 except:
                     pdb.set_trace()
-        
-        print(f"{(time.time()-t0)} seconds elapsed on initial download parsing.")
-        
+                
         success = True
         return success
 
-    async def insert_table(self) -> bool:
-        
+    async def insert_table(self, pbar) -> bool:
         success = False
-        
         if not self.shares:
             log.warning(f"No shares outstanding data to insert.")
         else:
@@ -212,12 +215,8 @@ class Facts():
             so_dict = df.to_dict(orient='records')
             # so_dict = [val for val in so_dict if val['cik'] not in ciks]
             # self.crud_util.insert_rows(SharesOutstanding, df)
-            unique_elements = ["cik", "accn", "fy", "form"]
-            await self.crud_util.insert_rows_orm(SharesOutstanding, unique_elements, so_dict[:3])
-            
-            print(f"{(time.time()-t0)} seconds elapsed on filings insertion.")
+            unique_elements_so = ["cik", "accn", "fy", "form"]
             self.shares = []
-
         if not self.float:
             log.warning(f"No float data to insert.")
         else:
@@ -234,18 +233,16 @@ class Facts():
             clean_df(df)
             f_dict = df.to_dict(orient='records')
             
-            unique_elements = ["cik", "accn", "fy", "form"]
-            await self.crud_util.insert_rows_orm(FloatTable, unique_elements, f_dict)   
-            print(f"{(time.time()-t0)} seconds elapsed on float data insertion.")
+            unique_elements_f = ["cik", "accn", "fy", "form"]
             self.float = []
-        
+
         if not self.accounting_data:
             log.warning(f"No accounting data to insert.")
         else:
             t0 = time.time()
             df = pd.DataFrame(self.accounting_data)
 
-            elements = ['cik','start','end','val','accn','fy','fp','form','filed','type','frame']
+            elements = ['cik','end','val','accn','fy','fp','form','filed','type','frame']
             df = df[elements]
             df['val'] = df['val'][df['val']<=np.iinfo(np.int64).max]
             df['val'] = df['val'].fillna(0)
@@ -254,11 +251,17 @@ class Facts():
             df['fy'] = df['fy'].astype(int)
             clean_df(df)
             a_dict = df.to_dict(orient='records')
-            
-            unique_elements = ["cik", "start", "end", "fy"]
-            await self.crud_util.insert_rows_orm(AccountingTable, unique_elements, a_dict)
-            print(f"{(time.time()-t0)} seconds elapsed on accounting data insertion.")
-            self.accounting_data = []
 
+            unique_elements_a = ["cik", "end", "fy"] # why are these columns unique elements?
+
+            last_accounting_element = await self.crud_util.query_table(AccountingTable, 
+                                                    query_col='accn', 
+                                                    query_val=a_dict[-1]['accn'])
+            # if data not present, insert it here.
+            if not last_accounting_element:
+                await self.crud_util.insert_rows_orm(SharesOutstanding, unique_elements_so, so_dict[:3])
+                await self.crud_util.insert_rows_orm(FloatTable, unique_elements_f, f_dict)  
+                await self.crud_util.insert_rows_orm(AccountingTable, unique_elements_a, a_dict)
+            self.accounting_data = []
         success = True
         return success

@@ -52,7 +52,7 @@ if database_name != None and user != None and password != None and hostname != N
                                                 'pool_timeout': SQLALCHEMY_POOL_TIMEOUT,
                                                 'pool_pre_ping': SQLALCHEMY_PRE_PING,
                                                 'pool_pre_ping': SQLALCHEMY_PRE_PING,
-                                                'insertmanyvalues_page_size' : 1000}
+                                                'insertmanyvalues_page_size' : 2000}
 
     db = SQLAlchemy(app)
 else:

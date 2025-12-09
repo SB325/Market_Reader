@@ -1,11 +1,54 @@
-from pymilvus import MilvusClient, DataType
+from pymilvus import MilvusClient, DataType, Collection
 from collection_model import collection_model
+from util.logger import log
+import pdb
 
 class crud_milvus():
     def __init__(self):
         self.client = MilvusClient(
             uri="http://172.18.0.12:19530",
         )
+
+    def insert(
+            collection_name: str = "",
+            data: list = [],
+            timeout: int = 1
+        )
+        success = False
+        try:
+            collection = Collection(collection_name) 
+            collection.insert(data=data,
+                            timeout=timeout)
+            success = True
+        except BaseException as be:
+            log.Errmsg(f"{be}")
+
+        return success
+
+    def query(
+            collection_name: str = "",
+            expr: str = "*", 
+            offset: int = 0 , 
+            limit: int = 1000, 
+            output_fields: list = ["*"], 
+            partition_names=None, 
+            timeout=2
+        ):
+        # https://milvus.io/api-reference/pymilvus/v2.2.x/Collection/query().md
+        pdb.set_trace()
+        try:
+            collection = Collection(collection_name) 
+            results = collection.query(
+                expr=expr,
+                offset=offset,
+                limit=limit,
+                output_fields=ouput_fields,
+                partition_names=partition_names,
+                timeout=timeout
+            )
+        except BaseException as be:
+            log.Errmsg(f"{be}")
+        return results
 
     def create_collection(self, collection_obj: collection_model)  #collection_model = pydantic BaseModel
         collection = collection_obj.model_dump()

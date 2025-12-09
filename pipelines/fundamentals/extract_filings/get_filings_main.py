@@ -31,13 +31,12 @@ async def get_facts(content_merged):
     facts = Facts(crud_util)
     t0 = time.time()
     vals = await facts.download_from_zip(
+                content_merged,
                 os.path.join(
                 os.path.dirname(__file__),
                 '../',
                 'companyfacts.zip')
-            )
-    facts.parse_response(content_merged)
-    await facts.insert_table()
+    )
 
     t1 = time.time()
     msg = f"Facts time: {(t1-t0)/60} minutes."
@@ -50,13 +49,12 @@ async def get_submissions(content_merged):
     submissions = Submissions(crud_util)
     t0 = time.time()
     vals = await submissions.insert_submissions_from_zip(
+                content_merged,
                 os.path.join(
                 os.path.dirname(__file__),
                 '../',
                 'submissions.zip')
-            )
-    submissions.parse_response(content_merged)
-    await submissions.insert_table()
+    )
     
     t1 = time.time()
     msg = f"Submissions time: {(t1-t0)/60} minutes."
@@ -74,13 +72,8 @@ async def main():
 
     df_existing = pd.DataFrame.from_dict(tickers_existing).rename(columns={'cik_str': 'cik'})
 
-    # n = 500
-    n=50
-    for i in range(0, len(df_existing), n):
-        chunk = df_existing.iloc[i:i + n]
-        print(f"Processing chunk from index {i} to {i + n - 1}:")
-        await get_facts(chunk)
-        await get_submissions(chunk)
+    await get_facts(df_existing)
+    await get_submissions(df_existing)
 
 if __name__ == "__main__":
     t0 = time.time()

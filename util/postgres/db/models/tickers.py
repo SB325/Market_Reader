@@ -3,9 +3,11 @@ from sqlalchemy import (
     Boolean,
     Column,
     # DateTime,
+    Date,
     Float,
     ForeignKey,
     Integer,
+    SmallInteger,
     # Text,
     String,
     UniqueConstraint,
@@ -166,7 +168,6 @@ class StockFloat(Base):
 class Accounting(Base):
     __tablename__ = "accounting"
     __table_args__ = (UniqueConstraint("cik", 
-                        "start",
                         "end",
                         "fy",
                         name='accounting_uc',
@@ -174,15 +175,14 @@ class Accounting(Base):
                         {"schema": db_schema},
                     )
     ind = Column(Integer, primary_key=True, autoincrement=True) 
-    cik = Column(String, index=True)
-    start = Column(String)
-    end = Column(String)
+    cik = Column(Integer, index=True)
+    end = Column(Date)
     val = Column(BigInteger)    
     accn = Column(String)
     fy = Column(Integer, index=True)
     fp = Column(String, index=True)
     form = Column(String, index=True)
-    filed = Column(String)
+    filed = Column(Date)
     type = Column(String, index=True)
     frame = Column(String)
 

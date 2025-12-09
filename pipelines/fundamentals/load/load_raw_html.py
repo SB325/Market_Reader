@@ -9,9 +9,9 @@ sys.path.append(os.path.join(os.getcwd())) #, '../../'))
 from util.logger import log
 from util.requests_util import requests_util
 from util.crud_pg import crud as crud
-from util.elastic.crud_elastic import crud_elastic as crud_elastic
 from util.postgres.db.models.tickers import Filings as company_filings
-from util.postgres.db.models.fundamentals import FundamentalsArtifacts as fundamentals_artifacts
+from util.milvus.collection_model import collection_model
+from schema import filing_schema
 import re
 from bs4 import BeautifulSoup
 import time
@@ -21,8 +21,7 @@ import pandas as pd
 # from vectorize.vectorize import add_data_to_vector_db
 
 crud_util = crud()
-pdb.set_trace()
-elastic = crud_elastic()
+milvus = crud_milvus()
 requests = requests_util(rate_limit = 1.5)
 
 uri_base = 'https://www.sec.gov/Archives/edgar/data/'
@@ -30,6 +29,7 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
 header_vec = {'Content-Type': 'application/json'}
+collection_name='rawFilings'
 
 warnings.filterwarnings("ignore", category=UserWarning, module="bs4")
 
@@ -50,7 +50,7 @@ async def query_files():
     # '0001318605' - tesla
     # '0000354950' - home depot
     # response_slim = [resp for resp in response if (resp[3] in query_match and '0000354950' in resp[0])]
-    pdb.set_trace()
+    # pdb.set_trace()
     if response_db:
         if isinstance(response_db, list):
             filing_content_list = []
@@ -66,14 +66,12 @@ async def query_files():
                 uriset = (cik.lstrip('0'), accessionNumber) #, link[2])
                 uri = uri_base + '/'.join(uriset)
 
-                # Check to see if this accessionNumber has already been captured
-                response = await crud_util.query_table(
-                                fundamentals_artifacts, 
-                                return_cols=['accessionNumber'],
-                                query_col='accessionNumber', 
-                                query_val=accessionNumber,
-                                unique_column_values='accessionNumber',
-                                )
+                # Check to see if this filing has already been loaded into milvus
+                response = milvus.query(
+                    collection_name=collection_name,
+                    limit=1,
+                    output_fields='uri')
+
                 # skip filings we already indexed
                 if response:
                     continue
@@ -94,18 +92,13 @@ async def query_files():
                     print('Failed to parse Content List! Errmsg:\n{be}')
 
                 df = df[['cik', 'accessionNumber', 'filename']]
-                # Post filing artifacts to db
-                response = await crud_util.insert_rows_orm(
-                                fundamentals_artifacts, 
-                                index_elements=['accessionNumber', 'filename'],
-                                data=df, 
-                                )
-                
+
+                # Post filing htmls to milvus
                 for htm in htm_list:
                     uri_full = uri + '/' + htm
                     resp = requests.get(url_in=uri_full, headers_in=header)
 
-                    # put resp.content into elasticdb, whether table or not
+                    # put resp.content into milvus, whether table or not
                     if not resp.content():
                         continue
                     content_element = {
@@ -122,7 +115,14 @@ async def query_files():
                                             }
                                         }
                 filing_content_list.append(content_element)
-                
+            if not milvus.get_collection_state(collection_name):
+                data_model = collection_model(
+                                collection_name=collection_name, 
+                                schema=filing_schema,
+                                reportDate="Bob")
+                milvus.create_collection(data_model: collection_model) 
+
+            milvus.insert(data=filing_content_list)
             pdb.set_trace()
 
 if __name__ == "__main__":

@@ -16,8 +16,9 @@ from tqdm import tqdm
 import time
 import json
 import pickle
-# from util.postgres.db.create_schemas import create_schemas
-# create_schemas()
+import math
+from util.postgres.db.create_schemas import create_schemas
+create_schemas()
 
 requests = requests_util()
 
@@ -28,24 +29,22 @@ def read_cik(self, cik: str = ''):
         cik.zfill(10)
     return cik
 
-def read_zip_file(zip_path):
-    filename = 'submissions.pkl' 
-    if filename in os.listdir('pickles'):
-        with open('pickles/' + filename, 'rb') as pickle_file:
-            subm_obj = pickle.load(pickle_file)
-    else:
-        subm_obj = []
-        with zipfile.ZipFile(zip_path) as zip_ref:
-            for info in tqdm(zip_ref.infolist(), desc="Downloading Submissions Data:"):
+def nfilings_in_zip(zip_path):
+    return len(zipfile.ZipFile(zip_path).infolist())
+    
+def read_zip_file(zip_path, nfilings, chunk_size):
+    with zipfile.ZipFile(zip_path) as zip_ref:
+        for i in range(0, nfilings, chunk_size):
+            subm_obj = []
+            info_chunk = zip_ref.infolist()[i:i + chunk_size]
+            for info in info_chunk:
                 if info.flag_bits & 0x1 == 0:
                     if not 'placeholder.txt' in info.filename:
                         with zip_ref.open(info, 'r') as f:
                             # You can read the contents of the file here
                             subm_obj.append(json.loads(f.read().decode('utf-8')))
-        with open('pickles/submissions.pkl', 'wb') as file:
-            pickle.dump(subm_obj, file)
-        
-    return subm_obj
+            yield subm_obj
+    
 
 def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
@@ -73,7 +72,8 @@ class Submissions():
         self.crud_util = crud_obj
         print("Initiating submissions_df...")
 
-    async def insert_submissions_from_zip(self, zip_file: str = ''):
+
+    async def insert_submissions_from_zip(self, content_merged, zip_file: str = ''):
         success = False
         known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
@@ -83,14 +83,22 @@ class Submissions():
         # all in bulk. 
         if zip_file:
             try: 
-                self.downloaded_list = read_zip_file(zip_file)
+                chunk_size = 1000
+                nfilings = nfilings_in_zip(zip_file)
+                filing = read_zip_file(zip_file, nfilings, chunk_size)
+                pbar = tqdm(enumerate(filing), total=math.ceil(nfilings/chunk_size), desc="Performing Extract+Load of SEC Filings")
+                for cnt, self.downloaded_list in pbar:
+                    self.parse_response(content_merged, pbar)
+                    await self.insert_table(pbar)
+                    pbar.set_description(f"Processing Submissions: {100*chunk_size*(cnt+1)/(nfilings):.2f}%")
+
             except (Exception) as err:
                 print(f"{err}")
         else:
             print('No zip file presented.')
         return success
 
-    def parse_response(self, content_merged):
+    def parse_response(self, content_merged, pbar):
 
         t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
@@ -102,10 +110,8 @@ class Submissions():
         self.downloaded_list['formerNames'] = self.downloaded_list['formerNames'].apply(lambda x: json.dumps(x))
         self.downloaded_list = self.downloaded_list.to_dict('records')
         
-        print(f"{(time.time()-t0)/60} minutes elapsed on initial download parsing.")
-
         # Set parsing rules and value checks, returning table of interest.
-        for dct in tqdm(self.downloaded_list, desc='Extracting Metadata'):
+        for dct in self.downloaded_list:
             if 'filings' in dct.keys():
                 cik = dct['cik']
                 filings = dct.pop('filings')['recent']
@@ -129,11 +135,11 @@ class Submissions():
         success = True
         return success
 
-    async def insert_table(self) -> bool:
+    async def insert_table(self, pbar) -> bool:
         success = False
         # Insert table(s) into database.
         if not self.filing_list:
-            log.warning(f"No filings data to insert for cik {self.cik}.")
+            log.warning(f"No shares outstanding data to insert.")
         else:
             # Insert company filings    
             t0 = time.time()
@@ -150,7 +156,6 @@ class Submissions():
             filings_dict = df.to_dict(orient='records')
             unique_elements = ["cik", "accessionNumber"]
             await self.crud_util.insert_rows_orm(filings, unique_elements, filings_dict)
-            print(f"{(time.time()-t0)/60} minutes elapsed on filings insertion.")
             self.filing_list = []
             
         if not self.meta_data:
@@ -171,7 +176,6 @@ class Submissions():
             unique_elements = ["cik", "ein"]
             cmeta_dict = df.to_dict(orient='records')
             await self.crud_util.insert_rows_orm(cmeta, unique_elements, cmeta_dict)   
-            print(f"{(time.time()-t0)/60} minutes elapsed on metadata insertion.")
             self.meta_data = []
 
         if not self.addresses_mailing:
@@ -189,7 +193,6 @@ class Submissions():
             unique_elements = ["cik"]
             cmail_dict = df.to_dict(orient='records')
             await self.crud_util.insert_rows_orm(cmailing, unique_elements, cmail_dict) 
-            print(f"{(time.time()-t0)/60} minutes elapsed on mailing addr insertion.")
             self. addresses_mailing = []
 
         if not self.addresses_business:
@@ -207,10 +210,8 @@ class Submissions():
             unique_elements = ["cik"]
             cbusiness_dict = df.to_dict(orient='records')
             await self.crud_util.insert_rows_orm(cbusiness, unique_elements, cbusiness_dict)
-            print(f"{(time.time()-t0)/60} minutes elapsed on business addr insertion.")
             self.addresses_business = []
             
-        # self.downloaded_list = []
         self.filing_list
         success = True
         return success
