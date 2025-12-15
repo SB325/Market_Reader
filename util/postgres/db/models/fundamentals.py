@@ -2,15 +2,14 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     Column,
-    # DateTime,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
-    # Text,
+    Text,
     String,
     UniqueConstraint,
     PrimaryKeyConstraint,
-    # text,
     MetaData,
     UniqueConstraint,
 )
@@ -36,5 +35,10 @@ class FundamentalsArtifacts(FundamentalsBase):
                     )
     ind = Column(Integer, primary_key=True, autoincrement=True) 
     cik = Column(String, index=True)  
-    accessionNumber = Column(String, index=True)
+    reportDate = Column(String)
+    acceptanceDateTime = Column(DateTime)
+    accessionNumber = Column(String)
+    uri = Column(String)
+    primaryDocDescription = Column(String, index=True)
     filename = Column(String)
+    content = Column(Text)

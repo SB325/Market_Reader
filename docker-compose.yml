@@ -45,41 +45,38 @@ services:
   #     - llm
   #   container_name: tech
 
-  # news downloads and db inserts
-  press_release_etl:
-    env_file:
-      - .env
-    build: 
-      dockerfile: Dockerfile_pr
-      context: .
-      no_cache: true
-    restart: on-failure
-    volumes:
-      - ./pipelines/press_releases/newswire_client.py:/pr/pipelines/press_releases/newswire_client.py
-      - ./util/elastic/certs:/pr/util/elastic/certs
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-     - homeserver
-    profiles:
-      - elastic
-      - llm
-    depends_on:
-      - es02
-    container_name: pr
-
-  # # real time news updates [defunct]
-  # webhook:
+  # # news downloads and db inserts
+  # press_release_etl:
+  #   env_file:
+  #     - .env
   #   build: 
-  #     context: "./util/webhook_server/"
+  #     dockerfile: Dockerfile_pr
+  #     context: .
   #     no_cache: true
-  #   restart: unless-stopped
+  #   restart: on-failure
   #   volumes:
-  #     - ./util/webhook_server:/webhook
-  #   ports:
-  #     - 8001:8001
+  #     - ./pipelines/press_releases/newswire_client.py:/pr/pipelines/press_releases/newswire_client.py
+  #     - ./util/elastic/certs:/pr/util/elastic/certs
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
   #   networks:
   #    - homeserver
   #   profiles:
+  #     - elastic
   #     - llm
-  #   container_name: benzinga_webhook
+  #   depends_on:
+  #     - es02
+  #   container_name: pr
+
+  # SEC Edgar Filing Load Process
+  load_filings:
+    build: 
+      context: .
+      dockerfile: Dockerfile_load_filings
+      no_cache: true
+    restart: unless-stopped
+    networks:
+     - homeserver
+    profiles:
+      - llm
+    container_name: load_filings

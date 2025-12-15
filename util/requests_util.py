@@ -49,7 +49,6 @@ class requests_util:
         try:
             response = self.session.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
         except:
-            pdb.set_trace()
             print(f"GET Request for \n{response.url}\n Failed. {response.status_code}")
                 
         self.set_request_time()    

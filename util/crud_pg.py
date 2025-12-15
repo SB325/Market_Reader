@@ -173,14 +173,6 @@ class crud():
     async def insert_rows_orm(self, tablename, index_elements: list, data: Union[list, pd.DataFrame]) -> bool:
         status = False
 
-        # if isinstance(data, pd.DataFrame):
-        #     with self.engine.connect() as conn:
-        #         conn.execute(insert(tablename).on_conflict_do_nothing(
-        #                     index_elements=index_elements
-        #                     ).values(data))
-        #         conn.commit()
-        #         status = True
-        # else:
         with self.engine.connect() as conn:
             conn.execute(insert(tablename).on_conflict_do_nothing(
                         index_elements=index_elements

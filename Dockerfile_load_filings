@@ -1,0 +1,15 @@
+FROM python:3.10.12
+
+USER root
+WORKDIR /edgar
+
+COPY ./requirements_load_filings.txt requirements.txt
+RUN python -m pip install -r requirements.txt
+
+COPY util/ util/
+COPY pipelines/fundamentals/load/load_raw_html.py pipelines/fundamentals/load/load_raw_html.py 
+COPY *.env .env
+
+ENV INDOCKER=True
+
+ENTRYPOINT python pipelines/fundamentals/load/load_raw_html.py 
