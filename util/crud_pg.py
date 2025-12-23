@@ -142,7 +142,8 @@ class crud():
                     # print(f"{isinstance(out[0], str)} {type(out[0])}")
                 else:
                     out = [n[:len(return_cols)] for n in out]
-            
+        
+        out = [val for val in out if val]
         return out
 
     async def delete_rows(self, column: str, tablename, query_val: str) -> bool:

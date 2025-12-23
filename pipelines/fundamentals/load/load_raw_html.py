@@ -11,6 +11,9 @@ from util.requests_util import requests_util
 from util.crud_pg import crud as crud
 from util.postgres.db.models.tickers import Filings as company_filings
 from util.postgres.db.models.fundamentals import FundamentalsArtifacts as Fundamentals
+from pipelines.fundamentals.transform.explore_data import target_filings
+from pipelines.fundamentals.transform.clean_html import clean_html
+
 # from util.milvus.collection_model import collection_model_type
 # from util.milvus.crud_milvus import crud_milvus
 # from schema import filing_schema, field_params_dict
@@ -127,13 +130,17 @@ async def query_files():
                             'uri': uri_full,
                             'primaryDocDescription': primaryDocDescription, 
                             'filename': htm,
-                            'content': resp.content
+                            'rawContent': resp.content
                         }
-                    filing_content_list.append(content_element)
+                        
+                    clean_html(content_element)
+                    
+                    if '{}' != content_element['cleanContent']:
+                        filing_content_list.append(content_element)
                 
                 await crud_util.insert_rows_orm(
                                 Fundamentals, 
-                                ["accessionNumber", "filename"], 
+                                ["accessionNumber"], 
                                 filing_content_list)
             
             # milvus.insert(data=filing_content_list)

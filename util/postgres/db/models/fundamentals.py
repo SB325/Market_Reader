@@ -13,6 +13,7 @@ from sqlalchemy import (
     MetaData,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, declarative_base
@@ -28,7 +29,7 @@ FundamentalsBase = declarative_base(metadata=MetaData(schema=db_schema))
 
 class FundamentalsArtifacts(FundamentalsBase):
     __tablename__ = "fundamentals_artifacts"
-    __table_args__ = (UniqueConstraint("accessionNumber", "filename",
+    __table_args__ = (UniqueConstraint("accessionNumber",
                         name='fartifacts_uc',
                         ),
                         {"schema": db_schema},
@@ -41,4 +42,5 @@ class FundamentalsArtifacts(FundamentalsBase):
     uri = Column(String)
     primaryDocDescription = Column(String, index=True)
     filename = Column(String)
-    content = Column(Text)
+    rawContent = Column(Text)
+    cleanContent = Column(JSONB)
