@@ -1,9 +1,12 @@
 import pdb
 import traceback
+import os
 from confluent_kafka import Producer, Consumer, TopicPartition
 from confluent_kafka.admin import AdminClient
 from dotenv import load_dotenv
 import time
+import subprocess
+import json
 
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
@@ -18,14 +21,16 @@ def get_kafka_ip():
     ).stdout.replace('\n', '')
     return ip
 
-client_conf = {
+producer_conf = {'bootstrap.servers': f'{get_kafka_ip()}:9092'}
+consumer_conf = {
     'bootstrap.servers': f'{get_kafka_ip()}:9092',
-    'default.topic.config': {'auto.offset.reset': 'smallest'}
+    'default.topic.config': {'auto.offset.reset': 'smallest'},
+    'group.id': group_id,
 }
 
 def get_number_of_messages_in_topic(self, topic):
-    unused_consumer = Consumer(client_conf)
-    admin_client = AdminClient(client_conf)
+    unused_consumer = Consumer(consumer_conf)
+    admin_client = AdminClient(producer_conf)
     metadata = admin_client.list_topics(topic=topic, timeout=10)
     if topic not in metadata.topics:
         print(f"Error: Topic '{topic_name}' not found.")
@@ -44,29 +49,38 @@ def get_number_of_messages_in_topic(self, topic):
     return total_messages
 
 class KafkaProducer():
-    producer = Producer(client_conf)
+    producer = Producer(producer_conf)
 
     def __init__(self):
         pass
 
     def send(self, topic, msg):
-        self.producer.produce(topic, msg.encode('utf-8'))
+        if isinstance(msg, list):
+            for message in msg:
+                self.producer.produce(topic, json.dumps(message).encode('utf-8'))
+        if isinstance(msg, str):
+            self.producer.produce(topic, msg.encode('utf-8'))
+        elif isinstance(msg, bytes):
+            self.producer.produce(topic, msg)
         self.producer.flush()
 
     def send_limit_queue_size(self, topic, msg, queue_size):
         while get_number_of_messages_in_topic(self, topic) >= queue_size:
             time.sleep(3)
-        self.producer.produce(topic, msg.encode('utf-8'))
+            
+        if isinstance(msg, list):
+            for message in msg:
+                self.producer.produce(topic, json.dumps(message).encode('utf-8'))
+        if isinstance(msg, str):
+            self.producer.produce(topic, msg.encode('utf-8'))
+        elif isinstance(msg, bytes):
+            self.producer.produce(topic, msg)
         self.producer.flush()
-    
-    def __del__(self):
-        self.producer.close()
 
 class KafkaConsumer():
-    consumer = Consumer(client_conf.update({'group.id': group_id})
+    consumer = Consumer(consumer_conf)
 
-    admin_client = AdminClient(client_conf)
-    producer = Producer(client_conf)
+    admin_client = AdminClient(consumer_conf)
 
     def __init__(self, topic):
         self.consumer.subscribe(topic)
@@ -75,7 +89,7 @@ class KafkaConsumer():
         try:
             msg = self.consumer.poll(1.0)
             if not msg.error():
-                # print('Received message: %s' % msg.value().decode('utf-8'))
+                print('Received message: %s' % msg.value().decode('utf-8'))
                 # send message to transform block
             elif msg.error().code() != KafkaError._PARTITION_EOF:
                 print(msg.error())

@@ -53,7 +53,7 @@ def nfilings_in_zip(zip_path):
 if __name__ == "__main__":
 
     try:
-        producer = Producer({'bootstrap.servers': f'{get_kafka_ip()}:9092'})
+        producer = KafkaProducer()
         nfilings = nfilings_in_zip(zip_fullpath)
         filing = read_zip_file(zip_fullpath, nfilings, zip_chunk_size)
         pbar = tqdm(enumerate(filing), 
@@ -61,7 +61,8 @@ if __name__ == "__main__":
                     desc="Performing Extract+Load of SEC Filings")
         for cnt, downloaded_list in pbar:
             # push objects to kafka log
-            producer.send_limit_queue_size(topic, downloaded_list, 10)
+            pdb.set_trace()
+            producer.send_limit_queue_size(topic, downloaded_list, zip_chunk_size)
             pbar.set_description(f"Processing {zip_filename}: {100*zip_chunk_size*(cnt+1)/(nfilings):.2f}%")
 
     except BaseException as be:
