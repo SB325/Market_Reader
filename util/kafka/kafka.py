@@ -71,7 +71,7 @@ class KafkaConsumer():
     def __init__(self, topic):
         self.consumer.subscribe(topic)
 
-    def recieve(self, topic, msg):
+    def recieve_once(self, topic, msg):
         try:
             msg = self.consumer.poll(1.0)
             if not msg.error():
@@ -82,6 +82,34 @@ class KafkaConsumer():
 
         except BaseException as be:
             traceback.print_exc()
+    
+    def recieve_continuous(self, topic, msg):
+        try:
+            while True:
+                msg = consumer.poll(1.0) # Poll with a timeout of 1 second
+
+                if msg is None:
+                    continue
+                elif msg.error():
+                    if msg.error().code() == KafkaException._PARTITION_EOF:
+                        # End of partition event
+                        sys.stderr.write('%% %s [%d] reached end of offset %d\n' %
+                                        (msg.topic(), msg.partition(), msg.offset()))
+                    else:
+                        raise KafkaException(msg.error())
+                    # print('Received message: %s' % msg.value().decode('utf-8'))
+                    # send message to transform block
+                else:
+                    # Process the message
+                    print(f"Received message: {msg.value().decode('utf-8')}")
+                    # Optionally commit offsets manually after processing
+                    # consumer.commit(msg)
+
+        except BaseException as be:
+            traceback.print_exc()
+        finally:
+            # Close the consumer gracefully to trigger a group rebalance
+            consumer.close()
     
     def __del__(self):
         self.consumer.close()
