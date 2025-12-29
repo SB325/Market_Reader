@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 import asyncio
 from util.logger import log
 from util.requests_util import requests_util
@@ -5,19 +8,19 @@ from util.postgres.db.models.tickers import Symbols as symbols
 from util.postgres.db.models.tickers import SharesOutstanding as SharesOutstanding
 from util.postgres.db.models.tickers import StockFloat as FloatTable
 from util.postgres.db.models.tickers import Accounting as AccountingTable
+from pipelines.fundamentals.get_ticker_list import save_ticker_data
 
 import pandas as pd
 import numpy as np
-import os
+
 import json
 import pdb
-import zipfile
-from tqdm import tqdm
 import time
 import math
 import pickle
 from dotenv import load_dotenv
 import gc  # invoke garbage collection with gc.collect() 
+from util.crud_pg import crud as crud
 load_dotenv()
 # from util.postgres.db.create_schemas import create_schemas
 # create_schemas()
@@ -34,6 +37,11 @@ load_dotenv()
 
 requests = requests_util()
 
+url_tickers='https://www.sec.gov/files/company_tickers.json'
+header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
+            'Accept-Encoding':'deflate', \
+            'Host':'www.sec.gov'}
+
 current_file = os.path.basename(__file__)
 
 def read_cik(self, cik: str = ''):
@@ -45,22 +53,6 @@ def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
-
-def nfilings_in_zip(zip_path):
-    return len(zipfile.ZipFile(zip_path).infolist())
-
-def read_zip_file(zip_path, nfilings, chunk_size):
-    with zipfile.ZipFile(zip_path) as zip_ref:
-        for i in range(0, nfilings, chunk_size):
-            fact_obj = []
-            info_chunk = zip_ref.infolist()[i:i + chunk_size]
-            for info in info_chunk:
-                if info.flag_bits & 0x1 == 0:
-                    if not 'placeholder.txt' in info.filename:
-                        with zip_ref.open(info, 'r') as f:
-                            # You can read the contents of the file here
-                            fact_obj.append(json.loads(f.read().decode('utf-8')))
-            yield fact_obj
 
 class Facts():
     # Submissions:
@@ -82,7 +74,7 @@ class Facts():
         self.crud_util = crud_obj
         print("Initiating facts_df...")
 
-    async def download_from_zip(self, content_merged, zip_file: str = ''):
+    async def process_chunk(self, content_merged, zip_file: str = ''):
         success = False
         known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
@@ -91,30 +83,21 @@ class Facts():
          
         # TODO: Still takes too long. Attempt to work with all objects as dataframes and insert
         # all in bulk. 
-        if zip_file:
+        while True:
             try: 
-                chunk_size = 100
-                nfilings = nfilings_in_zip(zip_file)
-                filing = read_zip_file(zip_file, nfilings, chunk_size)
-                pbar = tqdm(enumerate(filing), 
-                            total=math.ceil(nfilings/chunk_size), 
-                            desc="Performing Extract+Load of SEC Filings")
-                for cnt, self.downloaded_list in pbar:
-                    # if cnt<104:
-                    #     continue
+                # Pop objects off Kafka stream here
+                    # if object represents stop condition, return and exit here
+                    # self.downloaded_list = obj
                     self.parse_response(content_merged, cnt)
                     await self.insert_table(cnt)
-                    pbar.set_description(f"Processing Submissions: {100*chunk_size*(cnt+1)/(nfilings):.2f}%")
 
             except (Exception) as err:
                 print(f"{err}")
 
             success = True
-        else:
-            print('No zip file presented.')
         return success
 
-    def parse_response(self, content_merged, pbar):
+    def parse_response(self, content_merged):
         success = False
         t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
@@ -196,7 +179,7 @@ class Facts():
         success = True
         return success
 
-    async def insert_table(self, pbar) -> bool:
+    async def insert_table(self) -> bool:
         success = False
         if not self.shares:
             log.warning(f"No shares outstanding data to insert.")
@@ -265,3 +248,45 @@ class Facts():
             self.accounting_data = []
         success = True
         return success
+
+async def get_facts(content_merged):
+    crud_util = crud()
+    msg = "Facts failed."
+    facts = Facts(crud_util)
+    t0 = time.time()
+    vals = await facts.download_from_zip(
+                content_merged,
+                os.path.join(
+                os.path.dirname(__file__),
+                '../',
+                'companyfacts.zip')
+    )
+
+    t1 = time.time()
+    msg = f"Facts time: {(t1-t0)/60} minutes."
+    print(msg)
+    return msg, vals
+
+async def main():
+    response = requests.get(url_in=url_tickers, headers_in=header)
+    tickers_existing = list(response.json().values())
+
+    tickerdata = await save_ticker_data(tickers_existing, False)
+
+    for con in tickers_existing:
+        con['cik_str'] = str(con['cik_str']).zfill(10)
+
+    df_existing = pd.DataFrame.from_dict(tickers_existing).rename(columns={'cik_str': 'cik'})
+
+    await get_facts(df_existing)
+
+if __name__ == "__main__":
+    t0 = time.time()
+
+    print("Schema Created.")
+
+    asyncio.run(main())
+    
+    t1 = time.time()
+
+    print(f"{(t1-t0)/60} minutes elapsed.") 

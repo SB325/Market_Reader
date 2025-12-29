@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 import asyncio
 from util.logger import log
 from util.requests_util import requests_util
@@ -6,21 +9,27 @@ from util.postgres.db.models.tickers import Company_Meta as cmeta
 from util.postgres.db.models.tickers import Company_Mailing_Addresses as cmailing
 from util.postgres.db.models.tickers import Company_Business_Addresses as cbusiness
 from util.postgres.db.models.tickers import Filings as filings
+from pipelines.fundamentals.get_ticker_list import save_ticker_data
 
 import pandas as pd
-import os
+
 import json
 import pdb
-import zipfile
 from tqdm import tqdm
 import time
 import json
 import pickle
 import math
 from util.postgres.db.create_schemas import create_schemas
+from util.crud_pg import crud as crud
 create_schemas()
 
 requests = requests_util()
+
+url_tickers='https://www.sec.gov/files/company_tickers.json'
+header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
+            'Accept-Encoding':'deflate', \
+            'Host':'www.sec.gov'}
 
 current_file = os.path.basename(__file__)
 
@@ -73,7 +82,7 @@ class Submissions():
         print("Initiating submissions_df...")
 
 
-    async def insert_submissions_from_zip(self, content_merged, zip_file: str = ''):
+    async def process_chunk(self, content_merged, zip_file: str = ''):
         success = False
         known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
         if not known_ciks:
@@ -98,7 +107,7 @@ class Submissions():
             print('No zip file presented.')
         return success
 
-    def parse_response(self, content_merged, pbar):
+    def parse_response(self, content_merged):
 
         t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
@@ -135,7 +144,7 @@ class Submissions():
         success = True
         return success
 
-    async def insert_table(self, pbar) -> bool:
+    async def insert_table(self) -> bool:
         success = False
         # Insert table(s) into database.
         if not self.filing_list:
@@ -216,3 +225,44 @@ class Submissions():
         success = True
         return success
 
+async def get_submissions(content_merged):
+    crud_util = crud()
+    msg = "Submissions failed."
+    submissions = Submissions(crud_util)
+    t0 = time.time()
+    vals = await submissions.insert_submissions_from_zip(
+                content_merged,
+                os.path.join(
+                os.path.dirname(__file__),
+                '../',
+                'submissions.zip')
+    )
+    
+    t1 = time.time()
+    msg = f"Submissions time: {(t1-t0)/60} minutes."
+    print(msg)
+    return msg, vals
+
+async def main():
+    response = requests.get(url_in=url_tickers, headers_in=header)
+    tickers_existing = list(response.json().values())
+
+    tickerdata = await save_ticker_data(tickers_existing, False)
+
+    for con in tickers_existing:
+        con['cik_str'] = str(con['cik_str']).zfill(10)
+
+    df_existing = pd.DataFrame.from_dict(tickers_existing).rename(columns={'cik_str': 'cik'})
+
+    await get_submissions(df_existing)
+
+if __name__ == "__main__":
+    t0 = time.time()
+
+    print("Schema Created.")
+
+    asyncio.run(main())
+    
+    t1 = time.time()
+
+    print(f"{(t1-t0)/60} minutes elapsed.")
