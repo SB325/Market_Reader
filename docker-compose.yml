@@ -80,13 +80,3 @@ services:
     profiles:
       - llm
     container_name: load_filings
-
-  # Kafka
-  kafka:
-    image: apache/kafka:latest
-    restart: unless-stopped
-    ports:
-      - 9092:9092
-    networks:
-     - homeserver
-    container_name: kafka
