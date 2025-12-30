@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import time
 import subprocess
 import json
-import redis
 import pickle
 
 load_dotenv(override=True)
@@ -37,12 +36,16 @@ class RedisStream():
     def read(self, message_id):
         try:
             data = self.rstream.xread(streams={self.stream_name: message_id}, count=1, block=1000)
-
+            if data:
+                # data is a list of lists: [[stream_name, [message1, message2, ...]]]
+                for stream, stream_messages in data:
+                    for message_id, message_data in stream_messages:
+                        print(f"Received message ID: {message_id.decode('utf-8')}")
         except BaseException as be:
             traceback.print_exc()
-        pdb.set_trace()
-        data_out = pickle.loads(data)
-        return data_out['data_obj']
+
+        data_out = pickle.loads(message_data['data_obj'.encode('utf-8')])
+        return data_out
     
     def delete_stream(self, stream_name):
         self.rstream.delete(stream_name)
@@ -62,3 +65,7 @@ class RedisStream():
 
     def __del__(self):
         self.rstream.close()
+
+if __name__ == "__main__":
+    rstream = RedisStream('sec_zip_stream')
+    rstream.delete_stream('sec_zip_stream')

@@ -4,7 +4,7 @@ import os
 from confluent_kafka import Producer, Consumer, TopicPartition
 from confluent_kafka.admin import AdminClient, ConfigResource, NewTopic
 from dotenv import load_dotenv
-from util.redis.redis import RedisStream
+from util.redis.redis_util import RedisStream
 import time
 import subprocess
 import json
@@ -160,7 +160,7 @@ class KafkaConsumer():
                 msg_decoded = msg.value().decode('utf-8')
                 print('Received message_id: %s' % msg.value().decode('utf-8'))
                 data = rstream.read(msg_decoded)
-                ndeleted = rstream.delete(msg_decoded)
+                ndeleted = rstream.delete_msg_id(msg_decoded)
                 print(f'{ndeleted} entries removed from redis.')
                 # send message to transform block
             elif msg.error().code() != KafkaError._PARTITION_EOF:
@@ -196,7 +196,7 @@ class KafkaConsumer():
                     msg_decoded = msg.value().decode('utf-8')
                     print('Received message_id: %s' % msg.value().decode('utf-8'))
                     data = rstream.read(msg_decoded)
-                    ndeleted = rstream.delete(msg_decoded)
+                    ndeleted = rstream.delete_msg_id(msg_decoded)
                     print(f'{ndeleted} entries removed from redis.')
                     # send message to transform block
                     return data
