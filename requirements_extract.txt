@@ -4,5 +4,11 @@ tqdm==4.66.2
 pandas==2.2.3
 numpy
 loguru
+requests==2.27.1
+SQLAlchemy==2.0.25
+Flask
+Flask-SQLAlchemy
+psycopg2-binary
 
 confluent-kafka
+redis

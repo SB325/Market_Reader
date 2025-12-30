@@ -43,6 +43,7 @@ topic = os.getenv("KAFKA_TOPIC")
 requests = requests_util()
 consumer = KafkaConsumer(topic)
 
+
 current_file = os.path.basename(__file__)
 
 def read_cik(self, cik: str = ''):

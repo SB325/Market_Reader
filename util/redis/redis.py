@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import time
 import subprocess
 import json
+import redis
+import pickle
 
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
@@ -21,109 +23,42 @@ def get_redis_ip():
     return ip
 
 redis_ip = get_redis_ip()
-producer_conf = {'bootstrap.servers': f'{redis_ip}:9092'}
-consumer_conf = {
-    'bootstrap.servers': f'{redis_ip}:9092',
-    'default.topic.config': {'auto.offset.reset': 'smallest'},
-    'group.id': group_id,
-}
+pool = redis.ConnectionPool(host=redis_ip, port=6379, db=0)
 
-def get_number_of_messages_in_topic(self, topic):
-    unused_consumer = Consumer(consumer_conf)
-    admin_client = AdminClient(producer_conf)
-    metadata = admin_client.list_topics(topic=topic, timeout=10)
-    if topic not in metadata.topics:
-        print(f"Error: Topic '{topic_name}' not found.")
-        return 0
-    partitions = metadata.topics[topic].partitions.keys()
-    topic_partitions = [TopicPartition(topic, p) for p in partitions]
+class RedisStream():
+    def __init__(self, stream_name):
+        self.stream_name = stream_name
+        self.rstream = redis.Redis(connection_pool=pool, decode_responses=True)
 
-    total_messages = 0
-    for tp in topic_partitions:
-        # Get the low (earliest) and high (latest) watermarks (offsets)
-        low, high = unused_consumer.get_watermark_offsets(tp, timeout=10)
-        # The number of messages in the partition is the difference between the high and low offsets
-        total_messages += (high - low)
+    def add(self, data):
+        message_id = self.rstream.xadd(self.stream_name, {'data_obj': pickle.dumps(data)}, id='*')
+        return message_id.decode('utf-8')
 
-    unused_consumer.close()
-    return total_messages
-
-class KafkaProducer():
-    producer = Producer(producer_conf)
-
-    def __init__(self):
-        pass
-
-    def send(self, topic, msg):
-        if isinstance(msg, list):
-            for message in msg:
-                self.producer.produce(topic, json.dumps(message).encode('utf-8'))
-        if isinstance(msg, str):
-            self.producer.produce(topic, msg.encode('utf-8'))
-        elif isinstance(msg, bytes):
-            self.producer.produce(topic, msg)
-        self.producer.flush()
-
-    def send_limit_queue_size(self, topic, msg, queue_size):
-        while get_number_of_messages_in_topic(self, topic) >= queue_size:
-            time.sleep(3)
-            
-        if isinstance(msg, list):
-            for message in msg:
-                self.producer.produce(topic, json.dumps(message).encode('utf-8'))
-        if isinstance(msg, str):
-            self.producer.produce(topic, msg.encode('utf-8'))
-        elif isinstance(msg, bytes):
-            self.producer.produce(topic, msg)
-        self.producer.flush()
-
-class KafkaConsumer():
-    consumer = Consumer(consumer_conf)
-
-    admin_client = AdminClient(consumer_conf)
-
-    def __init__(self, topic):
-        self.consumer.subscribe(topic)
-
-    def recieve_once(self, topic, msg):
+    def read(self, message_id):
         try:
-            msg = self.consumer.poll(1.0)
-            if not msg.error():
-                print('Received message: %s' % msg.value().decode('utf-8'))
-                # send message to transform block
-            elif msg.error().code() != KafkaError._PARTITION_EOF:
-                print(msg.error())
+            data = self.rstream.xread(streams={self.stream_name: message_id}, count=1, block=1000)
 
         except BaseException as be:
             traceback.print_exc()
+        pdb.set_trace()
+        data_out = pickle.loads(data)
+        return data_out['data_obj']
     
-    def recieve_continuous(self, topic, msg):
+    def delete_stream(self, stream_name):
+        self.rstream.delete(stream_name)
+        print(f"stream_id : {stream_name} deleted.")
+
+    def delete_msg_id(self, message_id):
+        del_count = 0
         try:
-            while True:
-                msg = consumer.poll(1.0) # Poll with a timeout of 1 second
-
-                if msg is None:
-                    continue
-                elif msg.error():
-                    if msg.error().code() == KafkaException._PARTITION_EOF:
-                        # End of partition event
-                        sys.stderr.write('%% %s [%d] reached end of offset %d\n' %
-                                        (msg.topic(), msg.partition(), msg.offset()))
-                    else:
-                        raise KafkaException(msg.error())
-                    # print('Received message: %s' % msg.value().decode('utf-8'))
-                    # send message to transform block
-                else:
-                    # Process the message
-                    print(f"Received message: {msg.value().decode('utf-8')}")
-                    # Optionally commit offsets manually after processing
-                    # consumer.commit(msg)
-
+            del_count = self.rstream.xdel(self.stream_name, message_id)
         except BaseException as be:
             traceback.print_exc()
-        finally:
-            # Close the consumer gracefully to trigger a group rebalance
-            consumer.close()
-    
+        
+        if not del_count:
+            raise ValueError("No entries have been removed!")
+
+        return del_count
+
     def __del__(self):
-        self.consumer.close()
+        self.rstream.close()

@@ -20,11 +20,10 @@ load_dotenv('util/kafka/.env')
 
 zip_filename = os.getenv("FILINGS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
+queue_size = int(os.getenv("QUEUE_SIZE"))
 topic = os.getenv("KAFKA_TOPIC")
 
 zip_fullpath=os.path.join(os.path.join(os.path.dirname(__file__), '../'), zip_filename)
-
-producer = KafkaProducer()
 
 def get_kafka_ip():
     # Run a command and capture its stdout and stderr
@@ -55,7 +54,7 @@ def nfilings_in_zip(zip_path):
 if __name__ == "__main__":
 
     try:
-        producer = KafkaProducer()
+        producer = KafkaProducer(topic)
         nfilings = nfilings_in_zip(zip_fullpath)
         filing = read_zip_file(zip_fullpath, nfilings, zip_chunk_size)
         pbar = tqdm(enumerate(filing), 
@@ -63,8 +62,8 @@ if __name__ == "__main__":
                     desc="Performing Extract+Load of SEC Filings")
         for cnt, downloaded_list in pbar:
             # push objects to kafka log
-            pdb.set_trace()
-            producer.send_limit_queue_size(topic, downloaded_list, zip_chunk_size)
+            producer.send_limit_queue_size(downloaded_list, queue_size)
+
             pbar.set_description(f"Processing {zip_filename}: {100*zip_chunk_size*(cnt+1)/(nfilings):.2f}%")
 
     except BaseException as be:
