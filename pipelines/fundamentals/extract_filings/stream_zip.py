@@ -16,6 +16,8 @@ from util.kafka.kafka import KafkaProducer
 import subprocess
 
 load_dotenv(override=True)
+load_dotenv('util/kafka/.env')
+
 zip_filename = os.getenv("FILINGS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 topic = os.getenv("KAFKA_TOPIC")

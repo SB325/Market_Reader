@@ -21,7 +21,9 @@ def get_kafka_ip():
     ).stdout.replace('\n', '')
     return ip
 
-producer_conf = {'bootstrap.servers': f'{get_kafka_ip()}:9092'}
+producer_conf = {
+    'bootstrap.servers': f'{get_kafka_ip()}:9092',
+}
 consumer_conf = {
     'bootstrap.servers': f'{get_kafka_ip()}:9092',
     'default.topic.config': {'auto.offset.reset': 'smallest'},
@@ -56,8 +58,7 @@ class KafkaProducer():
 
     def send(self, topic, msg):
         if isinstance(msg, list):
-            for message in msg:
-                self.producer.produce(topic, json.dumps(message).encode('utf-8'))
+            self.producer.produce(topic, json.dumps(msg).encode('utf-8'))
         if isinstance(msg, str):
             self.producer.produce(topic, msg.encode('utf-8'))
         elif isinstance(msg, bytes):
@@ -79,13 +80,13 @@ class KafkaProducer():
 
 class KafkaConsumer():
     consumer = Consumer(consumer_conf)
-
     admin_client = AdminClient(consumer_conf)
 
     def __init__(self, topic):
+        self.topic = topic
         self.consumer.subscribe(topic)
 
-    def recieve_once(self, topic, msg):
+    def recieve_once(self):
         try:
             msg = self.consumer.poll(1.0)
             if not msg.error():
@@ -97,7 +98,7 @@ class KafkaConsumer():
         except BaseException as be:
             traceback.print_exc()
     
-    def recieve_continuous(self, topic, msg):
+    def recieve_continuous(self):
         try:
             while True:
                 msg = consumer.poll(1.0) # Poll with a timeout of 1 second
@@ -115,7 +116,8 @@ class KafkaConsumer():
                     # send message to transform block
                 else:
                     # Process the message
-                    print(f"Received message: {msg.value().decode('utf-8')}")
+                    # print(f"Received message: {msg.value().decode('utf-8')}")
+                    return msg.value().decode('utf-8')
                     # Optionally commit offsets manually after processing
                     # consumer.commit(msg)
 
