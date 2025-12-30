@@ -83,6 +83,7 @@ class Facts():
                 self.downloaded_list = consumer.recieve_continuous()
                 self.parse_response(content_merged)
                 await self.insert_table()
+                logger.info('Data insert complete.')
 
         except (Exception) as err:
             print(f"{err}")

@@ -21,7 +21,9 @@ def get_kafka_ip():
     ).stdout.replace('\n', '')
     return ip
 
-producer_conf = {'bootstrap.servers': f'{get_kafka_ip()}:9092'}
+producer_conf = {
+    'bootstrap.servers': f'{get_kafka_ip()}:9092',
+}
 consumer_conf = {
     'bootstrap.servers': f'{get_kafka_ip()}:9092',
     'default.topic.config': {'auto.offset.reset': 'smallest'},
