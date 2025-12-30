@@ -9,7 +9,7 @@ from util.postgres.db.models.tickers import SharesOutstanding as SharesOutstandi
 from util.postgres.db.models.tickers import StockFloat as FloatTable
 from util.postgres.db.models.tickers import Accounting as AccountingTable
 from pipelines.fundamentals.get_ticker_list import save_ticker_data
-
+from util.kafka.kafka import KafkaConsumer
 import pandas as pd
 import numpy as np
 
@@ -35,12 +35,13 @@ load_dotenv()
 #     .config("spark.executor.memory", "2g") \
 #     .getOrCreate()
 
-requests = requests_util()
-
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
+topic = os.getenv("KAFKA_TOPIC")
+requests = requests_util()
+consumer = KafkaConsumer(topic)
 
 current_file = os.path.basename(__file__)
 
@@ -74,27 +75,18 @@ class Facts():
         self.crud_util = crud_obj
         print("Initiating facts_df...")
 
-    async def process_chunk(self, content_merged, zip_file: str = ''):
+    async def process_chunk(self, content_merged):
         success = False
-        known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
-        if not known_ciks:
-            print('no ticker symbols in database. Run get_ticker_list.py')
-            return success
-         
-        # TODO: Still takes too long. Attempt to work with all objects as dataframes and insert
-        # all in bulk. 
-        while True:
-            try: 
-                # Pop objects off Kafka stream here
-                    # if object represents stop condition, return and exit here
-                    # self.downloaded_list = obj
-                    self.parse_response(content_merged, cnt)
-                    await self.insert_table(cnt)
+        try: 
+            while True:
+                # consumer.recieve_continuous polls continuously until msg arrives
+                self.downloaded_list = consumer.recieve_continuous()
+                self.parse_response(content_merged)
+                await self.insert_table()
 
-            except (Exception) as err:
-                print(f"{err}")
-
-            success = True
+        except (Exception) as err:
+            print(f"{err}")
+        success = True
         return success
 
     def parse_response(self, content_merged):
@@ -254,13 +246,7 @@ async def get_facts(content_merged):
     msg = "Facts failed."
     facts = Facts(crud_util)
     t0 = time.time()
-    vals = await facts.download_from_zip(
-                content_merged,
-                os.path.join(
-                os.path.dirname(__file__),
-                '../',
-                'companyfacts.zip')
-    )
+    vals = await facts.process_chunk(content_merged)
 
     t1 = time.time()
     msg = f"Facts time: {(t1-t0)/60} minutes."
