@@ -13,6 +13,7 @@ from tqdm import tqdm
 import math
 import json
 from util.kafka.kafka import KafkaProducer
+from util.redis.redis_util import RedisStream
 import subprocess
 
 load_dotenv(override=True)
@@ -22,8 +23,13 @@ zip_filename = os.getenv("FILINGS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 queue_size = int(os.getenv("QUEUE_SIZE"))
 topic = os.getenv("KAFKA_TOPIC")
+redis_stream_name = os.getenv("REDIS_STREAM_NAME")
 
 zip_fullpath=os.path.join(os.path.join(os.path.dirname(__file__), '../'), zip_filename)
+
+# Clear Redis stream objects before starting
+rstream = RedisStream(redis_stream_name)
+rstream.delete_stream(redis_stream_name)
 
 def get_kafka_ip():
     # Run a command and capture its stdout and stderr
@@ -62,7 +68,7 @@ if __name__ == "__main__":
                     desc="Performing Extract+Load of SEC Filings")
         for cnt, downloaded_list in pbar:
             # push objects to kafka log
-            producer.send_limit_queue_size(downloaded_list, queue_size)
+            producer.send(downloaded_list)
 
             pbar.set_description(f"Processing {zip_filename}: {100*zip_chunk_size*(cnt+1)/(nfilings):.2f}%")
 

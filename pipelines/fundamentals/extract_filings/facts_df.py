@@ -76,12 +76,12 @@ class Facts():
         self.crud_util = crud_obj
         print("Initiating facts_df...")
 
-    async def process_chunk(self, content_merged):
+    async def process_chunks(self, content_merged):
         success = False
         try: 
             while True:
                 # consumer.recieve_continuous polls continuously until msg arrives
-                self.downloaded_list = consumer.recieve_continuous()
+                self.downloaded_list = consumer.recieve_once()
                 self.parse_response(content_merged)
                 await self.insert_table()
                 log.info('Data insert complete.')
@@ -248,7 +248,7 @@ async def get_facts(content_merged):
     msg = "Facts failed."
     facts = Facts(crud_util)
     t0 = time.time()
-    vals = await facts.process_chunk(content_merged)
+    vals = await facts.process_chunks(content_merged)
 
     t1 = time.time()
     msg = f"Facts time: {(t1-t0)/60} minutes."

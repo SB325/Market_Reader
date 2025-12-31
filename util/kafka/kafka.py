@@ -11,7 +11,8 @@ import json
 
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
-rstream = RedisStream('sec_zip_stream')
+redis_stream_name = os.getenv("REDIS_STREAM_NAME")
+rstream = RedisStream(redis_stream_name)
 
 new_retention_ms_day = 24 * 60 * 60 * 1000  # 1 day
 
@@ -110,19 +111,6 @@ class KafkaProducer():
     def __init__(self, topic = None):
         self.topic = topic
         delete_and_create_topic(admin_client, topic)
-        # new_topic = NewTopic(
-        #     topic,
-        #     # num_partitions=num_partitions,
-        #     # replication_factor=replication_factor,
-        #     config={'retention.ms': new_retention_ms_day} # Retention set to 1 day
-        # )
-        # fs = admin_client.create_topics([new_topic])
-        # for topic, f in fs.items():
-        #     try:
-        #         f.result()
-        #         print(f"Topic {topic} created with retention.ms={new_retention_ms_day}")
-        #     except Exception as e:
-        #         print(f"Failed to create topic {topic}: {e}")
 
     def send(self, msg, topic=None):
         if topic:
@@ -155,13 +143,10 @@ class KafkaConsumer():
     def recieve_once(self):
         data = {}
         try:
-            msg = self.consumer.poll(1.0)
+            msg = self.consumer.poll(10.0)
             if not msg.error():
                 msg_decoded = msg.value().decode('utf-8')
-                print('Received message_id: %s' % msg.value().decode('utf-8'))
                 data = rstream.read(msg_decoded)
-                ndeleted = rstream.delete_msg_id(msg_decoded)
-                print(f'{ndeleted} entries removed from redis.')
                 # send message to transform block
             elif msg.error().code() != KafkaError._PARTITION_EOF:
                 print(msg.error())
@@ -170,44 +155,43 @@ class KafkaConsumer():
             traceback.print_exc()
 
         if not data:
-            raise ValueError("data returned from stream is empty!")
+            print("data returned from stream is empty!")
 
+        self.consumer.commit(msg)
         return data
 
-    def recieve_continuous(self):
-        try:
-            while True:
-                msg = self.consumer.poll(1.0) # Poll with a timeout of 1 second
+    # def recieve_continuous(self):
+    #     try:
+    #         while True:
+    #             msg = self.consumer.poll(1.0) # Poll with a timeout of 1 second
 
-                if msg is None:
-                    continue
-                elif msg.error():
-                    if msg.error().code() == KafkaException._PARTITION_EOF:
-                        # End of partition event
-                        sys.stderr.write('%% %s [%d] reached end of offset %d\n' %
-                                        (msg.topic(), msg.partition(), msg.offset()))
-                    else:
-                        raise KafkaException(msg.error())
-                    # print('Received message: %s' % msg.value().decode('utf-8'))
-                    # send message to transform block
-                else:
-                    data = {}
-                    # Process the message
-                    msg_decoded = msg.value().decode('utf-8')
-                    print('Received message_id: %s' % msg.value().decode('utf-8'))
-                    data = rstream.read(msg_decoded)
-                    ndeleted = rstream.delete_msg_id(msg_decoded)
-                    print(f'{ndeleted} entries removed from redis.')
-                    # send message to transform block
-                    return data
-                    # Optionally commit offsets manually after processing
-                    # consumer.commit(msg)
+    #             if msg is None:
+    #                 continue
+    #             elif msg.error():
+    #                 if msg.error().code() == KafkaException._PARTITION_EOF:
+    #                     # End of partition event
+    #                     sys.stderr.write('%% %s [%d] reached end of offset %d\n' %
+    #                                     (msg.topic(), msg.partition(), msg.offset()))
+    #                 else:
+    #                     raise KafkaException(msg.error())
+    #                 # print('Received message: %s' % msg.value().decode('utf-8'))
+    #                 # send message to transform block
+    #             else:
+    #                 data = {}
+    #                 # Process the message
+    #                 msg_decoded = msg.value().decode('utf-8')
+    #                 data = rstream.read(msg_decoded)
 
-        except BaseException as be:
-            traceback.print_exc()
-        finally:
-            # Close the consumer gracefully to trigger a group rebalance
-            self.consumer.close()
+    #                 # send message to transform block
+    #                 return data
+    #                 # Optionally commit offsets manually after processing
+    #                 # consumer.commit(msg)
+
+    #     except BaseException as be:
+    #         traceback.print_exc()
+    #     # finally:
+    #     #     # Close the consumer gracefully to trigger a group rebalance
+    #     #     self.consumer.close()
     
     def __del__(self):
         self.consumer.close()

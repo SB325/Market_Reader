@@ -10,6 +10,7 @@ import pickle
 
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
+redis_stream_name = os.getenv("REDIS_STREAM_NAME")
 
 def get_redis_ip():
     # Run a command and capture its stdout and stderr
@@ -40,7 +41,10 @@ class RedisStream():
                 # data is a list of lists: [[stream_name, [message1, message2, ...]]]
                 for stream, stream_messages in data:
                     for message_id, message_data in stream_messages:
-                        print(f"Received message ID: {message_id.decode('utf-8')}")
+                        msg_id = message_id.decode('utf-8')
+                        print(f"Received message ID: {msg_id}")
+                        ndeleted = self.delete_msg_id(message_id)
+                        print(f'{ndeleted} entries removed from redis.')
         except BaseException as be:
             traceback.print_exc()
 
@@ -67,5 +71,5 @@ class RedisStream():
         self.rstream.close()
 
 if __name__ == "__main__":
-    rstream = RedisStream('sec_zip_stream')
-    rstream.delete_stream('sec_zip_stream')
+    rstream = RedisStream(redis_stream_name)
+    rstream.delete_stream(redis_stream_name)
