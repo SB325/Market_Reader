@@ -80,8 +80,11 @@ class Facts():
         success = False
         try: 
             while True:
+                time.sleep(1)
                 # consumer.recieve_continuous polls continuously until msg arrives
                 self.downloaded_list = consumer.recieve_once()
+                if not self.downloaded_list: # no message yet
+                    continue
                 self.parse_response(content_merged)
                 await self.insert_table()
                 log.info('Data insert complete.')

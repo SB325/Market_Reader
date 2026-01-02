@@ -11,8 +11,11 @@ import pickle
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
 redis_stream_name = os.getenv("REDIS_STREAM_NAME")
+in_docker = os.getenv("INDOCKER")
 
 def get_redis_ip():
+    if bool(in_docker):
+        return 'redis'
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
         "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' redis",

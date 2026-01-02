@@ -45,38 +45,63 @@ services:
   #     - llm
   #   container_name: tech
 
-  # # news downloads and db inserts
-  # press_release_etl:
-  #   env_file:
-  #     - .env
-  #   build: 
-  #     dockerfile: Dockerfile_pr
-  #     context: .
-  #     no_cache: true
-  #   restart: on-failure
-  #   volumes:
-  #     - ./pipelines/press_releases/newswire_client.py:/pr/pipelines/press_releases/newswire_client.py
-  #     - ./util/elastic/certs:/pr/util/elastic/certs
-  #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
-  #   networks:
-  #    - homeserver
-  #   profiles:
-  #     - elastic
-  #     - llm
-  #   depends_on:
-  #     - es02
-  #   container_name: pr
 
-  # SEC Edgar Filing Load Process
-  load_filings:
+  # 1. SEC Filing metadata Unzip process
+  unzip_filings:
     build: 
       context: .
-      dockerfile: Dockerfile_load_filings
+      dockerfile: Dockerfile_unzip_filings
+      no_cache: true
+    volumes:
+      - ./pipelines/fundamentals/companyfacts.zip:/edgar/pipelines/fundamentals/companyfacts.zip
+      - ./pipelines/fundamentals/submissions.zip:/edgar/pipelines/fundamentals/submissions.zip
+    networks:
+     - homeserver
+    profiles:
+      - llm
+    container_name: unzip_filings
+
+  # 2. Transform+Load Filing metatdata Process
+  tl_filings:
+    build: 
+      context: .
+      dockerfile: Dockerfile_tl_filings
       no_cache: true
     restart: unless-stopped
     networks:
      - homeserver
     profiles:
       - llm
-    container_name: load_filings
+    container_name: tl_filings
+
+  # # 3. SEC Edgar Filing Load Process
+  # load_filings:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile_load_filings
+  #     no_cache: true
+  #   restart: unless-stopped
+  #   networks:
+  #    - homeserver
+  #   profiles:
+  #     - llm
+  #   container_name: load_filings
+
+  # app:
+  #   # ... build context and ports
+  #   environment:
+  #     # Point the app to the collector's OTLP endpoint
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4318
+  #   depends_on:
+  #     - collector
+
+  # # OpenTelemetry Collector Service
+  # collector:
+  #   image: otel/opentelemetry-collector:latest
+  #   command: ["--config=/etc/otelcol/config.yaml"]
+  #   volumes:
+  #     - ./collector-config.yaml:/etc/otelcol/config.yaml # Mount your configuration
+  #   ports:
+  #     - "4317:4317" # OTLP gRPC receiver
+  #     - "4318:4318" # OTLP HTTP receiver
+  #     # ... other ports for Prometheus, health checks, etc.

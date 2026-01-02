@@ -1,1 +1,5 @@
 .venv/
+**/__pycache__
+util/elastic
+util/webhook_server
+Dockerfile*

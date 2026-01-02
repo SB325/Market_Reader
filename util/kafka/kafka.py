@@ -12,11 +12,16 @@ import json
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
 redis_stream_name = os.getenv("REDIS_STREAM_NAME")
+in_docker = os.getenv("INDOCKER")
+
 rstream = RedisStream(redis_stream_name)
 
 new_retention_ms_day = 24 * 60 * 60 * 1000  # 1 day
 
 def get_kafka_ip():
+    if bool(in_docker):
+        return 'kafka:29092'
+
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
         "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' kafka",
@@ -24,13 +29,13 @@ def get_kafka_ip():
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code
     ).stdout.replace('\n', '')
-    return ip
+    return f'{ip}:9092'
 
 producer_conf = {
-    'bootstrap.servers': f'{get_kafka_ip()}:9092',
+    'bootstrap.servers': get_kafka_ip(),
 }
 consumer_conf = {
-    'bootstrap.servers': f'{get_kafka_ip()}:9092',
+    'bootstrap.servers': get_kafka_ip(),
     'default.topic.config': {'auto.offset.reset': 'smallest'},
     'group.id': group_id,
 }

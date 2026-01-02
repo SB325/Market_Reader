@@ -1,0 +1,15 @@
+FROM python:3.10.12
+
+USER root
+WORKDIR /edgar
+
+COPY ./requirements_extract.txt requirements.txt
+RUN python -m pip install -r requirements.txt
+
+COPY util/ util/
+COPY pipelines/fundamentals/extract_filings/stream_zip.py  pipelines/fundamentals/extract_filings/stream_zip.py 
+COPY *.env .env
+
+ENV INDOCKER=True
+
+ENTRYPOINT python pipelines/fundamentals/extract_filings/stream_zip.py 

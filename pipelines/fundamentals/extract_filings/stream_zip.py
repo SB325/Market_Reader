@@ -31,16 +31,6 @@ zip_fullpath=os.path.join(os.path.join(os.path.dirname(__file__), '../'), zip_fi
 rstream = RedisStream(redis_stream_name)
 rstream.delete_stream(redis_stream_name)
 
-def get_kafka_ip():
-    # Run a command and capture its stdout and stderr
-    ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' kafka",
-        capture_output=True,  # Capture stdout and stderr
-        text=True,           # Decode output as text (UTF-8 by default)
-        shell=True           # Raise CalledProcessError if the command returns a non-zero exit code
-    ).stdout.replace('\n', '')
-    return ip
-
 def read_zip_file(zip_path, nfilings, chunk_size):
     with zipfile.ZipFile(zip_path) as zip_ref:
         for i in range(0, nfilings, chunk_size):
