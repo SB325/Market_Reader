@@ -55,6 +55,11 @@ services:
     volumes:
       - ./pipelines/fundamentals/companyfacts.zip:/edgar/pipelines/fundamentals/companyfacts.zip
       - ./pipelines/fundamentals/submissions.zip:/edgar/pipelines/fundamentals/submissions.zip
+    depends_on:
+      - tl_filings
+      - otel
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4318
     networks:
      - homeserver
     profiles:
@@ -67,7 +72,11 @@ services:
       context: .
       dockerfile: Dockerfile_tl_filings
       no_cache: true
-    restart: unless-stopped
+    restart: on-failure
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4318
+    depends_on:
+      - otel
     networks:
      - homeserver
     profiles:
@@ -87,21 +96,4 @@ services:
   #     - llm
   #   container_name: load_filings
 
-  # app:
-  #   # ... build context and ports
-  #   environment:
-  #     # Point the app to the collector's OTLP endpoint
-  #     OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4318
-  #   depends_on:
-  #     - collector
-
-  # # OpenTelemetry Collector Service
-  # collector:
-  #   image: otel/opentelemetry-collector:latest
-  #   command: ["--config=/etc/otelcol/config.yaml"]
-  #   volumes:
-  #     - ./collector-config.yaml:/etc/otelcol/config.yaml # Mount your configuration
-  #   ports:
-  #     - "4317:4317" # OTLP gRPC receiver
-  #     - "4318:4318" # OTLP HTTP receiver
-  #     # ... other ports for Prometheus, health checks, etc.
+  
