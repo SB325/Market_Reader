@@ -7,6 +7,8 @@ from urllib3.util import Retry
 import logging
 import pdb
 
+# https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
+
 retry = Retry(
         total=3,
         backoff_factor=5,

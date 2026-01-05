@@ -12,3 +12,6 @@ psycopg2-binary
 
 confluent-kafka
 redis
+
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-grpc

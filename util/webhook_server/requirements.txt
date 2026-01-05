@@ -1,8 +1,0 @@
-requests==2.27.1
-typing_extensions==4.10.0
-pprintpp
-fastapi==0.115.6
-uvicorn
-pytz
-python-pushover
-python-dotenv==1.0.1

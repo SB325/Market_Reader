@@ -57,9 +57,9 @@ services:
       - ./pipelines/fundamentals/submissions.zip:/edgar/pipelines/fundamentals/submissions.zip
     depends_on:
       - tl_filings
-      - otel
+      - telemetry
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4318
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://telemetry:4318
     networks:
      - homeserver
     profiles:
@@ -74,9 +74,9 @@ services:
       no_cache: true
     restart: on-failure
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4318
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://telemetry:4318
     depends_on:
-      - otel
+      - telemetry
     networks:
      - homeserver
     profiles:

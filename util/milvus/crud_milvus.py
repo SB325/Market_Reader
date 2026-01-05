@@ -5,6 +5,7 @@ from collection_model import collection_model_type
 from util.logger import log
 import pdb
 
+# https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 def get_db_ip():
     import subprocess
 

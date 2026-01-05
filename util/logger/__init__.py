@@ -4,6 +4,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 
+# https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 load_dotenv(override=True)
 loggerFile = os.environ.get('LOGGING_FILE')
 

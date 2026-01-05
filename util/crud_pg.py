@@ -17,6 +17,7 @@ from typing import Union
 from enum import Enum
 from sqlalchemy import desc, asc, and_
 
+# https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 class operationType(Enum):
     gt = 'gt'
     lt = 'lt'

@@ -8,6 +8,7 @@ import subprocess
 import json
 import pickle
 
+# https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
 redis_stream_name = os.getenv("REDIS_STREAM_NAME")
