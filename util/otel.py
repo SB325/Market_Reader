@@ -1,14 +1,23 @@
 from opentelemetry.instrumentation.system_metrics import SystemMetricsInstrumentor
 SystemMetricsInstrumentor().instrument() # Automatically collects CPU, memory, etc.
 
-# Traces, Metrics
 import time
-from opentelemetry import trace, metrics
+import os
+import pdb
+import subprocess
+# Traces
+from opentelemetry import trace
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchExportSpanProcessor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# Metrics
+from opentelemetry import metrics
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.metrics.export import (
+    MetricExportResult,
+    PeriodicExportingMetricReader,
+)
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter # For OTLP/gRPC
 # Logs
 import logging
@@ -18,24 +27,44 @@ from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 
+from dotenv import load_dotenv
 from enum import Enum
+
+load_dotenv(override=True)
+in_docker = os.getenv("INDOCKER")
+service_name = os.getenv("OTEL_SERVICE_NAME")
+
+def get_otel_ip():
+    if bool(in_docker):
+        return 'telemetry:4317'
+
+    # Run a command and capture its stdout and stderr
+    ip = subprocess.run(
+        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' telemetry",
+        capture_output=True,  # Capture stdout and stderr
+        text=True,           # Decode output as text (UTF-8 by default)
+        shell=True           # Raise CalledProcessError if the command returns a non-zero exit code
+    ).stdout.replace('\n', '')
+    return f'{ip}:4317'
 
 class otel_tracer():
     # Configure the service name and other resource attributes
-    resource = Resource() # service name should already be set by OTEL_SERVICE_NAME
+    resourceAttributes = Resource(attributes={
+        SERVICE_NAME: service_name,
+    })
     # Set the global tracer provider
-    provider = TracerProvider(resource=resource)
+    provider = TracerProvider(resource=resourceAttributes)
     trace.set_tracer_provider(provider)
     # Configure the OTLP exporter
-    otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True) 
+    otlp_exporter = OTLPSpanExporter(endpoint=f"http://{get_otel_ip()}", insecure=True) 
     # Add a span processor to the provider
-    provider.add_span_processor(BatchExportSpanProcessor(otlp_exporter))
+    provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
     # Acquire a tracer for use in your application
     tracer = trace.get_tracer(__name__)
 
     def set_span(self, span_name: str):
         print(f"Tracing span: {span_name}.")
-        return tracer.start_as_current_span(span_name)
+        return self.tracer.start_as_current_span(span_name)
 
 # ===============================
 class meterType(Enum):
@@ -43,15 +72,35 @@ class meterType(Enum):
     upDownCounter = "AsynchronousUpDownCounter"
     gauge = "ObservableGauge"
     histogram = "Histogram"
-    
+
+# class MetricsExporterImpl(MetricExporter):
+#     def __init__(self):
+#         super().__init__()
+#         pdb.set_trace()
+#         self.is_running = True
+#     def export(self, metrics_data: list, timeout_millis = 2000):
+#         # metrics_data – The list of opentelemetry.sdk.metrics.export.Metric 
+#         #  objects to be exported
+#         if not self.is_running:
+#             return MetricExportResult.FAILURE
+#         return MetricExportResult.SUCCESS
+#     def force_flush(self, timeout_millis = 2000):
+#         print("Force flushing metrics.")
+#         return True
+#     def shutdown(self):
+#         self.is_running = False
+
+# https://opentelemetry-python.readthedocs.io/en/latest/sdk/metrics.export.html#
+# 1. Configure the MeterProvider with a Console Exporter (not necessary)
+# The MetricExporter prints metrics to the console for demonstration purposes.
+metric_reader = PeriodicExportingMetricReader(
+        exporter=OTLPMetricExporter(timeout=10000),
+        export_interval_millis=10000)
+meter_provider = MeterProvider(metric_readers=[metric_reader])
+
+# Sets the global default meter provider
+metrics.set_meter_provider(meter_provider)
 class otel_metrics():
-    # https://opentelemetry-python.readthedocs.io/en/latest/api/metrics.html
-    # 1. Configure the MeterProvider with a Console Exporter (not necessary)
-    # The ConsoleMetricExporter prints metrics to the console for demonstration purposes.
-    metric_reader = PeriodicExportingMetricReader()
-    meter_provider = MeterProvider(metric_readers=[metric_reader])
-    # Sets the global default meter provider
-    metrics.set_meter_provider(meter_provider)
     meter_objects = {
                 'counters': [], 
                 'upDownCounters': [], 
@@ -63,12 +112,18 @@ class otel_metrics():
             meter_name : str, 
             meter_id: str,
             meter_type: meterType,
-            description: str):
+            description: str,
+            ):
         # 2. Acquire a meter
         # A meter is associated with a specific name (e.g., application/library name) and version.
-        meter = metrics.get_meter(meter_name, version="1.0.0")
+        meter = metrics.get_meter(name=meter_name, version="1.39.1")
 
-        if meterType.counter
+        try:
+            meterType(meter_type)
+        except ValueError as e:
+            print(f"Invalid meter name: {e}")
+
+        if meter_type == meterType.counter.value:
             # 3. Create a synchronous instrument (Counter)
             # Counters are used for values that only increase, like the number of requests or errors.
             self.meter_objects['counters'].append(
@@ -78,7 +133,7 @@ class otel_metrics():
                     description=description,
                 )
             )
-        if meterType.upDownCounter:
+        if meter_type == meterType.upDownCounter.value:
             pass
             self.meter_objects['upDownCounters'].append(
                 meter.create_up_down_counter(
@@ -87,7 +142,7 @@ class otel_metrics():
                     description=description,
                 )
             )
-        # if meterType.gauge:
+        # if meter_type == meterType.gauge.value:
         #     pass
         #     self.meter_objects['gauges'].append(
         #         meter.create_gauge(
@@ -96,7 +151,7 @@ class otel_metrics():
         #             description=description,
         #         )
         #     )
-        if meterType.histogram:
+        if meter_type == meterType.histogram.value:
             pass
             self.meter_objects['histograms'].append(
                 meter.create_histogram(
@@ -106,7 +161,7 @@ class otel_metrics():
                 )
             )
     
-    def update_counter(self, increase_by: int = 1, counter_name, attributes: dict = None):
+    def update_counter(self, counter_name, increase_by: int = 1, attributes: dict = None):
         counter = [val for val in self.meter_objects['counters']
                 if counter_name in val.name]
         if not counter:
@@ -114,7 +169,7 @@ class otel_metrics():
 
         counter[0].add(increase_by, attributes)
 
-    def update_up_down_counter(self, change_by: int = 1, counter_name, attributes: dict = None):
+    def update_up_down_counter(self, counter_name, change_by: int = 1, attributes: dict = None):
         upDownCounter = [val for val in self.meter_objects['upDownCounters']
                 if counter_name in val.name]
 
@@ -130,7 +185,7 @@ class otel_metrics():
     #     if not gauge:
     #         print(f"Gauge name {counter_name} not found.")
 
-    def update_histogram(self, ammount: int, counter_name, attributes: dict=None, context=None):
+    def update_histogram(self, counter_name, ammount: int, attributes: dict=None, context=None):
         histogram = [val for val in self.meter_objects['histograms']
                 if counter_name in val.name]
         
@@ -147,7 +202,7 @@ class otel_logger():
     set_logger_provider(logger_provider)
     # 3. Configure the exporter (e.g., OTLP to a collector running on localhost:4317)
     # Use insecure=True if your collector does not have TLS configured
-    log_exporter = OTLPLogExporter(endpoint="localhost:4317", insecure=True)
+    log_exporter = OTLPLogExporter(endpoint=f"{get_otel_ip()}", insecure=True)
     # 4. Add a processor to the provider
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
     # 5. Attach OTLP handler to the Python standard logging
@@ -158,22 +213,47 @@ class otel_logger():
     logger = logging.getLogger(__name__)
 
     def info(self, msg):
-        logger.info(msg)
+        self.logger.info(msg)
 
     def message(self, msg):
-        logger.message(msg)
+        self.logger.message(msg)
 
     def debug(self, msg):
-        logger.debug(msg)
+        self.logger.debug(msg)
 
     def warning(self, msg):
-        logger.warning(msg)
+        self.logger.warning(msg)
     
     def error(self, msg, attributes: dict = None):
-        logger.error(msg, extra={"attributes": attributes})
+        self.logger.error(msg, extra={"attributes": attributes})
 
     def critical(self, msg):
-        logger.critical(msg, exc_info=True)
+        self.logger.critical(msg, exc_info=True)
     
     def exception(self, msg):
-        logger.exception(msg)
+        self.logger.exception(msg)
+
+
+if __name__ == "__main__":
+    metric = otel_metrics()
+    traces = otel_tracer()
+    logs = otel_logger()
+
+    metric.create_meter(
+            meter_name = 'NewMeter', 
+            meter_id = 'newmeter.test',
+            meter_type = "AsynchronousCounter",
+            description = "Test async counter meter"
+        )
+    
+    for i in range(5):
+        metric.update_counter(
+                counter_name = 'newmeter.test', 
+                attributes = {'attribute': 1234})
+
+    with traces.set_span(span_name = "First Span"):
+        logs.info(f'My First Span')
+        with traces.set_span(span_name = "Second Span"):
+            logs.info(f'My Second Span')
+    
+    print('done')
