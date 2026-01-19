@@ -2,7 +2,7 @@ from opentelemetry.instrumentation.system_metrics import SystemMetricsInstrument
 SystemMetricsInstrumentor().instrument() # Automatically collects CPU, memory, etc.
 
 import time
-import os
+import os   
 import pdb
 import subprocess
 # Traces
@@ -30,7 +30,7 @@ from opentelemetry.sdk.resources import Resource
 from dotenv import load_dotenv
 from enum import Enum
 
-load_dotenv(override=True)
+load_dotenv(override=True) 
 in_docker = os.getenv("INDOCKER")
 service_name = os.getenv("OTEL_SERVICE_NAME")
 
@@ -54,11 +54,11 @@ class otel_tracer():
     })
     # Set the global tracer provider
     provider = TracerProvider(resource=resourceAttributes)
-    trace.set_tracer_provider(provider)
     # Configure the OTLP exporter
-    otlp_exporter = OTLPSpanExporter(endpoint=f"http://{get_otel_ip()}", insecure=True) 
+    otlp_exporter = OTLPSpanExporter(endpoint=f"{get_otel_ip()}", insecure=True) 
     # Add a span processor to the provider
     provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+    trace.set_tracer_provider(provider)
     # Acquire a tracer for use in your application
     tracer = trace.get_tracer(__name__)
 
@@ -94,7 +94,7 @@ class meterType(Enum):
 # 1. Configure the MeterProvider with a Console Exporter (not necessary)
 # The MetricExporter prints metrics to the console for demonstration purposes.
 metric_reader = PeriodicExportingMetricReader(
-        exporter=OTLPMetricExporter(timeout=10000),
+        exporter=OTLPMetricExporter(endpoint=f"{get_otel_ip()}", insecure=True, timeout=10000),
         export_interval_millis=10000)
 meter_provider = MeterProvider(metric_readers=[metric_reader])
 
@@ -206,8 +206,8 @@ class otel_logger():
     # 4. Add a processor to the provider
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
     # 5. Attach OTLP handler to the Python standard logging
-    handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
-    logging.getLogger().setLevel(logging.NOTSET) # Ensure all levels are captured
+    handler = LoggingHandler(level=logging.DEBUG, logger_provider=logger_provider)
+    logging.getLogger().setLevel(logging.DEBUG) # Ensure all levels are captured
     logging.getLogger().addHandler(handler)
     # 6. Use standard Python logging
     logger = logging.getLogger(__name__)
