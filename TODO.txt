@@ -1,1 +1,0 @@
-Take tickers.json in pipelines/fundamentals and push ticker structure to company listing table.

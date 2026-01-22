@@ -10,9 +10,9 @@ from util.postgres.db.models.tickers import Company_Mailing_Addresses as cmailin
 from util.postgres.db.models.tickers import Company_Business_Addresses as cbusiness
 from util.postgres.db.models.tickers import Filings as filings
 from pipelines.fundamentals.get_ticker_list import save_ticker_data
-
+from util.kafka.kafka import KafkaConsumer
 import pandas as pd
-
+from dotenv import load_dotenv
 import json
 import pdb
 from tqdm import tqdm
@@ -23,43 +23,27 @@ import math
 from util.postgres.db.create_schemas import create_schemas
 from util.crud_pg import crud as crud
 create_schemas()
-
-requests = requests_util()
+load_dotenv()
 
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
 
-current_file = os.path.basename(__file__)
+topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
+consumer = KafkaConsumer([topic])
+requests = requests_util()
 
 def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
     return cik
 
-def nfilings_in_zip(zip_path):
-    return len(zipfile.ZipFile(zip_path).infolist())
-    
-def read_zip_file(zip_path, nfilings, chunk_size):
-    with zipfile.ZipFile(zip_path) as zip_ref:
-        for i in range(0, nfilings, chunk_size):
-            subm_obj = []
-            info_chunk = zip_ref.infolist()[i:i + chunk_size]
-            for info in info_chunk:
-                if info.flag_bits & 0x1 == 0:
-                    if not 'placeholder.txt' in info.filename:
-                        with zip_ref.open(info, 'r') as f:
-                            # You can read the contents of the file here
-                            subm_obj.append(json.loads(f.read().decode('utf-8')))
-            yield subm_obj
-    
-
 def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
     df.replace('\\\\','', regex=True, inplace=True)
     df.replace('/','', regex=True, inplace=True)
-
+    
 class Submissions():
     # Submissions:
     # List of all listed filing submissions made by the company.
@@ -81,30 +65,22 @@ class Submissions():
         self.crud_util = crud_obj
         print("Initiating submissions_df...")
 
-
-    async def process_chunk(self, content_merged, zip_file: str = ''):
+    async def process_chunks(self, content_merged):
         success = False
-        known_ciks = await self.crud_util.query_table(symbols, 'cik_str')
-        if not known_ciks:
-            return success
-         
-        # TODO: Still takes too long. Attempt to work with all objects as dataframes and insert
-        # all in bulk. 
-        if zip_file:
-            try: 
-                chunk_size = 1000
-                nfilings = nfilings_in_zip(zip_file)
-                filing = read_zip_file(zip_file, nfilings, chunk_size)
-                pbar = tqdm(enumerate(filing), total=math.ceil(nfilings/chunk_size), desc="Performing Extract+Load of SEC Filings")
-                for cnt, self.downloaded_list in pbar:
-                    self.parse_response(content_merged, pbar)
-                    await self.insert_table(pbar)
-                    pbar.set_description(f"Processing Submissions: {100*chunk_size*(cnt+1)/(nfilings):.2f}%")
+        try: 
+            while True:
+                time.sleep(1)
+                # consumer.recieve_continuous polls continuously until msg arrives
+                self.downloaded_list = consumer.recieve_once()
+                if not self.downloaded_list: # no message yet
+                    continue
+                self.parse_response(content_merged)
+                await self.insert_table()
+                log.info('Submissions Data insert complete.')
 
-            except (Exception) as err:
-                print(f"{err}")
-        else:
-            print('No zip file presented.')
+        except (Exception) as err:
+            print(f"{err}")
+        success = True
         return success
 
     def parse_response(self, content_merged):
@@ -164,8 +140,6 @@ class Submissions():
 
             filings_dict = df.to_dict(orient='records')
             unique_elements = ["cik", "accessionNumber"]
-            await self.crud_util.insert_rows_orm(filings, unique_elements, filings_dict)
-            self.filing_list = []
             
         if not self.meta_data:
             log.warning(f"No meta_data to insert for cik {self.cik}")
@@ -184,9 +158,6 @@ class Submissions():
 
             unique_elements = ["cik", "ein"]
             cmeta_dict = df.to_dict(orient='records')
-            await self.crud_util.insert_rows_orm(cmeta, unique_elements, cmeta_dict)   
-            self.meta_data = []
-
         if not self.addresses_mailing:
             log.warning(f"No meta_data to insert for cik {self.cik}")
         else:
@@ -201,8 +172,7 @@ class Submissions():
 
             unique_elements = ["cik"]
             cmail_dict = df.to_dict(orient='records')
-            await self.crud_util.insert_rows_orm(cmailing, unique_elements, cmail_dict) 
-            self. addresses_mailing = []
+            
 
         if not self.addresses_business:
             log.warning(f"No meta_data to insert for cik {self.cik}")
@@ -218,10 +188,17 @@ class Submissions():
 
             unique_elements = ["cik"]
             cbusiness_dict = df.to_dict(orient='records')
-            await self.crud_util.insert_rows_orm(cbusiness, unique_elements, cbusiness_dict)
-            self.addresses_business = []
-            
-        self.filing_list
+
+        await self.crud_util.insert_rows_orm(filings, unique_elements, filings_dict)
+        await self.crud_util.insert_rows_orm(cmeta, unique_elements, cmeta_dict)   
+        await self.crud_util.insert_rows_orm(cmailing, unique_elements, cmail_dict) 
+        await self.crud_util.insert_rows_orm(cbusiness, unique_elements, cbusiness_dict)
+        
+        self.filing_list = []
+        self.meta_data = []
+        self. addresses_mailing = []
+        self.filing_list = []
+        self.addresses_business = []
         success = True
         return success
 
@@ -230,13 +207,7 @@ async def get_submissions(content_merged):
     msg = "Submissions failed."
     submissions = Submissions(crud_util)
     t0 = time.time()
-    vals = await submissions.insert_submissions_from_zip(
-                content_merged,
-                os.path.join(
-                os.path.dirname(__file__),
-                '../',
-                'submissions.zip')
-    )
+    vals = await submissions.process_chunks(content_merged)
     
     t1 = time.time()
     msg = f"Submissions time: {(t1-t0)/60} minutes."

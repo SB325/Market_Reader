@@ -39,12 +39,9 @@ url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
-topic = os.getenv("KAFKA_TOPIC")
+topic = os.getenv("FACTS_KAFKA_TOPIC")
 requests = requests_util()
-consumer = KafkaConsumer(topic)
-
-
-current_file = os.path.basename(__file__)
+consumer = KafkaConsumer([topic])
 
 def read_cik(self, cik: str = ''):
     if cik:
@@ -87,7 +84,7 @@ class Facts():
                     continue
                 self.parse_response(content_merged)
                 await self.insert_table()
-                log.info('Data insert complete.')
+                log.info('Facts Data insert complete.')
 
         except (Exception) as err:
             print(f"{err}")

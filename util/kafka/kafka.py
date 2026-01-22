@@ -1,14 +1,15 @@
 import pdb
 import traceback
-import os
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 from confluent_kafka import Producer, Consumer, TopicPartition
-from confluent_kafka.admin import AdminClient, ConfigResource, NewTopic
+from confluent_kafka.admin import AdminClient, ConfigResource, NewTopic, ResourceType
 from dotenv import load_dotenv
 from util.redis.redis_util import RedisStream
 import time
 import subprocess
 import json
-
+from uuid import uuid4
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
@@ -37,7 +38,7 @@ producer_conf = {
 }
 consumer_conf = {
     'bootstrap.servers': get_kafka_ip(),
-    'default.topic.config': {'auto.offset.reset': 'smallest'},
+    'default.topic.config': {'auto.offset.reset': 'earliest'},
     'group.id': group_id,
 }
 admin_client = AdminClient(producer_conf)
@@ -63,9 +64,9 @@ def get_number_of_messages_in_topic(self, topic):
 
 def update_retention_period(retention_time_ms, topic):
     config_resource = ConfigResource(
-        ResourceType.TOPIC,
-        topic,
-        set_configs={'retention.ms': new_retention_ms_day},
+        restype=ResourceType.TOPIC,
+        name=topic,
+        described_configs={"retention.ms": new_retention_ms_day},
     )
     fs = admin_client.alter_configs([config_resource])
     try:
@@ -74,7 +75,7 @@ def update_retention_period(retention_time_ms, topic):
     except Exception as e:
         print(f"Failed to alter topic config: {e}")
 
-def delete_and_create_topic(admin_client, topic_name):
+def delete_topic(admin_client, topic_name):
     """Deletes a topic and re-creates it to clear all messages."""
     
     # 1. Delete the topic
@@ -93,6 +94,7 @@ def delete_and_create_topic(admin_client, topic_name):
     # Give Kafka a moment to process the deletion completely
     time.sleep(2) 
     
+def create_topic(admin_client, topic_name):
     # 2. Re-create the topic
     print(f"Creating topic '{topic_name}'...")
     # Define topic partitions and replication factor as needed
@@ -114,23 +116,37 @@ def delete_and_create_topic(admin_client, topic_name):
 class KafkaProducer():
     producer = Producer(producer_conf)
 
-    def __init__(self, topic = None):
+    def __init__(self, topic = None, clear_topic: bool = True):
         self.topic = topic
-        delete_and_create_topic(admin_client, topic)
+        if clear_topic:
+            self.clear_topic(topic)
+        update_retention_period(new_retention_ms_day, topic)
+    
+    def clear_topic(self, topic):
+        if self.clear_topic:
+            if isinstance(topic, list):
+                [delete_topic(admin_client, tpc) for tpc in topic]
+            else:
+                delete_topic(admin_client, topic)
+            if isinstance(topic, list):
+                [create_topic(admin_client, tpc) for tpc in topic]
+            else:
+                create_topic(admin_client, topic)
 
-    def send(self, msg, topic=None):
+    def send(self, msg, topic=None, use_redis: bool = True):
         if topic:
             self.topic = topic
-            update_retention_period(new_retention_ms_day, topic)
-
-        message_id = rstream.add(msg)
-        self.producer.produce(self.topic, message_id.encode('utf-8'))
+        if use_redis:
+            message_id = rstream.add(msg)
+            self.producer.produce(self.topic, message_id.encode('utf-8'))
+        else:
+            self.producer.produce(self.topic, msg.encode('utf-8'))
+            
         self.producer.flush()
 
     def send_limit_queue_size(self, msg, queue_size, topic = None):
         if topic:
             self.topic = topic
-            update_retention_period(new_retention_ms_day, topic)
         while get_number_of_messages_in_topic(self, self.topic) >= queue_size:
             time.sleep(1)
         
@@ -139,33 +155,52 @@ class KafkaProducer():
         self.producer.flush()
 
 class KafkaConsumer():
-    consumer = Consumer(consumer_conf)
-    admin_client = AdminClient(consumer_conf)
-
-    def __init__(self, topic):
+    def __init__(self, 
+                    commit_immediately: bool = True, 
+                    topic: list = [],
+                    partition_messages = True,
+                    unique_group_id: str = ''):
         self.topic = topic
-        self.consumer.subscribe([topic])
+        [create_topic(admin_client, tpc) for tpc in topic]
 
-    def recieve_once(self):
-        data = {}
+        self.commit_immediately = commit_immediately
+        if not commit_immediately:
+            consumer_conf.update({'enable.auto.commit': 'false'})
+        if not partition_messages:
+            uuid = str(uuid4())
+            consumer_conf['group.id'] = f"{unique_group_id}.{uuid}"
+        self.consumer = Consumer(consumer_conf)
+        self.consumer.subscribe(topic)
+
+    def recieve_once(self,
+                    use_redis: bool = True,
+                    timeout = 10):
+        data = ''
         try:
-            msg = self.consumer.poll(10.0)
-            if not msg.error():
-                msg_decoded = msg.value().decode('utf-8')
-                data = rstream.read(msg_decoded)
-                # send message to transform block
-            elif msg.error().code() != KafkaError._PARTITION_EOF:
-                print(msg.error())
+            msg = self.consumer.poll(timeout)
+            if msg:
+                if not msg.error():
+                    msg_decoded = msg.value().decode('utf-8')
+                    if use_redis:
+                        data = rstream.read(msg_decoded)
+                        # send message to transform block
+                    else: 
+                        data = msg_decoded
+                elif msg.error().code() != KafkaError._PARTITION_EOF:
+                    print(msg.error())
+                    raise BaseException(msg.error())
+                elif msg.error().code() == KafkaError._PARTITION_EOF:
+                    print(f'Reached end of topic/partition: {msg.topic()} [{msg.partition()}] at offset {msg.offset()}')
 
         except BaseException as be:
             traceback.print_exc()
 
-        if not data:
-            print("data returned from stream is empty!")
-
-        self.consumer.commit(msg)
+        if self.commit_immediately:
+            self.consumer.commit(msg)
         return data
 
+    def __del__(self):
+        self.consumer.close()
     # def recieve_continuous(self):
     #     try:
     #         while True:
@@ -199,5 +234,4 @@ class KafkaConsumer():
     #     #     # Close the consumer gracefully to trigger a group rebalance
     #     #     self.consumer.close()
     
-    def __del__(self):
-        self.consumer.close()
+    

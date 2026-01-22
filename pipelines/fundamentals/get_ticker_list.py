@@ -11,7 +11,7 @@ import asyncio
 from util.crud_pg import crud as crud
 from util.postgres.db.models.tickers import Symbols as SymbolTable
 import pandas as pd
-import requests
+from util.requests_util import requests_util
 import pdb
 import json
 import time
@@ -24,6 +24,7 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
 output_filename = 'tickers.json'
 
 crud_util = crud()
+requests = requests_util()
 
 async def clean_df(df: pd.DataFrame):
     df.replace(',','', regex=True, inplace=True)
@@ -49,7 +50,7 @@ async def save_ticker_data(data: dict, to_file: bool = True):
     return msg
 
 if __name__ == "__main__":
-    response = requests.get(url=url, headers=header)
+    response = requests.get(url_in=url, headers_in=header)
     content = list(response.json().values())
     for con in content:
         cik = str(con['cik_str'])
