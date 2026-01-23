@@ -41,8 +41,8 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Host':'www.sec.gov'}
 topic = os.getenv("FACTS_KAFKA_TOPIC")
 requests = requests_util()
-consumer = KafkaConsumer([topic])
 
+consumer = KafkaConsumer(topic=[topic])
 def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)

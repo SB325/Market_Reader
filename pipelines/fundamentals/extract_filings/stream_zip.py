@@ -15,21 +15,16 @@ import json
 from util.kafka.kafka import KafkaProducer
 from util.redis.redis_util import RedisStream
 import subprocess
+import argparse
 
 load_dotenv(override=True)
+load_dotenv('.env')
 load_dotenv('util/kafka/.env')
 
-zip_filename = os.getenv("FILINGS_ZIP_FILENAME")
+facts_zip_filename = os.getenv("FACTS_ZIP_FILENAME")
+submissions_zip_filename = os.getenv("SUBMISSIONS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 queue_size = int(os.getenv("QUEUE_SIZE"))
-topic = os.getenv("KAFKA_TOPIC")
-redis_stream_name = os.getenv("REDIS_STREAM_NAME")
-
-zip_fullpath=os.path.join(os.path.join(os.path.dirname(__file__), '../'), zip_filename)
-
-# Clear Redis stream objects before starting
-rstream = RedisStream(redis_stream_name)
-rstream.delete_stream(redis_stream_name)
 
 def read_zip_file(zip_path, nfilings, chunk_size):
     with zipfile.ZipFile(zip_path) as zip_ref:
@@ -48,6 +43,33 @@ def nfilings_in_zip(zip_path):
     return len(zipfile.ZipFile(zip_path).infolist())
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser(
+                    prog='Stream Unzipper',
+                    description='This process Extracts a Facts or Submissions \
+                        EDGAR .zip file and populates the contents into kafka-redis \
+                        streams for distributed consumption by replicated facts \
+                        Transform/Load pipelines.',
+                    epilog='by: SFB')
+    parser.add_argument('fileType', 
+                    help='either \'facts\' or \'submissions\'',
+                    choices=['facts', 'submissions'])  # on/off flag
+    args = parser.parse_args()
+    fileType = args.fileType
+    if 'facts' in fileType:
+        zip_filename = facts_zip_filename
+        topic = os.getenv("FACTS_KAFKA_TOPIC")
+        redis_stream_name = os.getenv("FACTS_REDIS_STREAM_NAME")
+    elif 'submissions' in fileType:
+        zip_filename = submissions_zip_filename
+        topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
+        redis_stream_name = os.getenv("SUBMISSIONS_REDIS_STREAM_NAME")
+
+    # Clear Redis stream objects before starting
+    rstream = RedisStream(redis_stream_name)
+    rstream.delete_stream(redis_stream_name)
+    
+    zip_fullpath=os.path.join(os.path.join(os.path.dirname(__file__), '../'), zip_filename)
 
     try:
         producer = KafkaProducer(topic)

@@ -9,7 +9,7 @@ SQLAlchemy==2.0.25
 Flask
 Flask-SQLAlchemy
 psycopg2-binary
-
+argparse==1.4.0
 confluent-kafka
 redis
 

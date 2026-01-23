@@ -1,3 +1,5 @@
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 import time
 import math
 import requests
@@ -7,7 +9,7 @@ from urllib3.util import Retry
 import logging
 import pdb
 from uuid import uuid4
-from kafka.kafka import KafkaProducer, KafkaConsumer
+from util.kafka.kafka import KafkaProducer, KafkaConsumer
 import json
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 
@@ -85,7 +87,7 @@ class requests_util:
         self.rate_limit = rate_limit  # minimum period or 1/max rate per second. For edgar, limit is listed at 10/sec
         self.session = requests.Session()
         self.session.mount('http://', adapter)
-        self.distributed = bool(delay_queue_topic)
+        self.distributed = distributed
         if distributed:
             self.ddc = distributed_delay_client(
                         delay_queue_topic = delay_queue_topic,

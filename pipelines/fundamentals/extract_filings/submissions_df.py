@@ -23,7 +23,8 @@ import math
 from util.postgres.db.create_schemas import create_schemas
 from util.crud_pg import crud as crud
 create_schemas()
-load_dotenv()
+load_dotenv(override=True)
+load_dotenv('util/kafka/.env')
 
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
@@ -31,7 +32,7 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Host':'www.sec.gov'}
 
 topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
-consumer = KafkaConsumer([topic])
+consumer = KafkaConsumer(topic=[topic])
 requests = requests_util()
 
 def read_cik(self, cik: str = ''):
@@ -139,7 +140,7 @@ class Submissions():
             clean_df(df)
 
             filings_dict = df.to_dict(orient='records')
-            unique_elements = ["cik", "accessionNumber"]
+            filings_unique_elements = ["cik", "accessionNumber"]
             
         if not self.meta_data:
             log.warning(f"No meta_data to insert for cik {self.cik}")
@@ -156,7 +157,7 @@ class Submissions():
             df = df[elements]
             clean_df(df)
 
-            unique_elements = ["cik", "ein"]
+            cmeta_unique_elements = ["cik", "ein"]
             cmeta_dict = df.to_dict(orient='records')
         if not self.addresses_mailing:
             log.warning(f"No meta_data to insert for cik {self.cik}")
@@ -170,7 +171,7 @@ class Submissions():
             df = df[elements]
             clean_df(df)
 
-            unique_elements = ["cik"]
+            cmail_unique_elements = ["cik"]
             cmail_dict = df.to_dict(orient='records')
             
 
@@ -186,13 +187,13 @@ class Submissions():
             df = df[elements]
             clean_df(df)
 
-            unique_elements = ["cik"]
+            cbusiness_unique_elements = ["cik"]
             cbusiness_dict = df.to_dict(orient='records')
 
-        await self.crud_util.insert_rows_orm(filings, unique_elements, filings_dict)
-        await self.crud_util.insert_rows_orm(cmeta, unique_elements, cmeta_dict)   
-        await self.crud_util.insert_rows_orm(cmailing, unique_elements, cmail_dict) 
-        await self.crud_util.insert_rows_orm(cbusiness, unique_elements, cbusiness_dict)
+        await self.crud_util.insert_rows_orm(filings, filings_unique_elements, filings_dict)
+        await self.crud_util.insert_rows_orm(cmeta, cmeta_unique_elements, cmeta_dict)   
+        await self.crud_util.insert_rows_orm(cmailing, cmail_unique_elements, cmail_dict) 
+        await self.crud_util.insert_rows_orm(cbusiness, cbusiness_unique_elements, cbusiness_dict)
         
         self.filing_list = []
         self.meta_data = []
