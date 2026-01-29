@@ -94,7 +94,7 @@ class meterType(Enum):
 # 1. Configure the MeterProvider with a Console Exporter (not necessary)
 # The MetricExporter prints metrics to the console for demonstration purposes.
 metric_reader = PeriodicExportingMetricReader(
-        exporter=OTLPMetricExporter(endpoint=f"{get_otel_ip()}", insecure=True, timeout=10000),
+        exporter=OTLPMetricExporter(endpoint=f"{get_otel_ip()}", insecure=True, timeout=30000),
         export_interval_millis=10000)
 meter_provider = MeterProvider(metric_readers=[metric_reader])
 
@@ -110,7 +110,6 @@ class otel_metrics():
     
     def create_meter(self, 
             meter_name : str, 
-            meter_id: str,
             meter_type: meterType,
             description: str,
             ):
@@ -128,7 +127,7 @@ class otel_metrics():
             # Counters are used for values that only increase, like the number of requests or errors.
             self.meter_objects['counters'].append(
                 meter.create_counter(
-                    meter_id,  # ex: "http.server.requests.total",
+                    meter_name,  # ex: "http.server.requests.total",
                     unit="1",
                     description=description,
                 )
@@ -137,7 +136,7 @@ class otel_metrics():
             pass
             self.meter_objects['upDownCounters'].append(
                 meter.create_up_down_counter(
-                    meter_id,  # ex: "http.server.requests.total",
+                    meter_name,  # ex: "http.server.requests.total",
                     unit="1",
                     description=description,
                 )
@@ -146,7 +145,7 @@ class otel_metrics():
         #     pass
         #     self.meter_objects['gauges'].append(
         #         meter.create_gauge(
-        #             meter_id,  # ex: "http.server.requests.total",
+        #             meter_name,  # ex: "http.server.requests.total",
         #             unit="1",
         #             description=description,
         #         )
@@ -155,7 +154,7 @@ class otel_metrics():
             pass
             self.meter_objects['histograms'].append(
                 meter.create_histogram(
-                    meter_id,  # ex: "http.server.requests.total",
+                    meter_name,  # ex: "http.server.requests.total",
                     unit="1",
                     description=description,
                 )
@@ -176,7 +175,7 @@ class otel_metrics():
         if not upDownCounter:
             print(f"UpDownCounter name {counter_name} not found.")
 
-        counter[0].add(change_by, attributes)
+        upDownCounter[0].add(change_by, attributes)
 
     # def update_gauge(self,):
     #     gauge = [val for val in self.meter_objects['gauges']
@@ -214,9 +213,6 @@ class otel_logger():
 
     def info(self, msg):
         self.logger.info(msg)
-
-    def message(self, msg):
-        self.logger.message(msg)
 
     def debug(self, msg):
         self.logger.debug(msg)

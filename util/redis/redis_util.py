@@ -1,12 +1,18 @@
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 import pdb
 import traceback
-import os
 import redis
 from dotenv import load_dotenv
 import time
 import subprocess
 import json
 import pickle
+from util.otel import otel_tracer, otel_metrics, otel_logger
+
+otraces = otel_tracer()
+ometrics = otel_metrics()
+ologs = otel_logger()
 
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 load_dotenv(override=True)
@@ -35,34 +41,46 @@ class RedisStream():
         self.rstream = redis.Redis(connection_pool=pool, decode_responses=True)
 
     def add(self, data):
-        message_id = self.rstream.xadd(self.stream_name, {'data_obj': pickle.dumps(data)}, id='*')
+        with otraces.set_span('redis_xadd') as span:
+            message_id = self.rstream.xadd(self.stream_name, {'data_obj': pickle.dumps(data)}, id='*')
         return message_id.decode('utf-8')
 
     def read(self, message_id):
+        data_out = {}
         try:
-            data = self.rstream.xread(streams={self.stream_name: message_id}, count=1, block=1000)
+            with otraces.set_span('redis_xread') as span:
+                span.set_attribute("message_id", message_id)
+                data = self.rstream.xread(streams={self.stream_name: message_id}, count=1, block=1000)
             if data:
                 # data is a list of lists: [[stream_name, [message1, message2, ...]]]
                 for stream, stream_messages in data:
                     for message_id, message_data in stream_messages:
                         msg_id = message_id.decode('utf-8')
-                        print(f"Received message ID: {msg_id}")
+                        ologs.info(f"Received message ID: {msg_id}")
+
                         ndeleted = self.delete_msg_id(message_id)
-                        print(f'{ndeleted} entries removed from redis.')
+                        ologs.info(f'{ndeleted} entries removed from redis.')
+                data_out = pickle.loads(message_data['data_obj'.encode('utf-8')])
+                
         except BaseException as be:
             traceback.print_exc()
 
-        data_out = pickle.loads(message_data['data_obj'.encode('utf-8')])
+
+        
         return data_out
     
     def delete_stream(self, stream_name):
-        self.rstream.delete(stream_name)
-        print(f"stream_id : {stream_name} deleted.")
+        with otraces.set_span('redis_delete') as span:
+            span.set_attribute("stream_name", stream_name)
+            self.rstream.delete(stream_name)
+        ologs.info(f"stream_id : {stream_name} deleted.")
 
     def delete_msg_id(self, message_id):
         del_count = 0
         try:
-            del_count = self.rstream.xdel(self.stream_name, message_id)
+            with otraces.set_span('redis_xdel') as span:
+                span.set_attribute("message_id", message_id)
+                del_count = self.rstream.xdel(self.stream_name, message_id)
         except BaseException as be:
             traceback.print_exc()
         

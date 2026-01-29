@@ -6,12 +6,24 @@ import requests
 from requests.models import Response
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-import logging
 import pdb
 from uuid import uuid4
 from util.kafka.kafka import KafkaProducer, KafkaConsumer
+from util.otel import otel_tracer, otel_metrics, otel_logger
 import json
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
+
+otraces = otel_tracer()
+ometrics = otel_metrics()
+ologs = otel_logger()
+
+ometrics.create_meter(
+            meter_name = 'requests_distributed',
+            meter_type = "AsynchronousUpDownCounter",
+            description = 'As distributed requests from multiple replicas arrive \
+                faster than the api rate limit, this meter will have increasing \
+                value over time. As replicas catch up, the value decreases.',
+            )
 
 class distributed_delay_client():
     '''
@@ -30,36 +42,51 @@ class distributed_delay_client():
                 ):
         self.period_s = 1/max_rate_per_s 
         self.topic = delay_queue_topic
-        self.producer = KafkaProducer(
-                    topic = delay_queue_topic,
-                    clear_topic = False)
-        self.consumer = KafkaConsumer(topic = [ready_queue_topic],
+        with otraces.set_span('requests_util_ddc_create_kafka_producer') as span:
+            span.set_attribute("topic", delay_queue_topic)
+            span.set_attribute("clear_preexisting_messages", "False")
+            self.producer = KafkaProducer(
+                        topic = delay_queue_topic,
+                        clear_topic = False)
+        with otraces.set_span('requests_util_ddc_create_kafka_consumer') as span:
+            span.set_attribute("topic", ready_queue_topic)
+            span.set_attribute("commit_messages_immediately", "False")
+            self.consumer = KafkaConsumer(topic = [ready_queue_topic],
                         partition_messages = False,
                         commit_immediately = False)
 
     def wait(self):
         # send guid to kafka queue
         uuid = str(uuid4())
-        self.producer.send(json.dumps({
+        with otraces.set_span('requests_util_ddc_send_uuid') as span:
+            span.set_attribute("topic", self.topic)
+            span.set_attribute("uuid", uuid)
+            self.producer.send(json.dumps({
                     'uuid': uuid, 
                     'period': self.period_s}), 
                     self.topic, 
                     use_redis = False
                 )
+        ometrics.update_up_down_counter(counter_name='estimated_queue_length', change_by=1)
 
         # wait for response
         done = False
         messages = []
-        while not done:
-            msg = self.consumer.recieve_once(use_redis = False)
-            if msg:
-                message = json.loads(msg)
-                messages.append(message)
-                if uuid in message['uuid']:
+        
+        with otraces.set_span('requests_util_ddc_wait_for_uuid') as span:
+            span.set_attribute("topic", self.topic)
+            span.set_attribute("uuid", uuid)
+            while not done:
+                span.set_attribute("uuid", uuid)
+                msg = self.consumer.recieve_once(use_redis = False)
+                if msg:
+                    message = json.loads(msg)
+                    messages.append(message)
+                    if uuid in message['uuid']:
+                        done = True
+                        ologs.info(f"Message {uuid} found! Proceeding to send request.")
+                else:
                     done = True
-                    print(f"Message {uuid} found! Proceeding to send request.")
-            else:
-                done = True
 
         return
 
@@ -68,7 +95,6 @@ retry = Retry(
         backoff_factor=5,
         status_forcelist=[429, 500, 502, 503, 504],
     )
-logging.getLogger("urllib3").setLevel(logging.DEBUG)
 adapter = HTTPAdapter(max_retries=retry)
 
 class requests_util:
@@ -119,25 +145,33 @@ class requests_util:
         response.error_type = "unknown"
         response.status_code =500
         try:
-            response = self.session.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
+            with otraces.set_span('requests_util_get') as span:
+                span.set_attribute("url", url_in)
+                response = self.session.get(url=url_in, params=params_dict, headers=headers_in, stream=stream_in, timeout=10)
         except:
-            print(f"GET Request for \n{response.url}\n Failed. {response.status_code}")
+            ologs.error(f"GET Request for \n{response.url}\n Failed. {response.status_code}")
                 
         self.set_request_time()    
         return response    
 
     def post(self, url_in: str, data_in: str = None, json_in: str = None, headers_in={}):
         if len(headers_in.keys()):
-            response = self.session.post(url=url_in, data=data_in, json=json_in, headers=headers_in)
+            with otraces.set_span('requests_util_post') as span:
+                span.set_attribute("url", url_in)
+                response = self.session.post(url=url_in, data=data_in, json=json_in, headers=headers_in)
         else:
-            response = self.session.post(url=url_in, data=data_in, json=json_in)
+            with otraces.set_span('requests_util_post_headerless') as span:
+                span.set_attribute("url", url_in)
+                response = self.session.post(url=url_in, data=data_in, json=json_in)
 
         if response.status_code != 200:
-            print(f"Post Error! Code {response.status_code}: {response.reason}") 
+            ologs.error(f"Post Error! Code {response.status_code}: {response.reason}") 
         return response  
     
     def put(self, url_in: str, data_in: str, json_in: str = {}):
-        response = self.session.put(url = url_in, data = data_in)
+        with otraces.set_span('requests_put') as span:
+            span.set_attribute("url", url_in)
+            response = self.session.put(url = url_in, data = data_in)
         return response
     
 if __name__ == '__main__':

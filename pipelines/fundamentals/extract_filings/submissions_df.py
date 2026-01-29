@@ -2,7 +2,6 @@ import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 import asyncio
-from util.logger import log
 from util.requests_util import requests_util
 from util.postgres.db.models.tickers import Symbols as symbols
 from util.postgres.db.models.tickers import Company_Meta as cmeta
@@ -22,6 +21,12 @@ import pickle
 import math
 from util.postgres.db.create_schemas import create_schemas
 from util.crud_pg import crud as crud
+from util.otel import otel_tracer, otel_metrics, otel_logger
+
+otraces = otel_tracer()
+ometrics = otel_metrics()
+ologs = otel_logger()
+
 create_schemas()
 load_dotenv(override=True)
 load_dotenv('util/kafka/.env')
@@ -34,6 +39,13 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
 topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
 consumer = KafkaConsumer(topic=[topic])
 requests = requests_util()
+
+ometrics.create_meter(
+            meter_name = 'submissions_stream_unzip',
+            meter_type = "AsynchronousUpDownCounter",
+            description = 'As distributed transform/load replicas process \
+                filing data, this value will decline.',
+            )
 
 def read_cik(self, cik: str = ''):
     if cik:
@@ -72,11 +84,15 @@ class Submissions():
             while True:
                 time.sleep(1)
                 # consumer.recieve_continuous polls continuously until msg arrives
-                self.downloaded_list = consumer.recieve_once()
-                if not self.downloaded_list: # no message yet
-                    continue
-                self.parse_response(content_merged)
-                await self.insert_table()
+                with otraces.set_span('transform_submissions_stream_unzip') as span:
+                    self.downloaded_list = consumer.recieve_once()
+                    ometrics.update_up_down_counter(counter_name='submissions_stream_unzip', change_by=-1)
+                    if not self.downloaded_list: # no message yet
+                        print('No message yet.')
+                        continue
+                    self.parse_response(content_merged)
+                with otraces.set_span(f'load_submissions_stream_unzip') as span:
+                    await self.insert_table()
                 log.info('Submissions Data insert complete.')
 
         except (Exception) as err:
@@ -86,7 +102,6 @@ class Submissions():
 
     def parse_response(self, content_merged):
 
-        t0 = time.time()
         self.downloaded_list = pd.DataFrame.from_dict(self.downloaded_list)
         self.downloaded_list['cik'] = self.downloaded_list['cik'].apply(lambda x: str(x).zfill(10))
         self.downloaded_list = pd.merge(self.downloaded_list, content_merged, on='cik', how='inner')
@@ -128,7 +143,6 @@ class Submissions():
             log.warning(f"No shares outstanding data to insert.")
         else:
             # Insert company filings    
-            t0 = time.time()
             df = pd.DataFrame(self.filing_list)
 
             elements = ["cik", "accessionNumber", "filingDate", "reportDate", 
@@ -146,7 +160,6 @@ class Submissions():
             log.warning(f"No meta_data to insert for cik {self.cik}")
         else:
             # Insert company metadata
-            t0 = time.time()
             df = pd.DataFrame(self.meta_data)
 
             elements = ['cik', 'name', 'tickers', 'exchanges', 'description', 'website', \
@@ -163,7 +176,6 @@ class Submissions():
             log.warning(f"No meta_data to insert for cik {self.cik}")
         else:
             # Insert mailing address
-            t0 = time.time()
             df = pd.DataFrame(self.addresses_mailing)
 
             elements = ['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
@@ -179,7 +191,6 @@ class Submissions():
             log.warning(f"No meta_data to insert for cik {self.cik}")
         else:
             # Insert business address
-            t0 = time.time()
             df = pd.DataFrame(self.addresses_business)
             
             elements = ['cik','street1', 'street2', 'city', 'stateOrCountry', 'zipCode',
@@ -207,12 +218,8 @@ async def get_submissions(content_merged):
     crud_util = crud()
     msg = "Submissions failed."
     submissions = Submissions(crud_util)
-    t0 = time.time()
     vals = await submissions.process_chunks(content_merged)
     
-    t1 = time.time()
-    msg = f"Submissions time: {(t1-t0)/60} minutes."
-    print(msg)
     return msg, vals
 
 async def main():
@@ -229,12 +236,4 @@ async def main():
     await get_submissions(df_existing)
 
 if __name__ == "__main__":
-    t0 = time.time()
-
-    print("Schema Created.")
-
     asyncio.run(main())
-    
-    t1 = time.time()
-
-    print(f"{(t1-t0)/60} minutes elapsed.")

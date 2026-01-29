@@ -2,8 +2,12 @@ from pymilvus import MilvusClient, DataType, Collection
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 from collection_model import collection_model_type
-from util.logger import log
 import pdb
+from util.otel import otel_tracer, otel_metrics, otel_logger
+
+otraces = otel_tracer()
+ometrics = otel_metrics()
+ologs = otel_logger()
 
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 def get_db_ip():
@@ -32,8 +36,9 @@ class crud_milvus():
         success = False
         try:
             collection = Collection(collection_name) 
-            collection.insert(data=data,
-                            timeout=timeout)
+            with otraces.set_span('milvus_insert') as span:
+                span.set_attribute("collection_name", collection_name)
+                collection.insert(data=data,timeout=timeout)
             success = True
         except BaseException as be:
             log.error(f"{be}")
@@ -55,14 +60,17 @@ class crud_milvus():
             if not self.client.list_collections():
                 return collection
             collection = Collection(collection_name) 
-            results = collection.query(
-                expr=expr,
-                offset=offset,
-                limit=limit,
-                output_fields=ouput_fields,
-                partition_names=partition_names,
-                timeout=timeout,
-            )
+            with otraces.set_span('milvus_query') as span:
+                span.set_attribute("collection_name", collection_name)
+                span.set_attribute("expression", expr)
+                results = collection.query(
+                    expr=expr,
+                    offset=offset,
+                    limit=limit,
+                    output_fields=ouput_fields,
+                    partition_names=partition_names,
+                    timeout=timeout,
+                )
             
         except BaseException as be:
             log.error(f"{be}")
@@ -90,24 +98,28 @@ class crud_milvus():
                 index_params_obj.add_index(**index)
 
         # 3.5. Create a collection with the index loaded simultaneously
-        self.client.create_collection(
-            collection_name=collection['collection_name'],
-            schema=self.schema, 
-            index_params=index_params_obj, 
-            timeout=collection.get('timeout', None), 
-            dimension=collection.get('dimension', None), 
-            primary_field_name=collection.get('primary_field_name', None),  
-            id_type=collection['id_type'], 
-            vector_field_name=collection.get('vector_field_name', None),  
-            metric_type=collection.get('metric_type', None),
-            auto_id=collection.get('auto_id', None),
-            enable_dynamic_field=collection.get('enable_dynamic_field', False),
-        )
+        with otraces.set_span('milvus_create_collection') as span:
+            span.set_attribute("collection_name", collection['collection_name'])
+            self.client.create_collection(
+                collection_name=collection['collection_name'],
+                schema=self.schema, 
+                index_params=index_params_obj, 
+                timeout=collection.get('timeout', None), 
+                dimension=collection.get('dimension', None), 
+                primary_field_name=collection.get('primary_field_name', None),  
+                id_type=collection['id_type'], 
+                vector_field_name=collection.get('vector_field_name', None),  
+                metric_type=collection.get('metric_type', None),
+                auto_id=collection.get('auto_id', None),
+                enable_dynamic_field=collection.get('enable_dynamic_field', False),
+            )
 
     def get_collection_state(self, collection_name: str):
-        res = self.client.get_load_state(
-            collection_name=collection_name
-        )
+        with otraces.set_span('milvus_get_collection_state') as span:
+            span.set_attribute("collection_name", collection_name)
+            res = self.client.get_load_state(
+                collection_name=collection_name
+            )
         if not res:
             return None
         return res

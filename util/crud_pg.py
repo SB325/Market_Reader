@@ -5,7 +5,6 @@ import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 import asyncio
 from util.postgres.db.conn import insert_engine
-from util.logger import log
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import delete, select, column, table, text
 from sqlalchemy.orm import Session
@@ -16,6 +15,11 @@ import time
 from typing import Union
 from enum import Enum
 from sqlalchemy import desc, asc, and_
+from util.otel import otel_tracer, otel_metrics, otel_logger
+
+otraces = otel_tracer()
+ometrics = otel_metrics()
+ologs = otel_logger()
 
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 class operationType(Enum):
@@ -29,7 +33,8 @@ class operationType(Enum):
 # TODO: Copies from first called file (facts, or submisions) succeed, but only first
 #   copy from next file succeeds, rest fail. Fix this before proceeding.
 class crud():
-    engine = insert_engine()
+    with otraces.set_span('sqlalchemy_engine') as span:
+        engine = insert_engine()
 
     # async def insert_rows(self, table, data: pd.DataFrame, add_index: bool = True) -> bool:
     async def insert_rows(self, table, data: dict, add_index: bool = True) -> bool:
@@ -47,14 +52,15 @@ class crud():
             conn = self.engine.raw_connection()
             cursor = conn.cursor()
             try:
-                cursor.copy_from(buffer, tablename, sep=sep, null="")
-                conn.commit()
+                with otraces.set_span('sqlalchemy_engine_raw_connection') as span:
+                    cursor.copy_from(buffer, tablename, sep=sep, null="")
+                    conn.commit()
             except (Exception) as error:
-                print("Error: %s" % error)
+                ologs.error("Error: %s" % error)
                 conn.rollback()
                 cursor.close()
                 return 1
-            print("copy done.")
+            ologs.info("copy done.")
             cursor.close()
             conn.close()
             
@@ -123,7 +129,8 @@ class crud():
                 if limit:
                     result = result.limit(limit)
 
-                out = result.all()
+                with otraces.set_span('sqlalchemy_sesssion_query') as span:
+                    out = result.all()
 
             else:
                 stmt = select(*out_col_obj)
@@ -134,13 +141,13 @@ class crud():
                 if limit:
                     stmt = stmt.limit(limit)
 
-                out = session.execute(stmt).all()
+                with otraces.set_span('sqlalchemy_sesssion_query') as span:
+                    out = session.execute(stmt).all()
 
             if return_cols:
                 if len(return_cols)==1:
                     # while not isinstance(out[0], str):
                     out = [n[0] for n in out] 
-                    # print(f"{isinstance(out[0], str)} {type(out[0])}")
                 else:
                     out = [n[:len(return_cols)] for n in out]
         
@@ -158,12 +165,13 @@ class crud():
                     return False
                 else:
                     with conn as conn:
-                        conn.execute(
-                            delete(tablename).where(
-                            tablename[column] == query_val
+                        with otraces.set_span('sqlalchemy_delete_rows') as span:
+                            conn.execute(
+                                delete(tablename).where(
+                                tablename[column] == query_val
+                                )
                             )
-                        )
-                        conn.commit()
+                            conn.commit()
                     
             log.info(f'Successfully deleted {query_val}')
 
@@ -176,10 +184,11 @@ class crud():
         status = False
 
         with self.engine.connect() as conn:
-            conn.execute(insert(tablename).on_conflict_do_nothing(
-                        index_elements=index_elements
-                ).values(data))
-            conn.commit()
+            with otraces.set_span('sqlalchemy_insert_rows_orm') as span:
+                conn.execute(insert(tablename).on_conflict_do_nothing(
+                            index_elements=index_elements
+                    ).values(data))
+                conn.commit()
             status = True
 
         return status

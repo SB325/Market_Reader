@@ -2,7 +2,6 @@ import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 import asyncio
-from util.logger import log
 from util.requests_util import requests_util
 from util.postgres.db.models.tickers import Symbols as symbols
 from util.postgres.db.models.tickers import SharesOutstanding as SharesOutstanding
@@ -21,6 +20,8 @@ import pickle
 from dotenv import load_dotenv
 import gc  # invoke garbage collection with gc.collect() 
 from util.crud_pg import crud as crud
+from util.otel import otel_tracer, otel_metrics, otel_logger
+
 load_dotenv()
 # from util.postgres.db.create_schemas import create_schemas
 # create_schemas()
@@ -35,12 +36,23 @@ load_dotenv()
 #     .config("spark.executor.memory", "2g") \
 #     .getOrCreate()
 
+otraces = otel_tracer()
+ometrics = otel_metrics()
+ologs = otel_logger()
+
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
 topic = os.getenv("FACTS_KAFKA_TOPIC")
 requests = requests_util()
+
+ometrics.create_meter(
+            meter_name = 'facts_stream_unzip',
+            meter_type = "AsynchronousUpDownCounter",
+            description = 'As distributed transform/load replicas process \
+                filing data, this value will decline.',
+            )
 
 consumer = KafkaConsumer(topic=[topic])
 def read_cik(self, cik: str = ''):
@@ -71,7 +83,7 @@ class Facts():
         self.filing_list: list = []
         self.cik: str = None
         self.crud_util = crud_obj
-        print("Initiating facts_df...")
+        ologs.info("Initiating facts_df...")
 
     async def process_chunks(self, content_merged):
         success = False
@@ -79,15 +91,19 @@ class Facts():
             while True:
                 time.sleep(1)
                 # consumer.recieve_continuous polls continuously until msg arrives
-                self.downloaded_list = consumer.recieve_once()
-                if not self.downloaded_list: # no message yet
-                    continue
-                self.parse_response(content_merged)
-                await self.insert_table()
+                with otraces.set_span('transform_facts_stream_unzip') as span:
+                    self.downloaded_list = consumer.recieve_once()
+                    ometrics.update_up_down_counter(counter_name='facts_stream_unzip', change_by=1)
+                    if not self.downloaded_list: # no message yet
+                        ologs.info('No message yet.')
+                        continue
+                    self.parse_response(content_merged)
+                with otraces.set_span(f'load_facts_stream_unzip') as span:
+                    await self.insert_table()
                 log.info('Facts Data insert complete.')
 
         except (Exception) as err:
-            print(f"{err}")
+            ologs.error(f"{err}")
         success = True
         return success
 
@@ -247,12 +263,7 @@ async def get_facts(content_merged):
     crud_util = crud()
     msg = "Facts failed."
     facts = Facts(crud_util)
-    t0 = time.time()
     vals = await facts.process_chunks(content_merged)
-
-    t1 = time.time()
-    msg = f"Facts time: {(t1-t0)/60} minutes."
-    print(msg)
     return msg, vals
 
 async def main():
@@ -269,12 +280,5 @@ async def main():
     await get_facts(df_existing)
 
 if __name__ == "__main__":
-    t0 = time.time()
-
-    print("Schema Created.")
-
     asyncio.run(main())
     
-    t1 = time.time()
-
-    print(f"{(t1-t0)/60} minutes elapsed.") 
