@@ -29,6 +29,7 @@ from opentelemetry.sdk.resources import Resource
 
 from dotenv import load_dotenv
 from enum import Enum
+from uuid import uuid4
 
 load_dotenv(override=True) 
 in_docker = os.getenv("INDOCKER")
@@ -73,23 +74,6 @@ class meterType(Enum):
     gauge = "ObservableGauge"
     histogram = "Histogram"
 
-# class MetricsExporterImpl(MetricExporter):
-#     def __init__(self):
-#         super().__init__()
-#         pdb.set_trace()
-#         self.is_running = True
-#     def export(self, metrics_data: list, timeout_millis = 2000):
-#         # metrics_data – The list of opentelemetry.sdk.metrics.export.Metric 
-#         #  objects to be exported
-#         if not self.is_running:
-#             return MetricExportResult.FAILURE
-#         return MetricExportResult.SUCCESS
-#     def force_flush(self, timeout_millis = 2000):
-#         print("Force flushing metrics.")
-#         return True
-#     def shutdown(self):
-#         self.is_running = False
-
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/metrics.export.html#
 # 1. Configure the MeterProvider with a Console Exporter (not necessary)
 # The MetricExporter prints metrics to the console for demonstration purposes.
@@ -104,12 +88,13 @@ class otel_metrics():
     meter_objects = {
                 'counters': [], 
                 'upDownCounters': [], 
-                'gauges': [],
+                'observableGauges': [],
                 'histograms': [],
             }
     
     def create_meter(self, 
             meter_name : str, 
+            callbacks: None,
             meter_type: meterType,
             description: str,
             ):
@@ -133,7 +118,6 @@ class otel_metrics():
                 )
             )
         if meter_type == meterType.upDownCounter.value:
-            pass
             self.meter_objects['upDownCounters'].append(
                 meter.create_up_down_counter(
                     meter_name,  # ex: "http.server.requests.total",
@@ -141,17 +125,17 @@ class otel_metrics():
                     description=description,
                 )
             )
-        # if meter_type == meterType.gauge.value:
-        #     pass
-        #     self.meter_objects['gauges'].append(
-        #         meter.create_gauge(
-        #             meter_name,  # ex: "http.server.requests.total",
-        #             unit="1",
-        #             description=description,
-        #         )
-        #     )
+            
+        if meter_type == meterType.gauge.value:
+            self.meter_objects['observableGauges'].append(
+                meter.create_observable_gauge(
+                    meter_name,  # ex: "http.server.requests.total",
+                    [callbacks],
+                    unit="1",
+                    description=description,
+                )
+            )
         if meter_type == meterType.histogram.value:
-            pass
             self.meter_objects['histograms'].append(
                 meter.create_histogram(
                     meter_name,  # ex: "http.server.requests.total",
@@ -174,15 +158,15 @@ class otel_metrics():
 
         if not upDownCounter:
             print(f"UpDownCounter name {counter_name} not found.")
-
+        # pdb.set_trace()
         upDownCounter[0].add(change_by, attributes)
 
-    # def update_gauge(self,):
-    #     gauge = [val for val in self.meter_objects['gauges']
-    #             if counter_name in val.name]
+    def update_gauge(self,):
+        gauge = [val for val in self.meter_objects['gauges']
+                if counter_name in val.name]
     
-    #     if not gauge:
-    #         print(f"Gauge name {counter_name} not found.")
+        if not gauge:
+            print(f"Gauge name {counter_name} not found.")
 
     def update_histogram(self, counter_name, ammount: int, attributes: dict=None, context=None):
         histogram = [val for val in self.meter_objects['histograms']
@@ -195,7 +179,7 @@ class otel_metrics():
 
 # =======================================================================
 class otel_logger():
-    resource = Resource.create({ "service.instance.id": "instance-1"})
+    resource = Resource.create({ "service.instance.id": 'market_reader'})
     # 2. Configure the Logger Provider
     logger_provider = LoggerProvider(resource=resource)
     set_logger_provider(logger_provider)
@@ -220,8 +204,8 @@ class otel_logger():
     def warning(self, msg):
         self.logger.warning(msg)
     
-    def error(self, msg, attributes: dict = None):
-        self.logger.error(msg, extra={"attributes": attributes})
+    def error(self, msg):
+        self.logger.error(msg)
 
     def critical(self, msg):
         self.logger.critical(msg, exc_info=True)
@@ -236,8 +220,7 @@ if __name__ == "__main__":
     logs = otel_logger()
 
     metric.create_meter(
-            meter_name = 'NewMeter', 
-            meter_id = 'newmeter.test',
+            meter_name = 'newmeter.test', 
             meter_type = "AsynchronousCounter",
             description = "Test async counter meter"
         )

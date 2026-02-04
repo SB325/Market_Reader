@@ -17,13 +17,13 @@ otraces = otel_tracer()
 ometrics = otel_metrics()
 ologs = otel_logger()
 
-ometrics.create_meter(
-            meter_name = 'requests_distributed',
-            meter_type = "AsynchronousUpDownCounter",
-            description = 'As distributed requests from multiple replicas arrive \
-                faster than the api rate limit, this meter will have increasing \
-                value over time. As replicas catch up, the value decreases.',
-            )
+# ometrics.create_meter(
+#             meter_name = 'requests_distributed',
+#             meter_type = "AsynchronousUpDownCounter",
+#             description = 'As distributed requests from multiple replicas arrive \
+#                 faster than the api rate limit, this meter will have increasing \
+#                 value over time. As replicas catch up, the value decreases.',
+#             )
 
 class distributed_delay_client():
     '''
@@ -65,9 +65,9 @@ class distributed_delay_client():
                     'uuid': uuid, 
                     'period': self.period_s}), 
                     self.topic, 
-                    use_redis = False
+                    use_redis = False,
+                    counter_name='estimated_queue_length'
                 )
-        ometrics.update_up_down_counter(counter_name='estimated_queue_length', change_by=1)
 
         # wait for response
         done = False

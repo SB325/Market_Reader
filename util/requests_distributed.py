@@ -49,9 +49,9 @@ if __name__ == '__main__':
                         'uuid': uuid, 
                         'status': 'ready'})
                 producer.send(response,
-                        use_redis = False
+                        use_redis = False,
+                        counter_name='estimated_queue_length'
                     )
-                ometrics.update_up_down_counter(counter_name='estimated_queue_length', change_by=-1)
                 ologs.info(f"Gave signal to send request {uuid}.")
 
             

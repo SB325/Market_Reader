@@ -22,9 +22,10 @@ import math
 from util.postgres.db.create_schemas import create_schemas
 from util.crud_pg import crud as crud
 from util.otel import otel_tracer, otel_metrics, otel_logger
+import traceback
 
 otraces = otel_tracer()
-ometrics = otel_metrics()
+# ometrics = otel_metrics()
 ologs = otel_logger()
 
 create_schemas()
@@ -37,15 +38,9 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Host':'www.sec.gov'}
 
 topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
-consumer = KafkaConsumer(topic=[topic])
+redis_stream_name = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
+consumer = KafkaConsumer(topic=[topic], redis_stream_name=redis_stream_name)
 requests = requests_util()
-
-ometrics.create_meter(
-            meter_name = 'submissions_stream_unzip',
-            meter_type = "AsynchronousUpDownCounter",
-            description = 'As distributed transform/load replicas process \
-                filing data, this value will decline.',
-            )
 
 def read_cik(self, cik: str = ''):
     if cik:
@@ -86,17 +81,17 @@ class Submissions():
                 # consumer.recieve_continuous polls continuously until msg arrives
                 with otraces.set_span('transform_submissions_stream_unzip') as span:
                     self.downloaded_list = consumer.recieve_once()
-                    ometrics.update_up_down_counter(counter_name='submissions_stream_unzip', change_by=-1)
                     if not self.downloaded_list: # no message yet
                         print('No message yet.')
+                        ologs.info('No message yet.')
                         continue
                     self.parse_response(content_merged)
                 with otraces.set_span(f'load_submissions_stream_unzip') as span:
                     await self.insert_table()
-                log.info('Submissions Data insert complete.')
+                ologs.info('Submissions Data insert complete.')
 
         except (Exception) as err:
-            print(f"{err}")
+            ologs.error(f"Error in Process Chunks:\n{traceback.format_exc()}")
         success = True
         return success
 
@@ -140,7 +135,7 @@ class Submissions():
         success = False
         # Insert table(s) into database.
         if not self.filing_list:
-            log.warning(f"No shares outstanding data to insert.")
+            ologs.warning(f"No shares outstanding data to insert.")
         else:
             # Insert company filings    
             df = pd.DataFrame(self.filing_list)
@@ -157,7 +152,7 @@ class Submissions():
             filings_unique_elements = ["cik", "accessionNumber"]
             
         if not self.meta_data:
-            log.warning(f"No meta_data to insert for cik {self.cik}")
+            ologs.warning(f"No meta_data to insert for cik {self.cik}")
         else:
             # Insert company metadata
             df = pd.DataFrame(self.meta_data)
@@ -173,7 +168,7 @@ class Submissions():
             cmeta_unique_elements = ["cik", "ein"]
             cmeta_dict = df.to_dict(orient='records')
         if not self.addresses_mailing:
-            log.warning(f"No meta_data to insert for cik {self.cik}")
+            ologs.warning(f"No meta_data to insert for cik {self.cik}")
         else:
             # Insert mailing address
             df = pd.DataFrame(self.addresses_mailing)
@@ -188,7 +183,7 @@ class Submissions():
             
 
         if not self.addresses_business:
-            log.warning(f"No meta_data to insert for cik {self.cik}")
+            ologs.warning(f"No meta_data to insert for cik {self.cik}")
         else:
             # Insert business address
             df = pd.DataFrame(self.addresses_business)
@@ -201,11 +196,23 @@ class Submissions():
             cbusiness_unique_elements = ["cik"]
             cbusiness_dict = df.to_dict(orient='records')
 
-        await self.crud_util.insert_rows_orm(filings, filings_unique_elements, filings_dict)
-        await self.crud_util.insert_rows_orm(cmeta, cmeta_unique_elements, cmeta_dict)   
-        await self.crud_util.insert_rows_orm(cmailing, cmail_unique_elements, cmail_dict) 
-        await self.crud_util.insert_rows_orm(cbusiness, cbusiness_unique_elements, cbusiness_dict)
-        
+        try:
+            await self.crud_util.insert_rows_orm(filings, filings_unique_elements, filings_dict)
+        except:
+            ologs.warning('No filings to insert.')
+        try:
+            await self.crud_util.insert_rows_orm(cmeta, cmeta_unique_elements, cmeta_dict)   
+        except:
+            ologs.warning('No meta to insert.')
+        try:
+            await self.crud_util.insert_rows_orm(cmailing, cmail_unique_elements, cmail_dict) 
+        except:
+            ologs.warning('No mailing to insert.')
+        try:
+            await self.crud_util.insert_rows_orm(cbusiness, cbusiness_unique_elements, cbusiness_dict)
+        except:
+            ologs.warning('No business to insert.')
+
         self.filing_list = []
         self.meta_data = []
         self. addresses_mailing = []

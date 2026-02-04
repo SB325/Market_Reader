@@ -13,16 +13,14 @@ from uuid import uuid4
 from util.otel import otel_tracer, otel_metrics, otel_logger
 
 otraces = otel_tracer()
-ometrics = otel_metrics()
 ologs = otel_logger()
 
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
-redis_stream_name = os.getenv("REDIS_STREAM_NAME")
+redis_stream_name_facts = os.getenv("REDIS_FACTS_STREAM_NAME")
+redis_stream_name_submissions = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 in_docker = os.getenv("INDOCKER")
-
-rstream = RedisStream(redis_stream_name)
 
 new_retention_ms_day = 24 * 60 * 60 * 1000  # 1 day
 
@@ -115,7 +113,7 @@ def create_topic(admin_client, topic_name):
         # replication_factor=1
     )
     with otraces.set_span('kafka_create_topic') as span:
-        span.set_attribute("topic", new_topic)
+        span.set_attribute("topic", topic_name)
         fs = admin_client.create_topics([new_topic], operation_timeout=30)
 
     # Wait for the creation to finish
@@ -129,12 +127,13 @@ def create_topic(admin_client, topic_name):
 class KafkaProducer():
     producer = Producer(producer_conf)
 
-    def __init__(self, topic = None, clear_topic: bool = True):
+    def __init__(self, topic = None, clear_topic: bool = True, redis_stream_name=''):
         self.topic = topic
         if clear_topic:
             self.clear_topic(topic)
         update_retention_period(new_retention_ms_day, topic)
-    
+        self.rstream = RedisStream(redis_stream_name)
+
     def clear_topic(self, topic):
         if self.clear_topic:
             if isinstance(topic, list):
@@ -151,7 +150,7 @@ class KafkaProducer():
             self.topic = topic
         if use_redis:
             with otraces.set_span('redis_add_message') as span:
-                message_id = rstream.add(msg)
+                message_id = self.rstream.add(msg, self.topic)
                 span.set_attribute("message_id", message_id)
             with otraces.set_span('kafka_produce_message') as span:
                 span.set_attribute("topic", self.topic)
@@ -163,26 +162,14 @@ class KafkaProducer():
             
         self.producer.flush()
 
-    def send_limit_queue_size(self, msg, queue_size, topic = None):
-        if topic:
-            self.topic = topic
-        while get_number_of_messages_in_topic(self, self.topic) >= queue_size:
-            time.sleep(1)
-        
-        with otraces.set_span('redis_add_message') as span:
-            message_id = rstream.add(msg)
-            span.set_attribute("message_id", message_id)
-        with otraces.set_span('kafka_produce_message') as span:
-            span.set_attribute("topic", self.topic)
-            self.producer.produce(self.topic, message_id.encode('utf-8'))
-        self.producer.flush()
-
 class KafkaConsumer():
+
     def __init__(self, 
                     commit_immediately: bool = True, 
                     topic: list = [],
                     partition_messages = True,
-                    unique_group_id: str = ''):
+                    unique_group_id: str = '',
+                    redis_stream_name=''):
         self.topic = topic
         [create_topic(admin_client, tpc) for tpc in topic]
 
@@ -194,10 +181,12 @@ class KafkaConsumer():
             consumer_conf['group.id'] = f"{unique_group_id}.{uuid}"
         self.consumer = Consumer(consumer_conf)
         self.consumer.subscribe(topic)
+        self.rstream = RedisStream(redis_stream_name)
 
     def recieve_once(self,
                     use_redis: bool = True,
-                    timeout = 10):
+                    timeout = 10
+                    ):
         data = ''
         try:
             with otraces.set_span('kafka_consume_message') as span:
@@ -209,7 +198,7 @@ class KafkaConsumer():
                     msg_decoded = msg.value().decode('utf-8')
                     if use_redis:
                         with otraces.set_span('redis_read_message') as span:
-                            data = rstream.read(msg_decoded)
+                            data = self.rstream.read(msg_decoded, self.topic)
                             span.set_attribute("message_id", msg_decoded)
                         # send message to transform block
                     else: 

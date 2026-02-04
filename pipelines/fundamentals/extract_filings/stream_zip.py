@@ -11,11 +11,12 @@ import zipfile
 from tqdm import tqdm
 import math
 import json
+import time
 from util.kafka.kafka import KafkaProducer
 from util.redis.redis_util import RedisStream
 import subprocess
 import argparse
-from util.otel import otel_tracer, otel_metrics, otel_logger
+from util.otel import otel_tracer, otel_logger
 
 load_dotenv(override=True)
 load_dotenv('.env')
@@ -25,10 +26,6 @@ facts_zip_filename = os.getenv("FACTS_ZIP_FILENAME")
 submissions_zip_filename = os.getenv("SUBMISSIONS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 queue_size = int(os.getenv("QUEUE_SIZE"))
-
-otraces = otel_tracer()
-ometrics = otel_metrics()
-ologs = otel_logger()
 
 def read_zip_file(zip_path, nfilings, chunk_size):
     with zipfile.ZipFile(zip_path) as zip_ref:
@@ -63,30 +60,28 @@ if __name__ == "__main__":
     if 'facts' in fileType:
         zip_filename = facts_zip_filename
         topic = os.getenv("FACTS_KAFKA_TOPIC")
-        redis_stream_name = os.getenv("FACTS_REDIS_STREAM_NAME")
+        redis_stream_name = os.getenv("REDIS_FACTS_STREAM_NAME")
     elif 'submissions' in fileType:
         zip_filename = submissions_zip_filename
         topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
-        redis_stream_name = os.getenv("SUBMISSIONS_REDIS_STREAM_NAME")
+        redis_stream_name = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 
-    ometrics.create_meter(
-            meter_name = f'{fileType}_stream_unzip',
-            meter_type = "AsynchronousUpDownCounter",
-            description = 'As distributed transform/load replicas process \
-                filing data, this value will decline.',
-            )
+    otraces = otel_tracer()
+    ologs = otel_logger()
+
     # Clear Redis stream objects before starting
     rstream = RedisStream(redis_stream_name)
     rstream.delete_stream(redis_stream_name)
     
     zip_fullpath=os.path.join(os.path.join(os.path.dirname(__file__), '../'), zip_filename)
-
+    
     try:
-        producer = KafkaProducer(topic)
+        producer = KafkaProducer(topic=topic, redis_stream_name=redis_stream_name)
         nfilings = nfilings_in_zip(zip_fullpath)
-        filing = read_zip_file(zip_fullpath, nfilings, zip_chunk_size)
+        chunk_size = math.ceil(nfilings/100)
+        filing = read_zip_file(zip_fullpath, nfilings, chunk_size)
         pbar = tqdm(enumerate(filing), 
-                    total=math.ceil(nfilings/zip_chunk_size), 
+                    total=math.ceil(nfilings/chunk_size), 
                     desc="Performing Extract+Load of SEC Filings")
 
         with otraces.set_span(f'extract_{fileType}_stream_unzip') as span:
@@ -94,8 +89,11 @@ if __name__ == "__main__":
             for cnt, downloaded_list in pbar:
                 # push objects to kafka log
                 producer.send(downloaded_list)
-                ometrics.update_up_down_counter(counter_name=f'{fileType}_stream_unzip', change_by=1)
-                pbar.set_description(f"Processing {zip_filename}: {100*zip_chunk_size*(cnt+1)/(nfilings):.2f}%")
+                pbar.set_description(f"Processing {zip_filename}: {100*chunk_size*(cnt+1)/(nfilings):.2f}%")
 
     except BaseException as be:
         traceback.print_exc()
+    
+    # temporary wait to keep process open long enough for data to run through
+    while True:
+        time.sleep(1)

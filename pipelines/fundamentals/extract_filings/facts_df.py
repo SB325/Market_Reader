@@ -21,23 +21,10 @@ from dotenv import load_dotenv
 import gc  # invoke garbage collection with gc.collect() 
 from util.crud_pg import crud as crud
 from util.otel import otel_tracer, otel_metrics, otel_logger
+import traceback
 
 load_dotenv()
-# from util.postgres.db.create_schemas import create_schemas
-# create_schemas()
-
-# from pyspark.sql import SparkSession
-
-# spark_ip = os.environ.get("SPARK_IP")
-
-# spark = SparkSession.builder \
-#     .appName("MyApp") \
-#     .master(f"spark://{spark_ip}:7077") \
-#     .config("spark.executor.memory", "2g") \
-#     .getOrCreate()
-
 otraces = otel_tracer()
-ometrics = otel_metrics()
 ologs = otel_logger()
 
 url_tickers='https://www.sec.gov/files/company_tickers.json'
@@ -45,16 +32,10 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
             'Host':'www.sec.gov'}
 topic = os.getenv("FACTS_KAFKA_TOPIC")
+redis_stream_name = os.getenv("REDIS_FACTS_STREAM_NAME")
 requests = requests_util()
 
-ometrics.create_meter(
-            meter_name = 'facts_stream_unzip',
-            meter_type = "AsynchronousUpDownCounter",
-            description = 'As distributed transform/load replicas process \
-                filing data, this value will decline.',
-            )
-
-consumer = KafkaConsumer(topic=[topic])
+consumer = KafkaConsumer(topic=[topic], redis_stream_name=redis_stream_name)
 def read_cik(self, cik: str = ''):
     if cik:
         cik.zfill(10)
@@ -93,17 +74,17 @@ class Facts():
                 # consumer.recieve_continuous polls continuously until msg arrives
                 with otraces.set_span('transform_facts_stream_unzip') as span:
                     self.downloaded_list = consumer.recieve_once()
-                    ometrics.update_up_down_counter(counter_name='facts_stream_unzip', change_by=1)
                     if not self.downloaded_list: # no message yet
+                        print('No message yet.')
                         ologs.info('No message yet.')
                         continue
                     self.parse_response(content_merged)
                 with otraces.set_span(f'load_facts_stream_unzip') as span:
                     await self.insert_table()
-                log.info('Facts Data insert complete.')
+                ologs.info('Facts Data insert complete.')
 
-        except (Exception) as err:
-            ologs.error(f"{err}")
+        except Exception as err:
+            ologs.error(f"Error in Process Chunks:\n{traceback.format_exc()}")
         success = True
         return success
 
@@ -115,8 +96,9 @@ class Facts():
         self.downloaded_list = pd.merge(self.downloaded_list, content_merged, on='cik', how='inner')
         
         cik = self.downloaded_list['cik'].tolist()
-        self.downloaded_list = self.downloaded_list.drop(['entityName'], axis=1)
-
+        if 'entityName' in self.downloaded_list.keys():
+            self.downloaded_list = self.downloaded_list.drop(['entityName'], axis=1)
+            
         facts = self.downloaded_list['facts'].to_frame()
 
         facts.insert(1, "cik", cik, True)
