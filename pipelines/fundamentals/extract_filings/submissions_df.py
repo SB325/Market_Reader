@@ -10,6 +10,7 @@ from util.postgres.db.models.tickers import Company_Business_Addresses as cbusin
 from util.postgres.db.models.tickers import Filings as filings
 from pipelines.fundamentals.get_ticker_list import save_ticker_data
 from util.kafka.kafka import KafkaConsumer
+from util.signal_handler import SignalHandler
 import pandas as pd
 from dotenv import load_dotenv
 import json
@@ -41,6 +42,7 @@ topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
 redis_stream_name = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 consumer = KafkaConsumer(topic=[topic], redis_stream_name=redis_stream_name)
 requests = requests_util()
+sigHandler = SignalHandler()
 
 def read_cik(self, cik: str = ''):
     if cik:
@@ -78,6 +80,8 @@ class Submissions():
         try: 
             while True:
                 time.sleep(1)
+                if sigHandler.stopped:
+                    sigHandler.cleanup()
                 # consumer.recieve_continuous polls continuously until msg arrives
                 with otraces.set_span('transform_submissions_stream_unzip') as span:
                     self.downloaded_list = consumer.recieve_once()

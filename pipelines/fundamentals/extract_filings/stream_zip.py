@@ -14,6 +14,7 @@ import json
 import time
 from util.kafka.kafka import KafkaProducer
 from util.redis.redis_util import RedisStream
+from util.signal_handler import SignalHandler
 import subprocess
 import argparse
 from util.otel import otel_tracer, otel_logger
@@ -26,6 +27,7 @@ facts_zip_filename = os.getenv("FACTS_ZIP_FILENAME")
 submissions_zip_filename = os.getenv("SUBMISSIONS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 queue_size = int(os.getenv("QUEUE_SIZE"))
+sigHandler = SignalHandler()
 
 def read_zip_file(zip_path, nfilings, chunk_size):
     with zipfile.ZipFile(zip_path) as zip_ref:
@@ -90,10 +92,10 @@ if __name__ == "__main__":
                 # push objects to kafka log
                 producer.send(downloaded_list)
                 pbar.set_description(f"Processing {zip_filename}: {100*chunk_size*(cnt+1)/(nfilings):.2f}%")
+                
+                if sigHandler.stopped:
+                    sigHandler.cleanup()
 
     except BaseException as be:
         traceback.print_exc()
     
-    # temporary wait to keep process open long enough for data to run through
-    while True:
-        time.sleep(1)

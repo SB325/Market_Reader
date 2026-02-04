@@ -161,6 +161,9 @@ class KafkaProducer():
                 self.producer.produce(self.topic, msg.encode('utf-8'))
             
         self.producer.flush()
+    
+    def __del__(self):
+        self.producer.close()
 
 class KafkaConsumer():
 

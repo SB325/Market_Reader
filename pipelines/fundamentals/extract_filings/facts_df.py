@@ -11,7 +11,7 @@ from pipelines.fundamentals.get_ticker_list import save_ticker_data
 from util.kafka.kafka import KafkaConsumer
 import pandas as pd
 import numpy as np
-
+from util.signal_handler import SignalHandler
 import json
 import pdb
 import time
@@ -26,6 +26,7 @@ import traceback
 load_dotenv()
 otraces = otel_tracer()
 ologs = otel_logger()
+sigHandler = SignalHandler()
 
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
@@ -71,6 +72,8 @@ class Facts():
         try: 
             while True:
                 time.sleep(1)
+                if sigHandler.stopped:
+                    sigHandler.cleanup()
                 # consumer.recieve_continuous polls continuously until msg arrives
                 with otraces.set_span('transform_facts_stream_unzip') as span:
                     self.downloaded_list = consumer.recieve_once()
