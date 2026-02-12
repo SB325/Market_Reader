@@ -1,0 +1,50 @@
+apiVersion: v2
+description: A Helm chart for the Market Reader ETL Pipeline for Stock Filings
+name: marketreader
+version: 0.1.0
+dependencies:
+  ## BASE INFRA ##
+  # https://artifacthub.io/packages/helm/camptocamp-pod/application
+  - name: application
+    repository: https://camptocamp.github.io/helm-application/
+    alias: geoserver
+    version: 2.8.0
+  # https://artifacthub.io/packages/helm/kubelauncher/kafka
+  - name: kafka
+    repository: oci://ghcr.io/kubelauncher/charts/kafka
+    version: 0.1.2
+  # https://artifacthub.io/packages/helm/cloudpirates-redis/redis
+  - name: redis
+    repository: oci://registry-1.docker.io/cloudpirates/redis
+    version: 0.22.2
+  # https://artifacthub.io/packages/helm/cloudpirates-postgres/postgres
+  - name: postgres
+    repository: oci://registry-1.docker.io/cloudpirates/postgres
+    version: 0.15.5
+  # https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard
+  - name: kubernetes-dashboard 
+    repository: https://kubernetes.github.io/dashboard/
+    version: 7.14.0
+
+  ## MONITORING ##
+  # https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-collector
+  - name: otel
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    version: 0.145.0
+  # https://artifacthub.io/packages/helm/prometheus-community/prometheus
+  - name: prometheus
+    repository: oci://ghcr.io/prometheus-community/charts/prometheus
+    version: 28.9.0
+  # https://artifacthub.io/packages/helm/grafana-community/tempo
+  - name: tempo
+    repository: https://grafana-community.github.io/helm-charts
+    version: 1.26.1
+  # https://artifacthub.io/packages/helm/grafana/loki helm install my-loki grafana/loki --version 6.53.0
+  - name: loki
+    repository: https://grafana.github.io/helm-charts
+    version: 6.53.0
+  # https://artifacthub.io/packages/helm/grafana-community/grafana
+  - name: grafana
+    repository: https://grafana-community.github.io/helm-charts
+    version: 11.1.1
+
