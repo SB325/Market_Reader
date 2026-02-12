@@ -23,13 +23,13 @@ pipeline {
                     // that imports work correctly
                     echo 'Running the application...' 
                     sh """
-                        docker compose run --rm -d -e TEST_MODE \\
+                        docker compose up -d -e TEST_MODE \\
                         extract_facts_filings 
-                        docker compose run --rm -d -e TEST_MODE  \\
+                        docker compose up -d -e TEST_MODE  \\
                         extract_submissions_filings 
-                        docker compose run --rm -d -e TEST_MODE  \\
+                        docker compose up -d -e TEST_MODE  \\
                         tl_submissions_filings 
-                        docker compose run --rm -d -e TEST_MODE  \\
+                        docker compose up -d -e TEST_MODE  \\
                         tl_facts_filings 
                     """
                 }
