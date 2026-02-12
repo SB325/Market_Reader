@@ -2,7 +2,7 @@ import pdb
 import traceback
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from confluent_kafka import Producer, Consumer, TopicPartition
+from confluent_kafka import Producer, Consumer, TopicPartition, KafkaError
 from confluent_kafka.admin import AdminClient, ConfigResource, NewTopic, ResourceType
 from dotenv import load_dotenv
 from util.redis.redis_util import RedisStream
@@ -21,7 +21,7 @@ group_id = os.getenv("GROUP_ID")
 redis_stream_name_facts = os.getenv("REDIS_FACTS_STREAM_NAME")
 redis_stream_name_submissions = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 in_docker = os.getenv("INDOCKER")
-
+    
 new_retention_ms_day = 24 * 60 * 60 * 1000  # 1 day
 
 def get_kafka_ip():

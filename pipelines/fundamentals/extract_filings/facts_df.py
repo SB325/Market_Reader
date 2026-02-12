@@ -27,6 +27,11 @@ load_dotenv()
 otraces = otel_tracer()
 ologs = otel_logger()
 sigHandler = SignalHandler()
+test_mode = bool(os.getenv("TEST_MODE"))
+
+if test_mode:
+    print('Import Test for Facts TL Successful.')
+    sys.exit(0)
 
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
@@ -265,5 +270,6 @@ async def main():
     await get_facts(df_existing)
 
 if __name__ == "__main__":
+
     asyncio.run(main())
     

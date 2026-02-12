@@ -1,0 +1,32 @@
+FROM python:3.12.3 AS build
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# Set environment variables for uv to not create a virtual environment in the container build stage
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+
+WORKDIR /edgar
+
+COPY ./requirements_extract.txt requirements.txt
+RUN uv pip install -r requirements.txt
+
+FROM python:3.12.3
+
+WORKDIR /edgar
+
+# Copy installed packages from the builder stage
+COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+
+ARG FILING_TYPE=${FILING_TYPE}
+ENV FILING_TYPE=${FILING_TYPE}
+
+COPY ./util/ util/
+COPY ./pipelines/fundamentals/extract_filings/stream_zip.py  pipelines/fundamentals/extract_filings/stream_zip.py
+COPY *.env .env
+
+ENV INDOCKER=True
+
+ENTRYPOINT python pipelines/fundamentals/extract_filings/stream_zip.py ${FILING_TYPE}
+# When running this image as a container, 
+# set 'facts' or 'submissions' as arguments to ENTRYPOINT with CMD

@@ -26,7 +26,7 @@ def get_redis_ip():
         return 'redis'
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' redis",
+        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' redis_home",
         capture_output=True,  # Capture stdout and stderr
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code

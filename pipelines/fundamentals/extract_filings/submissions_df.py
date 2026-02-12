@@ -32,7 +32,12 @@ ologs = otel_logger()
 create_schemas()
 load_dotenv(override=True)
 load_dotenv('util/kafka/.env')
+test_mode = bool(os.getenv("TEST_MODE"))
 
+if test_mode:
+    print('Import Test for Submissions TL Successful.')
+    sys.exit(0)
+    
 url_tickers='https://www.sec.gov/files/company_tickers.json'
 header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Accept-Encoding':'deflate', \
@@ -40,6 +45,7 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
 
 topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
 redis_stream_name = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
+
 consumer = KafkaConsumer(topic=[topic], redis_stream_name=redis_stream_name)
 requests = requests_util()
 sigHandler = SignalHandler()
@@ -247,4 +253,5 @@ async def main():
     await get_submissions(df_existing)
 
 if __name__ == "__main__":
+
     asyncio.run(main())

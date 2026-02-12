@@ -28,7 +28,12 @@ submissions_zip_filename = os.getenv("SUBMISSIONS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 queue_size = int(os.getenv("QUEUE_SIZE"))
 sigHandler = SignalHandler()
+test_mode = bool(os.getenv("TEST_MODE"))
 
+if test_mode:
+    print('Import Test for Submissions TL Successful.')
+    sys.exit(0)
+    
 def read_zip_file(zip_path, nfilings, chunk_size):
     with zipfile.ZipFile(zip_path) as zip_ref:
         for i in range(0, nfilings, chunk_size):
@@ -47,6 +52,10 @@ def nfilings_in_zip(zip_path):
 
 if __name__ == "__main__":
     
+    if test_mode:
+        print('Import Test for Stream Zip Successful.')
+        sys.exit(0)
+
     parser = argparse.ArgumentParser(
                     prog='Stream Unzipper',
                     description='This process Extracts a Facts or Submissions \

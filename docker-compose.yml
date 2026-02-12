@@ -1,41 +1,76 @@
-services:
 
+x-common-base: &common-base
+  restart: "no"
+  depends_on:
+    - telemetry
+  environment:
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://telemetry:4318
+  networks:
+    - homeserver
+  profiles:
+    - etl
+
+x-tl-service-base: &base-template
+  restart: on-failure
+  <<: *common-base
+  depends_on:
+    - telemetry
+
+x-tl-build_values: &tl_build-vals
+  context: .
+  dockerfile: Dockerfile_tl
+  no_cache: true
+
+services:      
   # 1. SEC Filing metadata Unzip process
-  unzip_filings:
+  extract_facts_filings:
     build: 
       context: .
-      dockerfile: Dockerfile_unzip_filings
+      dockerfile: Dockerfile_extract_filings
       no_cache: true
+      args:
+        - FILING_TYPE=facts
     volumes:
       - ./pipelines/fundamentals/companyfacts.zip:/edgar/pipelines/fundamentals/companyfacts.zip
-      - ./pipelines/fundamentals/submissions.zip:/edgar/pipelines/fundamentals/submissions.zip
-    depends_on:
-      - tl_filings
-      - telemetry
+    <<: *common-base
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://telemetry:4318
-    networks:
-     - homeserver
-    profiles:
-      - llm
-    container_name: unzip_filings
+      - FILING_TYPE=facts
+    container_name: extract_facts_filings
 
-  # 2. Transform+Load Filing metatdata Process
-  tl_filings:
+  extract_submissions_filings:
     build: 
       context: .
-      dockerfile: Dockerfile_tl_filings
+      dockerfile: Dockerfile_extract_filings
       no_cache: true
-    restart: on-failure
+      args:
+        - FILING_TYPE=submissions
+    volumes:
+      - ./pipelines/fundamentals/submissions.zip:/edgar/pipelines/fundamentals/submissions.zip
+    <<: *common-base
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://telemetry:4318
-    depends_on:
-      - telemetry
-    networks:
-     - homeserver
-    profiles:
-      - llm
-    container_name: tl_filings
+      - FILING_TYPE=submissions
+    container_name: extract_submissions_filings
+
+  # 2. Transform+Load *Facts* Filing metatdata Process
+  tl_submissions_filings:
+    <<: *base-template
+    build: 
+      <<: *tl_build-vals
+      args:
+        - FILING_TYPE=submissions
+    environment:
+      - FILING_TYPE=submissions
+    container_name: tl_submissions_filings
+
+  tl_facts_filings:
+    <<: *base-template
+    build: 
+      <<: *tl_build-vals
+      args:
+        - FILING_TYPE=facts
+    environment:
+      - FILING_TYPE=facts
+    container_name: tl_facts_filings
 
   # # 3. SEC Edgar Filing Load Process
   # load_filings:
@@ -49,5 +84,3 @@ services:
   #   profiles:
   #     - llm
   #   container_name: load_filings
-
-  
