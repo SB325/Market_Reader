@@ -13,3 +13,4 @@ log/*
 **/.next/
 **/node_modules/
 __pycache__/
+.env
