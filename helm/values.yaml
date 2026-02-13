@@ -11,20 +11,6 @@ service: &common-service-definition
       protocol: TCP
       targetPort: http
 
-# volumes: &common-volumes # this comes from the config initContainer
-#   vol-local-gscloud:
-#     emptyDir: {}
-#   # /tmp as emptyDir, required if running with readOnlyRootFilesystem=true
-#   tmp-empty-dir:
-#     emptyDir: {}
-
-# volumeMounts: &common-volume-mounts
-#   /etc/localconfig:
-#     name: vol-local-gscloud
-#   # /tmp as emptyDir, required if running with readOnlyRootFilesystem=true
-#   /tmp/:
-#     name: 'tmp-empty-dir'
-
 # ports: &common-ports
 #   http:
 #     containerPort: 8080
