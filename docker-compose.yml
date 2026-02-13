@@ -13,8 +13,6 @@ x-common-base: &common-base
 x-tl-service-base: &base-template
   restart: on-failure
   <<: *common-base
-  depends_on:
-    - telemetry
 
 x-tl-build_values: &tl_build-vals
   context: .

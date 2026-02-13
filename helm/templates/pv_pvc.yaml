@@ -1,0 +1,35 @@
+
+{{- if (eq .Values.usePVCs true) }}
+{{- range $key, $definition := .Values.persistentVolumes }}
+---
+# PV {{ print $key }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{$definition.pvname}}
+spec:
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: {{$definition.storage}}
+  hostPath: 
+    path: {{$definition.path}}
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{$.Values.storageClassName}}
+---
+# PVC {{ print $key }}-claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{$definition.pvcname}}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{$definition.storage}}
+  volumeName: {{$definition.pvname}}
+  storageClassName: {{$.Values.storageClassName}}
+{{- end }}
+{{- end }}

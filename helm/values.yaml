@@ -1,0 +1,377 @@
+tolerations: []
+podSecurityContext: {}
+securityContext: {}
+
+service: &common-service-definition
+  type: ClusterIP
+  servicePort: 8080
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: http
+
+# volumes: &common-volumes # this comes from the config initContainer
+#   vol-local-gscloud:
+#     emptyDir: {}
+#   # /tmp as emptyDir, required if running with readOnlyRootFilesystem=true
+#   tmp-empty-dir:
+#     emptyDir: {}
+
+# volumeMounts: &common-volume-mounts
+#   /etc/localconfig:
+#     name: vol-local-gscloud
+#   # /tmp as emptyDir, required if running with readOnlyRootFilesystem=true
+#   /tmp/:
+#     name: 'tmp-empty-dir'
+
+# ports: &common-ports
+#   http:
+#     containerPort: 8080
+#     hostIP: 127.0.0.1
+#   health:
+#     containerPort: 8081
+#     hostIP: 127.0.0.1
+
+resources: &common-resources
+  requests:
+    memory: 128Mi
+    cpu: 100m
+  limits:
+    memory: 10Gi
+    cpu: 500m
+
+common-generic-stuff: &common-generic-config
+  releaseTrunc: 45
+  prefixTrunc: 51
+  template: true
+  replicaCount: 1
+  initContainers: {}
+  nodeSelector: {}
+  affinity: {}
+
+# createStorageClass: false
+# storageClassName: local-path
+
+# Persistent Volumes
+usePVCs: true
+persistentVolumes:
+  postgres-main:
+    pvcname: marketreader-postgres-main-claim
+    pvname: marketreader-postgres-main
+    path: /mnt/bulkStorage/postgres
+    storage: 8Gi
+
+# Common Utilities
+kafka:
+  replicaCount: 1
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+    successThreshold: 1
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+redis:
+  architecture: replication
+  replicaCount: 2 # 1 master + 1 replicas
+  sentinel:
+    enabled: false
+  auth:
+    enabled: false
+
+postgres:
+  auth:
+    existingSecret: "postgres-credentials"
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+
+  config:
+    postgresqlMaxConnections: 50
+    postgresqlSharedBuffers: "2GB"
+    postgresqlEffectiveCacheSize: "6GB"
+    postgresqlWorkMem: "16MB"
+    postgresqlMaintenanceWorkMem: "512MB"
+    postgresqlWalBuffers: "32MB"
+    postgresqlCheckpointCompletionTarget: "0.9"
+    postgresqlRandomPageCost: "1.0"
+    extraConfig:
+      - "wal_level = replica"
+      - "max_wal_senders = 3"
+      - "archive_mode = on"
+      - "archive_command = 'test ! -f /backup/%f && cp %p /backup/%f'"
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - postgres
+            topologyKey: kubernetes.io/hostname
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true  
+
+# Observability & Telemetry
+kubernetes-dashboard:
+  metricsScraper:
+    enabled: true
+    volumeMounts:
+      # Create volume mount to store logs (required)
+      - mountPath: /tmp
+        name: tmp-volume
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
+      livenessProbe:
+        httpGet:
+          scheme: HTTP
+          path: /
+          port: 8000
+        initialDelaySeconds: 30
+        timeoutSeconds: 30
+
+otel:
+  mode: daemonset
+  replicaCount: 1
+  presets: {}
+    # kubeletMetrics:   #requires the Kubeletstats reciever to be included in the collector
+    #   enabled: false
+    clusterMetrics:   #requires the Kubernetes Cluster reciever to be included in the collector
+      enabled: false   #and requires statefulset or deployment mode with a single replica.
+    kubernetesEvents: #requires the Kubernetes Objects reciever to be included in the collector
+      enabled: false
+    hostMetrics:    # Requires hostMetrics reciever to be included in collector
+      enabled: false
+  config:
+    exporters:
+      otlphttp:
+        # endpoint: https://example.com:55681 # activate this once grafana is configured
+    receivers:
+      jaeger: null
+      prometheus: null # activate this once prometheus is configured
+      zipkin: null
+    service:
+      pipelines:
+        traces:
+          receivers:
+            - otlp
+        metrics: 
+          receivers:
+            - otlp
+        logs: 
+          receivers:
+            - otlp
+          exporters:
+            - otlphttp
+
+prometheus: 
+  enabled: true
+
+tempo:
+  replicas: 1
+  metricsGenerator:
+    # -- If true, enables Tempo's metrics generator (https://grafana.com/docs/tempo/next/metrics-generator/)
+    enabled: false
+    storage:
+      # -- Path for storing metrics blocks. Defaults to /tmp/tempo for backward compatibility, but /var/tempo/metrics is recommended for production with persistent storage
+      path: "/tmp/tempo"
+      # -- Optional remote write configuration (will use remoteWriteUrl if not specified)
+      # Supports full Prometheus remote_write config: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
+      remote_write: []
+    # -- Traces storage (WAL) configuration for metrics generator
+    # This configures the Write Ahead Log for traces used by the metrics generator
+    traces_storage:
+      # -- Path for traces storage WAL used by metrics generator
+      path: "/tmp/traces"
+  retention: 24h
+  livenessProbe:
+    httpGet:
+      path: /ready
+      port: 3200
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 3200
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      wal:
+        path: /var/tempo/wal
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+loki:
+  auth_enabled: false
+  # Configures the liveness probe for all of the Loki pods
+  livenessProbe: {}
+  # Configures the readiness probe for all of the Loki pods
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    periodSeconds: 10
+    initialDelaySeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
+    timeoutSeconds: 1
+  storage:
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+
+grafana:
+  replicas: 1
+  autoscaling:
+    enabled: false
+  readinessProbe:
+  httpGet:
+    path: /api/health
+    port: grafana #?
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: grafana #?
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+    failureThreshold: 10
+
+# Main Application
+marketreader:
+  metadata:
+    enabled: true
+  securityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    # privileged: true
+  ingress:
+    enabled: true
+    hostGroups:
+      host1:
+        tls:
+          enabled: true
+          secretName: 'tls-secrets'
+        hosts:
+        - secretRef:
+            name: hostname-secret 
+  serviceAccount:
+    create: true
+    name: default
+  services:
+    extract_facts_filings:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-config
+      service:
+        <<: *common-service-definition
+      containers:
+        extract_facts_filings:
+          resources:
+            <<: *common-resources
+          env:
+            FILING_TYPE:
+              value: 'facts'
+            OTEL_EXPORTER_OTLP_ENDPOINT:
+              value: 'http://telemetry:4318'
+          image:
+            repository: localhost:5050:/v2/market_reader/etl/extract_facts_filings
+            tag: latest
+    extract_submissions_filings:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-config
+      service:
+        <<: *common-service-definition
+      containers:
+        extract_facts_filings:
+          resources:
+            <<: *common-resources
+          env:
+            FILING_TYPE:
+              value: 'submissions'
+            OTEL_EXPORTER_OTLP_ENDPOINT:
+              value: 'http://telemetry:4318'
+          image:
+            repository: localhost:5050:/v2/market_reader/etl/extract_submissions_filings
+            tag: latest
+    load_submissions_filings:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-config
+      service:
+        <<: *common-service-definition
+      containers:
+        load_submissions_filings:
+          resources:
+            <<: *common-resources
+          env:
+            FILING_TYPE:
+              value: 'submissions'
+            OTEL_EXPORTER_OTLP_ENDPOINT:
+              value: 'http://telemetry:4318'
+          image:
+            repository: localhost:5050:/v2/market_reader/etl/tl_submissions_filings
+            tag: latest
+    load_facts_filings:
+      enabled: true
+      ingress:
+        enabled: false
+      <<: *common-generic-config
+      service:
+        <<: *common-service-definition
+      containers:
+        load_facts_filings:
+          resources:
+            <<: *common-resources
+          env:
+            FILING_TYPE:
+              value: 'facts'
+            OTEL_EXPORTER_OTLP_ENDPOINT:
+              value: 'http://telemetry:4318'
+          image:
+            repository: localhost:5050:/v2/market_reader/etl/tl_facts_filings
+            tag: latest
