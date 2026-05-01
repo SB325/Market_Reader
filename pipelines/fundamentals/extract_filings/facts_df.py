@@ -27,7 +27,7 @@ load_dotenv()
 otraces = otel_tracer()
 ologs = otel_logger()
 sigHandler = SignalHandler()
-test_mode = bool(os.getenv("TEST_MODE"))
+test_mode = os.getenv("TEST_MODE", "0").lower() in ("1", "true", "yes", "on")
 
 if test_mode:
     print('Import Test for Facts TL Successful.')
@@ -39,6 +39,13 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
             'Host':'www.sec.gov'}
 topic = os.getenv("FACTS_KAFKA_TOPIC")
 redis_stream_name = os.getenv("REDIS_FACTS_STREAM_NAME")
+
+if not (topic and redis_stream_name):
+    print(f'Missing environment variable. \n \
+        topic = {topic} \n \
+        redis_stream_name = {redis_stream_name}')
+    sys.exit(1)
+    
 requests = requests_util()
 
 consumer = KafkaConsumer(topic=[topic], redis_stream_name=redis_stream_name)

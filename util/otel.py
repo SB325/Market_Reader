@@ -7,7 +7,6 @@ import pdb
 import subprocess
 # Traces
 from opentelemetry import trace
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 # Metrics
@@ -51,7 +50,7 @@ def get_otel_ip():
 class otel_tracer():
     # Configure the service name and other resource attributes
     resourceAttributes = Resource(attributes={
-        SERVICE_NAME: service_name,
+        "service.name": service_name,
     })
     # Set the global tracer provider
     provider = TracerProvider(resource=resourceAttributes)

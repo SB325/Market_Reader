@@ -5,6 +5,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 ENV UV_SYSTEM_PYTHON=1
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /edgar
 
@@ -24,6 +25,8 @@ ENV FILING_TYPE=${FILING_TYPE}
 COPY ./util/ util/
 COPY ./pipelines/fundamentals/extract_filings/stream_zip.py  pipelines/fundamentals/extract_filings/stream_zip.py
 COPY *.env .env
+COPY ./util/redis/*.env util/redis/*.env
+COPY ./util/kafka/*.env util/kafka/*.env
 
 ENV INDOCKER=True
 

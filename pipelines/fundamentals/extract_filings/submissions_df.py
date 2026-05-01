@@ -9,7 +9,7 @@ from util.postgres.db.models.tickers import Company_Mailing_Addresses as cmailin
 from util.postgres.db.models.tickers import Company_Business_Addresses as cbusiness
 from util.postgres.db.models.tickers import Filings as filings
 from pipelines.fundamentals.get_ticker_list import save_ticker_data
-from util.kafka.kafka import KafkaConsumer
+from util.kafka.kafka import KafkaConsumer, get_number_of_messages_in_topic
 from util.signal_handler import SignalHandler
 import pandas as pd
 from dotenv import load_dotenv
@@ -24,6 +24,7 @@ from util.postgres.db.create_schemas import create_schemas
 from util.crud_pg import crud as crud
 from util.otel import otel_tracer, otel_metrics, otel_logger
 import traceback
+import signal
 
 otraces = otel_tracer()
 # ometrics = otel_metrics()
@@ -31,8 +32,10 @@ ologs = otel_logger()
 
 create_schemas()
 load_dotenv(override=True)
+load_dotenv('.env')
 load_dotenv('util/kafka/.env')
-test_mode = bool(os.getenv("TEST_MODE"))
+load_dotenv('util/redis/.env')
+test_mode = os.getenv("TEST_MODE", "0").lower() in ("1", "true", "yes", "on")
 
 if test_mode:
     print('Import Test for Submissions TL Successful.')
@@ -46,9 +49,23 @@ header = {'User-Agent': 'Sheldon Bish sbish33@gmail.com', \
 topic = os.getenv("SUBMISSIONS_KAFKA_TOPIC")
 redis_stream_name = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 
+if not (topic and redis_stream_name):
+    print(f'Missing environment variable. \n \
+        topic = {topic} \n \
+        redis_stream_name = {redis_stream_name}')
+    sys.exit(1)
+
 consumer = KafkaConsumer(topic=[topic], redis_stream_name=redis_stream_name)
 requests = requests_util()
 sigHandler = SignalHandler()
+
+running = True
+def signal_handler(sig, frame):
+    global running
+    print("\nStopping gracefully...")
+    running = False
+
+signal.signal(signal.SIGINT, signal_handler)
 
 def read_cik(self, cik: str = ''):
     if cik:
@@ -86,6 +103,8 @@ class Submissions():
         try: 
             while True:
                 time.sleep(1)
+                if not running:
+                    break
                 if sigHandler.stopped:
                     sigHandler.cleanup()
                 # consumer.recieve_continuous polls continuously until msg arrives

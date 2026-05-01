@@ -23,7 +23,7 @@ in_docker = os.getenv("INDOCKER")
 
 def get_redis_ip():
     if bool(in_docker):
-        return 'redis'
+        return 'redis_home'
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
         "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' redis_home",
@@ -36,10 +36,23 @@ def get_redis_ip():
 redis_ip = get_redis_ip()
 pool = redis.ConnectionPool(host=redis_ip, port=6379, db=0)
 
+def wait_for_redis(r):
+    while True:
+        try:
+            r.ping()
+            break
+        except redis.exceptions.BusyLoadingError:
+            print("Redis is still loading... waiting 1s")
+            time.sleep(1)
+        except redis.exceptions.ConnectionError:
+            print("Redis is unavailable... waiting 1s")
+            time.sleep(1)
+
 class RedisStream():
     def __init__(self, stream_name):
         self.stream_name = stream_name
         self.rstream = redis.Redis(connection_pool=pool, decode_responses=True)
+        wait_for_redis(self.rstream)
         ometrics.create_meter(
             meter_name = f'{stream_name}_queue',
             callbacks=self.get_stream_size_gen,

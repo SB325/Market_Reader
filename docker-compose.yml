@@ -1,6 +1,7 @@
 
 x-common-base: &common-base
   restart: "no"
+  pull_policy: build
   depends_on:
     - telemetry
   environment:
@@ -17,7 +18,6 @@ x-tl-service-base: &base-template
 x-tl-build_values: &tl_build-vals
   context: .
   dockerfile: Dockerfile_tl
-  no_cache: true
 
 services:      
   # 1. SEC Filing metadata Unzip process
@@ -25,7 +25,6 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile_extract_filings
-      no_cache: true
       args:
         - FILING_TYPE=facts
     volumes:
@@ -39,7 +38,6 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile_extract_filings
-      no_cache: true
       args:
         - FILING_TYPE=submissions
     volumes:
@@ -51,6 +49,8 @@ services:
 
   # 2. Transform+Load *Facts* Filing metatdata Process
   tl_submissions_filings:
+    depends_on:
+      - extract_submissions_filings
     <<: *base-template
     build: 
       <<: *tl_build-vals
@@ -59,8 +59,12 @@ services:
     environment:
       - FILING_TYPE=submissions
     container_name: tl_submissions_filings
+    entrypoint: >
+      sh -c "sleep 10 && python pipelines/fundamentals/extract_filings/submissions_df.py"
 
   tl_facts_filings:
+    depends_on:
+      - extract_facts_filings
     <<: *base-template
     build: 
       <<: *tl_build-vals
@@ -69,6 +73,8 @@ services:
     environment:
       - FILING_TYPE=facts
     container_name: tl_facts_filings
+    entrypoint: >
+      sh -c "sleep 10 && python pipelines/fundamentals/extract_filings/facts_df.py"
 
   # # 3. SEC Edgar Filing Load Process
   # load_filings:

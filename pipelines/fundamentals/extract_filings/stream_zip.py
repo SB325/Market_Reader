@@ -12,7 +12,7 @@ from tqdm import tqdm
 import math
 import json
 import time
-from util.kafka.kafka import KafkaProducer
+from util.kafka.kafka import KafkaProducer, get_number_of_messages_in_topic
 from util.redis.redis_util import RedisStream
 from util.signal_handler import SignalHandler
 import subprocess
@@ -22,13 +22,23 @@ from util.otel import otel_tracer, otel_logger
 load_dotenv(override=True)
 load_dotenv('.env')
 load_dotenv('util/kafka/.env')
+load_dotenv('util/redis/.env')
 
 facts_zip_filename = os.getenv("FACTS_ZIP_FILENAME")
 submissions_zip_filename = os.getenv("SUBMISSIONS_ZIP_FILENAME")
 zip_chunk_size = int(os.getenv("ZIP_CHUNK_SIZE"))
 queue_size = int(os.getenv("QUEUE_SIZE"))
+
+if not (facts_zip_filename and submissions_zip_filename and zip_chunk_size and queue_size):
+    print(f'Missing environment variable. \n \
+        facts_zip_filename = {facts_zip_filename} \n \
+        submissions_zip_filename = {submissions_zip_filename}\n \
+        zip_chunk_size = {zip_chunk_size}\n \
+        queue_size = {queue_size}')
+    sys.exit(1)
+
 sigHandler = SignalHandler()
-test_mode = bool(os.getenv("TEST_MODE"))
+test_mode = os.getenv("TEST_MODE", "0").lower() in ("1", "true", "yes", "on")
 
 if test_mode:
     print('Import Test for Submissions TL Successful.')

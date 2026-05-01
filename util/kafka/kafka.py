@@ -11,6 +11,7 @@ import subprocess
 import json
 from uuid import uuid4
 from util.otel import otel_tracer, otel_metrics, otel_logger
+import signal
 
 otraces = otel_tracer()
 ologs = otel_logger()
@@ -23,6 +24,14 @@ redis_stream_name_submissions = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 in_docker = os.getenv("INDOCKER")
     
 new_retention_ms_day = 24 * 60 * 60 * 1000  # 1 day
+
+running = True
+def signal_handler(sig, frame):
+    global running
+    print("\nStopping gracefully...")
+    running = False
+
+signal.signal(signal.SIGINT, signal_handler)
 
 def get_kafka_ip():
     if bool(in_docker):
@@ -47,7 +56,7 @@ consumer_conf = {
 }
 admin_client = AdminClient(producer_conf)
 
-def get_number_of_messages_in_topic(self, topic):
+def get_number_of_messages_in_topic(topic):
     unused_consumer = Consumer(consumer_conf)
     with otraces.set_span('kafka_list_topics') as span:
         metadata = admin_client.list_topics(topic=topic, timeout=10)
@@ -188,30 +197,47 @@ class KafkaConsumer():
 
     def recieve_once(self,
                     use_redis: bool = True,
-                    timeout = 10
+                    timeout = 5,
                     ):
         data = ''
         try:
             with otraces.set_span('kafka_consume_message') as span:
                 span.set_attribute("topic", self.topic)
                 span.set_attribute("timeout", timeout)
-                msg = self.consumer.poll(timeout)
-            if msg:
-                if not msg.error():
-                    msg_decoded = msg.value().decode('utf-8')
-                    if use_redis:
-                        with otraces.set_span('redis_read_message') as span:
-                            data = self.rstream.read(msg_decoded, self.topic)
-                            span.set_attribute("message_id", msg_decoded)
-                        # send message to transform block
-                    else: 
-                        data = msg_decoded
-                elif msg.error().code() != KafkaError._PARTITION_EOF:
-                    ologs.error(msg.error())
-                    raise BaseException(msg.error())
-                elif msg.error().code() == KafkaError._PARTITION_EOF:
-                    ologs.error(f'Reached end of topic/partition: {msg.topic()} [{msg.partition()}] at offset {msg.offset()}')
+            msg = self.consumer.poll(timeout)
+            if not msg:
+                print(f"Poll Timeout on topic {self.topic}")
+            elif not msg.error():
+                msg_decoded = msg.value().decode('utf-8')
+                if use_redis:
+                    with otraces.set_span('redis_read_message') as span:
+                        data = self.rstream.read(msg_decoded, self.topic)
+                        span.set_attribute("message_id", msg_decoded)
+                    # send message to transform block
+                else: 
+                    data = msg_decoded
+            elif msg.error().code() == KafkaError.UNKNOWN_TOPIC_OR_PART:
+                retries += 1
+                wait_time = min(2 ** retries, 30)  # Exponential backoff
+                print(f"Topic -{self.topic}- not ready.") #Retry {retries}/{max_retries} in {wait_time}s...")
 
+            #     sleep_interval = 0.5  # Check every 0.5 seconds
+            #     elapsed = 0
+            #     while elapsed < wait_time and running:
+            #         time.sleep(sleep_interval)
+            #         elapsed += sleep_interval
+            #     if not running:
+            #         pdb.set_trace()
+            #         break
+            #     continue
+            elif msg.error().code() != KafkaError._PARTITION_EOF:
+                ologs.error(msg.error())
+                raise BaseException(msg.error())
+            elif msg.error().code() == KafkaError._PARTITION_EOF:
+                ologs.error(f'Reached end of topic/partition: {msg.topic()} [{msg.partition()}] at offset {msg.offset()}')
+
+        except KeyboardInterrupt:
+            print("Caught interrupt, exiting...")
         except BaseException as be:
             traceback.print_exc()
 

@@ -35,7 +35,8 @@ if os.getenv('INDOCKER'):
 port = os.getenv("DATABASE_PORT")
 database_name = os.getenv("DATABASE_NAME")
 database_schema = os.environ.get('DATABASE_SCHEMA')
-debug = os.environ.get('DATA_DEBUG')
+debug = os.getenv("DATA_DEBUG", "0").lower() in ("1", "true", "yes", "on")
+
 
 if debug == 'True' or debug == 'False':
     debug = eval(debug)
@@ -57,7 +58,7 @@ if database_name != None and user != None and password != None and hostname != N
     db = SQLAlchemy(app)
 else:
     print(
-        f'\n____Error____: Environ variables [ DATA_INGEST_USER, DATA_INGEST_PASSWORD, DEV_or_PROD_DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist')
+        f'\n____Error____: Environ variables [ DATABASE_USER, DATABASE_PASSWOR, DATABASE_PORT, DATABASE_NAME, DATABASE_SCHEMA ] does not exist')
     exit()
 
 app.app_context().push()
