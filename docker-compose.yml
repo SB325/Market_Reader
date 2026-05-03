@@ -3,9 +3,9 @@ x-common-base: &common-base
   restart: "no"
   pull_policy: build
   depends_on:
-    - telemetry
+    - otelcol
   environment:
-    - OTEL_EXPORTER_OTLP_ENDPOINT=http://telemetry:4318
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://otelcol:4318
   networks:
     - homeserver
   profiles:

@@ -36,11 +36,11 @@ service_name = os.getenv("OTEL_SERVICE_NAME")
 
 def get_otel_ip():
     if bool(in_docker):
-        return 'telemetry:4317'
+        return 'otelcol:4317'
 
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' telemetry",
+        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' otelcol",
         capture_output=True,  # Capture stdout and stderr
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code
