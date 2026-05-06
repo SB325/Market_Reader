@@ -13,13 +13,17 @@ load_dotenv()
 app = Flask(__name__)
 db = None
 env = os.environ.get("ENV")
+postgres_service_name = os.getenv("POSTGRES_SERVICE_NAME")
+in_docker = os.getenv("INDOCKER")
 
 def get_db_ip():
     import subprocess
+    if bool(in_docker):
+        return f'{postgres_service_name}'
 
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' postgres_container",  # Command and its arguments as a list
+        f"docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' {postgres_service_name}",  # Command and its arguments as a list
         capture_output=True,  # Capture stdout and stderr
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code

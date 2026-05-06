@@ -2,30 +2,13 @@ tolerations: []
 podSecurityContext: {}
 securityContext: {}
 
-service: &common-service-definition
-  type: ClusterIP
-  servicePort: 8080
-  ports:
-    - name: http
-      port: 8080
-      protocol: TCP
-      targetPort: http
-
-# ports: &common-ports
-#   http:
-#     containerPort: 8080
-#     hostIP: 127.0.0.1
-#   health:
-#     containerPort: 8081
-#     hostIP: 127.0.0.1
-
 resources: &common-resources
   requests:
     memory: 128Mi
     cpu: 100m
   limits:
     memory: 10Gi
-    cpu: 500m
+    cpu: 1
 
 common-generic-stuff: &common-generic-config
   releaseTrunc: 45
@@ -37,30 +20,69 @@ common-generic-stuff: &common-generic-config
   affinity: {}
 
 # createStorageClass: false
-# storageClassName: local-path
 
 # Persistent Volumes
 usePVCs: true
+storageClassName: local-path
 persistentVolumes:
   postgres-main:
     pvcname: marketreader-postgres-main-claim
     pvname: marketreader-postgres-main
     path: /mnt/bulkStorage/postgres
-    storage: 8Gi
+    storage: 150Gi
+  redis-main:
+    pvcname: marketreader-redis-main-claim
+    pvname: marketreader-redis-main
+    path: /mnt/bulkStorage/redis
+    accessModes:
+    - ReadWriteMany
+    storage: 10Gi
+  loki-data:
+    pvcname: marketreader-loki-data-claim
+    pvname: marketreader-loki-data
+    path: /mnt/bulkStorage/loki
+    storage: 10Gi
+  tempo-data:
+    pvcname: marketreader-tempo-data-claim
+    pvname: marketreader-tempo-data
+    path: /mnt/bulkStorage/tempo
+    storage: 10Gi
+  prometheus-data:
+    pvcname: marketreader-prometheus-data-claim
+    pvname: marketreader-prometheus-data
+    path: /mnt/bulkStorage/prometheus
+    storage: 10Gi
+  pyroscope-data:
+    pvcname: marketreader-pyroscope-data-claim
+    pvname: marketreader-pyroscope-data
+    path: /mnt/bulkStorage/pyroscope
+    storage: 10Gi
+  otel-data:
+    pvcname: marketreader-otel-data-claim
+    pvname: marketreader-otel-data
+    path: (set-from-helm-install-argument)  
+    storage: 10Gi
 
-# Common Utilities
 kafka:
   replicaCount: 1
+  # KRaft mode configuration (no Zookeeper)
+  controllerReplicaCount: 1
+  configuration:
+    offsetsTopicReplicationFactor: 1
+    transactionStateLogReplicationFactor: 1
+    transactionStateLogMinIsr: 1
+    numPartitions: 1
+    groupInitialRebalanceDelayMs: 0
   startupProbe:
     enabled: true
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
-    failureThreshold: 30
+    failureThreshold: 5
     successThreshold: 1
   livenessProbe:
     enabled: true
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 6
@@ -68,37 +90,57 @@ kafka:
 
 redis:
   architecture: replication
-  replicaCount: 2 # 1 master + 1 replicas
+  replicaCount: 1 # 1 master + 1 replicas
+  master:
+    persistence:
+      enabled: true
+      existingClaim: marketreader-redis-main-claim
+  master:
+    podAntiAffinityPreset: soft
+  replica:
+    podAntiAffinityPreset: soft
   sentinel:
     enabled: false
   auth:
     enabled: false
 
 postgres:
+  architecture: replication
+  readReplicas:
+    replicaCount: 0 # No read replicas for now
   auth:
     existingSecret: "postgres-credentials"
-  resources:
-    requests:
-      memory: "4Gi"
-      cpu: "2000m"
-    limits:
-      memory: "8Gi"
-      cpu: "4000m"
-
-  config:
-    postgresqlMaxConnections: 50
-    postgresqlSharedBuffers: "2GB"
+  
+  primary:
+    persistence:
+      enabled: true
+      existingClaim: marketreader-postgres-main-claim
+  
+  # Consolidated configuration using the chart's native config block
+  config: 
+    postgresqlMaxConnections: 100
+    postgresqlSharedBuffers: "2.5GB"
     postgresqlEffectiveCacheSize: "6GB"
-    postgresqlWorkMem: "16MB"
-    postgresqlMaintenanceWorkMem: "512MB"
+    postgresqlWorkMem: "64MB"
+    postgresqlMaintenanceWorkMem: "1GB"
     postgresqlWalBuffers: "32MB"
     postgresqlCheckpointCompletionTarget: "0.9"
     postgresqlRandomPageCost: "1.0"
-    extraConfig:
-      - "wal_level = replica"
-      - "max_wal_senders = 3"
-      - "archive_mode = on"
-      - "archive_command = 'test ! -f /backup/%f && cp %p /backup/%f'"
+  
+  # extraConfig is perfect for raw parameter additions
+  extraConfig:
+  - "wal_level = replica"
+  - "max_wal_senders = 3"
+  - "archive_mode = on"
+  - "archive_command = 'test ! -f /mnt/bulkStorage/postgres/wal_archive/%f && mkdir -p /mnt/bulkStorage/postgres/wal_archive && cp %p /mnt/bulkStorage/postgres/wal_archive/%f'"
+
+  resources:
+    requests:
+      memory: "10Gi"
+      cpu: "4"
+    limits:
+      memory: "10Gi"
+      cpu: "4"
 
   affinity:
     podAntiAffinity:
@@ -112,17 +154,17 @@ postgres:
                   values:
                     - postgres
             topologyKey: kubernetes.io/hostname
+
   metrics:
     enabled: true
     serviceMonitor:
-      enabled: true  
+      enabled: true
 
 # Observability & Telemetry
 kubernetes-dashboard:
   metricsScraper:
     enabled: true
     volumeMounts:
-      # Create volume mount to store logs (required)
       - mountPath: /tmp
         name: tmp-volume
     containers:
@@ -144,15 +186,12 @@ kubernetes-dashboard:
 otel:
   mode: daemonset
   replicaCount: 1
-  presets: {}
-    # kubeletMetrics:   #requires the Kubeletstats reciever to be included in the collector
-    #   enabled: false
-    clusterMetrics:   #requires the Kubernetes Cluster reciever to be included in the collector
-      enabled: false   #and requires statefulset or deployment mode with a single replica.
-    kubernetesEvents: #requires the Kubernetes Objects reciever to be included in the collector
-      enabled: false
-    hostMetrics:    # Requires hostMetrics reciever to be included in collector
-      enabled: false
+  clusterMetrics:   #requires the Kubernetes Cluster reciever to be included in the collector
+    enabled: false   #and requires statefulset or deployment mode with a single replica.
+  kubernetesEvents: #requires the Kubernetes Objects reciever to be included in the collector
+    enabled: false
+  hostMetrics:    # Requires hostMetrics reciever to be included in collector
+    enabled: false
   config:
     exporters:
       otlphttp:
@@ -177,9 +216,18 @@ otel:
 
 prometheus: 
   enabled: true
+  # Persistent Volume Claim configuration
+  server:
+    persistentVolume:
+      enabled: true
+      existingClaim: marketreader-prometheus-data-claim
 
 tempo:
   replicas: 1
+  # Persistent Volume Claim configuration
+  persistence:
+    enabled: true
+    existingClaim: marketreader-tempo-data-claim
   metricsGenerator:
     # -- If true, enables Tempo's metrics generator (https://grafana.com/docs/tempo/next/metrics-generator/)
     enabled: false
@@ -230,6 +278,10 @@ tempo:
 
 loki:
   auth_enabled: false
+  # Persistent Volume Claim configuration
+  persistence:
+    enabled: true
+    existingClaim: marketreader-loki-data-claim
   # Configures the liveness probe for all of the Loki pods
   livenessProbe: {}
   # Configures the readiness probe for all of the Loki pods
@@ -251,17 +303,42 @@ grafana:
   replicas: 1
   autoscaling:
     enabled: false
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx  # or your ingress class
+    annotations:
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: hostname-secret
+      nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    hosts:
+      - (set-from-helm-install-argument)  
+    tls:
+      - secretName: tls-secrets
+        hosts:
+          - (set-from-helm-install-argument)
+          
   readinessProbe:
   httpGet:
     path: /api/health
-    port: grafana #?
+    port: grafana 
   livenessProbe:
     httpGet:
       path: /api/health
-      port: grafana #?
+      port: grafana 
     initialDelaySeconds: 60
     timeoutSeconds: 30
     failureThreshold: 10
+
+pyroscope:
+  replicas: 1
+  retention: 24h
+  # Persistent Volume Claim configuration
+  persistence:
+    enabled: true
+    existingClaim: marketreader-pyroscope-data-claim
+  storage:
+    path: /var/lib/pyroscope
 
 # Main Application
 marketreader:
@@ -281,6 +358,15 @@ marketreader:
         hosts:
         - secretRef:
             name: hostname-secret 
+        paths:
+        - path: /pgadmin
+          pathType: Prefix
+          serviceName: pgadmin-service
+          servicePort: (set-from-helm-install-argument)
+        - path: /grafana
+          pathType: Prefix
+          serviceName: grafana
+          servicePort: 3000
   serviceAccount:
     create: true
     name: default
@@ -290,8 +376,6 @@ marketreader:
       ingress:
         enabled: false
       <<: *common-generic-config
-      service:
-        <<: *common-service-definition
       containers:
         extract_facts_filings:
           resources:
@@ -300,17 +384,16 @@ marketreader:
             FILING_TYPE:
               value: 'facts'
             OTEL_EXPORTER_OTLP_ENDPOINT:
-              value: 'http://telemetry:4318'
+              value: 'http://otel:4318'
           image:
-            repository: localhost:5050:/v2/market_reader/etl/extract_facts_filings
+            registry: ""
+            repository: homeserver-extract_facts_filings
             tag: latest
     extract_submissions_filings:
       enabled: true
       ingress:
         enabled: false
       <<: *common-generic-config
-      service:
-        <<: *common-service-definition
       containers:
         extract_facts_filings:
           resources:
@@ -319,17 +402,16 @@ marketreader:
             FILING_TYPE:
               value: 'submissions'
             OTEL_EXPORTER_OTLP_ENDPOINT:
-              value: 'http://telemetry:4318'
+              value: 'http://otel:4318'
           image:
-            repository: localhost:5050:/v2/market_reader/etl/extract_submissions_filings
+            registry: ""
+            repository: homeserver-extract_submissions_filings
             tag: latest
     load_submissions_filings:
       enabled: true
       ingress:
         enabled: false
       <<: *common-generic-config
-      service:
-        <<: *common-service-definition
       containers:
         load_submissions_filings:
           resources:
@@ -338,17 +420,16 @@ marketreader:
             FILING_TYPE:
               value: 'submissions'
             OTEL_EXPORTER_OTLP_ENDPOINT:
-              value: 'http://telemetry:4318'
+              value: 'http://otel:4318'
           image:
-            repository: localhost:5050:/v2/market_reader/etl/tl_submissions_filings
+            registry: ""
+            repository: homeserver-tl_submissions_filings
             tag: latest
     load_facts_filings:
       enabled: true
       ingress:
         enabled: false
       <<: *common-generic-config
-      service:
-        <<: *common-service-definition
       containers:
         load_facts_filings:
           resources:
@@ -357,7 +438,43 @@ marketreader:
             FILING_TYPE:
               value: 'facts'
             OTEL_EXPORTER_OTLP_ENDPOINT:
-              value: 'http://telemetry:4318'
+              value: 'http://otel:4318'
           image:
-            repository: localhost:5050:/v2/market_reader/etl/tl_facts_filings
+            registry: ""
+            repository: homeserver-tl_facts_filings
             tag: latest
+    pgadmin-service:
+      enabled: true
+      ingress:
+        enabled: true
+      <<: *common-generic-config
+      service:
+        type: ClusterIP
+        servicePort: 80
+        ports:
+          - name: http
+            port: 80
+            protocol: TCP
+            targetPort: (set-from-helm-install-argument)
+      containers:
+        pgadmin:
+          resources:
+            <<: *common-resources
+          env:
+            environment:
+              PGADMIN_EMAIL:
+                valueFrom:
+                  secretKeyRef:
+                    name: pgadmin-credentials
+                    key: pgadmin_email
+              PGADMIN_PW:
+                valueFrom:
+                  secretKeyRef:
+                    name: pgadmin-credentials
+                    key: pgadmin_pw   
+            FILING_TYPE:
+              value: 'facts'
+          image:
+            registry: ""
+            repository: dpage/pgadmin4
+            tag: 8.0

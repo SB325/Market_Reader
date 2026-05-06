@@ -4,18 +4,24 @@ sys.path.append(os.path.join(os.path.dirname(__file__)))
 from collection_model import collection_model_type
 import pdb
 from util.otel import otel_tracer, otel_metrics, otel_logger
+from dotenv import load_dotenv
 
+load_dotenv()
 otraces = otel_tracer()
 ometrics = otel_metrics()
 ologs = otel_logger()
 
+milvus_service_name = os.getenv("MILVUS_SERVICE_NAME")
+
 # https://opentelemetry-python.readthedocs.io/en/latest/sdk/index.html
 def get_db_ip():
     import subprocess
+    if bool(in_docker):
+        return f'{milvus_service_name}'
 
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' milvus",  # Command and its arguments as a list
+        f"docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' {milvus_service_name}",  # Command and its arguments as a list
         capture_output=True,  # Capture stdout and stderr
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code

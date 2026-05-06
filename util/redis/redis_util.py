@@ -20,13 +20,14 @@ group_id = os.getenv("GROUP_ID")
 redis_stream_name_facts = os.getenv("REDIS_FACTS_STREAM_NAME")
 redis_stream_name_submissions = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
 in_docker = os.getenv("INDOCKER")
+redis_service_name = os.getenv("REDIS_SERVICE_NAME")
 
 def get_redis_ip():
     if bool(in_docker):
-        return 'redis_home'
+        return f'{redis_service_name}'
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' redis_home",
+        f"docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' {redis_service_name}",
         capture_output=True,  # Capture stdout and stderr
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code

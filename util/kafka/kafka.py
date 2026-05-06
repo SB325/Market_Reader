@@ -13,6 +13,7 @@ from uuid import uuid4
 from util.otel import otel_tracer, otel_metrics, otel_logger
 import signal
 
+load_dotenv()
 otraces = otel_tracer()
 ologs = otel_logger()
 
@@ -21,6 +22,8 @@ load_dotenv(override=True)
 group_id = os.getenv("GROUP_ID")
 redis_stream_name_facts = os.getenv("REDIS_FACTS_STREAM_NAME")
 redis_stream_name_submissions = os.getenv("REDIS_SUBMISSIONS_STREAM_NAME")
+kafka_service_name = os.getenv("KAFKA_SERVICE_NAME")
+
 in_docker = os.getenv("INDOCKER")
     
 new_retention_ms_day = 24 * 60 * 60 * 1000  # 1 day
@@ -35,11 +38,11 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def get_kafka_ip():
     if bool(in_docker):
-        return 'kafka:29092'
+        return f'{kafka_service_name}:29092'
 
     # Run a command and capture its stdout and stderr
     ip = subprocess.run(
-        "docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' kafka",
+        f"docker inspect --format='{{.NetworkSettings.Networks.homeserver.IPAddress}}' {kafka_service_name}",
         capture_output=True,  # Capture stdout and stderr
         text=True,           # Decode output as text (UTF-8 by default)
         shell=True           # Raise CalledProcessError if the command returns a non-zero exit code

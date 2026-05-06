@@ -3,3 +3,10 @@
 util/elastic
 util/webhook_server
 Dockerfile*
+agents/
+documentation/
+helm/
+models/
+pickles/
+scripts/
+ui/
