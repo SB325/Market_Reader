@@ -15,4 +15,4 @@ log/*
 __pycache__/
 .env
 .terraform/
-.terraform
+.terraform*
